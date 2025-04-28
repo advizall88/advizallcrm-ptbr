@@ -2,6 +2,7 @@
 import React from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Add this import for Button component
 
 const Dashboard = () => {
   return (

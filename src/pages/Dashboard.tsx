@@ -1,127 +1,614 @@
-
-import React from "react";
-import AppLayout from "@/components/layout/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button"; // Add this import for Button component
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ResponsiveBar } from '@nivo/bar';
+import { ResponsivePie } from '@nivo/pie';
+import { ResponsiveLine } from '@nivo/line';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CalendarIcon, LineChartIcon, UsersIcon, DollarSignIcon, BarChartIcon } from 'lucide-react';
+import { prospectService } from '@/services/prospectService';
+import { clientService } from '@/services/clientService';
+import { meetingService } from '@/services/meetingService';
+import { useAuth } from '@/contexts/AuthContext';
+import AppLayout from '@/components/layout/AppLayout';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [metrics, setMetrics] = useState({
+    totalProspects: 0,
+    totalClients: 0,
+    newProspectsThisMonth: 0,
+    newClientsThisMonth: 0,
+    upcomingMeetings: 0,
+    totalRevenue: 0,
+    totalProjects: 0
+  });
+  const [prospects, setProspects] = useState([]);
+  const [clients, setClients] = useState([]);
+  const [meetings, setMeetings] = useState([]);
+  const [prospectsByStage, setProspectsByStage] = useState([]);
+  const [revenueData, setRevenueData] = useState([]);
+  const [conversionRateData, setConversionRateData] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch prospects
+        const allProspects = await prospectService.getProspects();
+        setProspects(allProspects);
+        
+        // Fetch clients
+        const allClients = await clientService.getClients();
+        setClients(allClients);
+        
+        // Fetch upcoming meetings
+        const upcomingMeetings = await meetingService.getUpcomingMeetings();
+        setMeetings(upcomingMeetings);
+        
+        // Calculate metrics
+        const now = new Date();
+        const thisMonth = now.getMonth();
+        const thisYear = now.getFullYear();
+        
+        const newProspectsThisMonth = allProspects.filter(p => {
+          const createdAt = new Date(p.created_at);
+          return createdAt.getMonth() === thisMonth && createdAt.getFullYear() === thisYear;
+        });
+        
+        const newClientsThisMonth = allClients.filter(c => {
+          const createdAt = new Date(c.created_at);
+          return createdAt.getMonth() === thisMonth && createdAt.getFullYear() === thisYear;
+        });
+        
+        // Calculate total projects
+        let totalProjects = 0;
+        for (const client of allClients) {
+          const projects = await clientService.getProjects(client.id);
+          totalProjects += projects.length;
+        }
+        
+        // Calculate total revenue
+        let totalRevenue = 0;
+        for (const client of allClients) {
+          totalRevenue += client.monthly_fee || 0;
+        }
+        
+        setMetrics({
+          totalProspects: allProspects.length,
+          totalClients: allClients.length,
+          newProspectsThisMonth: newProspectsThisMonth.length,
+          newClientsThisMonth: newClientsThisMonth.length,
+          upcomingMeetings: upcomingMeetings.length,
+          totalRevenue,
+          totalProjects
+        });
+        
+        // Prepare data for charts
+        const stageCount = {
+          new: 0,
+          interested: 0,
+          negotiation: 0,
+          lost: 0
+        };
+        
+        allProspects.forEach(prospect => {
+          const status = prospect.status;
+          if (status && status in stageCount) {
+            stageCount[status]++;
+          }
+        });
+        
+        const chartData = Object.entries(stageCount).map(([id, value]) => ({
+          id,
+          label: id.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+          value
+        }));
+        
+        setProspectsByStage(chartData);
+        
+        // Mock revenue data for the last 12 months
+        const mockRevenueData = [];
+        const mockConversionData = [];
+        
+        for (let i = 0; i < 12; i++) {
+          const month = new Date();
+          month.setMonth(month.getMonth() - i);
+          const monthName = month.toLocaleString('default', { month: 'short' });
+          const year = month.getFullYear();
+          
+          mockRevenueData.unshift({
+            x: `${monthName} ${year}`,
+            y: Math.floor(Math.random() * 10000) + 5000
+          });
+          
+          mockConversionData.unshift({
+            x: `${monthName} ${year}`,
+            y: Math.floor(Math.random() * 30) + 10
+          });
+        }
+        
+        setRevenueData([
+          {
+            id: 'revenue',
+            data: mockRevenueData
+          }
+        ]);
+        
+        setConversionRateData([
+          {
+            id: 'conversion',
+            data: mockConversionData
+          }
+        ]);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
+  
+  const recentProspects = prospects.slice(0, 5);
+  const recentClients = clients.slice(0, 5);
+  const upcomingMeetings = meetings.slice(0, 5);
+  
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-500">Welcome to Advizall CRM.</p>
+      <div className="p-6 space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div className="flex gap-2">
+            <Button variant="outline">Export Report</Button>
+            <Button>Refresh Data</Button>
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="shadow-neumorph-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Active Prospects
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-green-500">+2 this week</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-neumorph-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Active Clients
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">24</div>
-              <p className="text-xs text-green-500">+1 this week</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-neumorph-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Scheduled Meetings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">8</div>
-              <p className="text-xs text-blue-500">Next: Today at 3 PM</p>
-            </CardContent>
-          </Card>
-          
-          <Card className="shadow-neumorph-sm">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                Pending Payments
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$12,450</div>
-              <p className="text-xs text-yellow-500">3 invoices unpaid</p>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="shadow-neumorph-sm">
-            <CardHeader>
-              <CardTitle>Recent Activities</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                  <div className="text-sm">
-                    <span className="font-medium">ABC Corp</span> converted from prospect to client
-                    <div className="text-xs text-gray-500">2 hours ago</div>
-                  </div>
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-x-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Prospects</p>
+                  <p className="text-3xl font-bold">{metrics.totalProspects}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    +{metrics.newProspectsThisMonth} this month
+                  </p>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                  <div className="text-sm">
-                    <span className="font-medium">Meeting scheduled</span> with XYZ Inc.
-                    <div className="text-xs text-gray-500">Yesterday at 4:30 PM</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-2 h-2 bg-purple-500 rounded-full mr-2"></div>
-                  <div className="text-sm">
-                    <span className="font-medium">New prospect added:</span> Tech Solutions LLC
-                    <div className="text-xs text-gray-500">2 days ago</div>
-                  </div>
+                <div className="bg-primary/10 p-2 rounded-full">
+                  <UsersIcon className="h-8 w-8 text-primary" />
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="shadow-neumorph-sm">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-x-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Active Clients</p>
+                  <p className="text-3xl font-bold">{metrics.totalClients}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    +{metrics.newClientsThisMonth} this month
+                  </p>
+                </div>
+                <div className="bg-green-500/10 p-2 rounded-full">
+                  <UsersIcon className="h-8 w-8 text-green-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-x-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Upcoming Meetings</p>
+                  <p className="text-3xl font-bold">{metrics.upcomingMeetings}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Next 7 days
+                  </p>
+                </div>
+                <div className="bg-blue-500/10 p-2 rounded-full">
+                  <CalendarIcon className="h-8 w-8 text-blue-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between space-x-4">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
+                  <p className="text-3xl font-bold">${metrics.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {metrics.totalProjects} active projects
+                  </p>
+                </div>
+                <div className="bg-amber-500/10 p-2 rounded-full">
+                  <DollarSignIcon className="h-8 w-8 text-amber-500" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* Charts Section */}
+        <Tabs defaultValue="overview">
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="sales">Sales Pipeline</TabsTrigger>
+              <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="overview" className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Prospects by Stage</CardTitle>
+                  <CardDescription>Distribution of prospects across pipeline stages</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveBar
+                      data={prospectsByStage}
+                      keys={['value']}
+                      indexBy="id"
+                      margin={{ top: 10, right: 20, bottom: 50, left: 40 }}
+                      padding={0.3}
+                      valueScale={{ type: 'linear' }}
+                      colors={{ scheme: 'nivo' }}
+                      borderRadius={4}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: -45,
+                        legend: 'Stage',
+                        legendPosition: 'middle',
+                        legendOffset: 40
+                      }}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Count',
+                        legendPosition: 'middle',
+                        legendOffset: -35
+                      }}
+                      labelSkipWidth={12}
+                      labelSkipHeight={12}
+                      role="application"
+                      ariaLabel="Prospects by Stage"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Conversion Rate</CardTitle>
+                  <CardDescription>Prospect to client conversion over time</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveLine
+                      data={conversionRateData}
+                      margin={{ top: 10, right: 20, bottom: 50, left: 40 }}
+                      xScale={{ type: 'point' }}
+                      yScale={{ type: 'linear', min: 0, max: 'auto' }}
+                      curve="monotoneX"
+                      axisTop={null}
+                      axisRight={null}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: -45,
+                        legend: 'Month',
+                        legendOffset: 40,
+                        legendPosition: 'middle'
+                      }}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Rate (%)',
+                        legendOffset: -40,
+                        legendPosition: 'middle'
+                      }}
+                      colors={{ scheme: 'category10' }}
+                      pointSize={10}
+                      pointColor={{ theme: 'background' }}
+                      pointBorderWidth={2}
+                      pointBorderColor={{ from: 'serieColor' }}
+                      pointLabelYOffset={-12}
+                      enableArea={true}
+                      areaOpacity={0.15}
+                      useMesh={true}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="sales" className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sales Pipeline</CardTitle>
+                  <CardDescription>Current distribution of deal values by stage</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsivePie
+                      data={prospectsByStage}
+                      margin={{ top: 10, right: 20, bottom: 50, left: 20 }}
+                      innerRadius={0.5}
+                      padAngle={0.7}
+                      cornerRadius={3}
+                      activeOuterRadiusOffset={8}
+                      borderWidth={1}
+                      borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                      arcLinkLabelsSkipAngle={10}
+                      arcLinkLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+                      arcLinkLabelsThickness={2}
+                      arcLinkLabelsColor={{ from: 'color' }}
+                      arcLabelsSkipAngle={10}
+                      arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+                      colors={{ scheme: 'category10' }}
+                      legends={[
+                        {
+                          anchor: 'bottom',
+                          direction: 'row',
+                          justify: false,
+                          translateX: 0,
+                          translateY: 45,
+                          itemsSpacing: 0,
+                          itemWidth: 80,
+                          itemHeight: 18,
+                          itemTextColor: '#999',
+                          itemDirection: 'left-to-right',
+                          itemOpacity: 1,
+                          symbolSize: 18,
+                          symbolShape: 'circle'
+                        }
+                      ]}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Win Rate by Business Type</CardTitle>
+                  <CardDescription>Conversion success rate by client business type</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveBar
+                      data={[
+                        { businessType: 'Restaurant', rate: 68 },
+                        { businessType: 'Retail', rate: 72 },
+                        { businessType: 'Professional', rate: 84 },
+                        { businessType: 'Healthcare', rate: 62 },
+                        { businessType: 'Service', rate: 75 }
+                      ]}
+                      keys={['rate']}
+                      indexBy="businessType"
+                      margin={{ top: 10, right: 20, bottom: 50, left: 60 }}
+                      padding={0.3}
+                      layout="horizontal"
+                      valueScale={{ type: 'linear' }}
+                      colors={{ scheme: 'paired' }}
+                      borderRadius={4}
+                      axisTop={null}
+                      axisRight={null}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Win Rate (%)',
+                        legendPosition: 'middle',
+                        legendOffset: 35
+                      }}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Business Type',
+                        legendPosition: 'middle',
+                        legendOffset: -50
+                      }}
+                      labelSkipWidth={12}
+                      labelSkipHeight={12}
+                      labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                      role="application"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="revenue" className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 gap-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Monthly Revenue</CardTitle>
+                  <CardDescription>Revenue growth over the past 12 months</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-80">
+                    <ResponsiveLine
+                      data={revenueData}
+                      margin={{ top: 20, right: 20, bottom: 50, left: 60 }}
+                      xScale={{ type: 'point' }}
+                      yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
+                      curve="monotoneX"
+                      axisTop={null}
+                      axisRight={null}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: -45,
+                        legend: 'Month',
+                        legendOffset: 40,
+                        legendPosition: 'middle'
+                      }}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Revenue ($)',
+                        legendOffset: -50,
+                        legendPosition: 'middle',
+                        format: value => `$${value.toLocaleString()}`
+                      }}
+                      enableGridX={false}
+                      colors={{ scheme: 'category10' }}
+                      lineWidth={3}
+                      pointSize={10}
+                      pointColor={{ theme: 'background' }}
+                      pointBorderWidth={2}
+                      pointBorderColor={{ from: 'serieColor' }}
+                      pointLabelYOffset={-12}
+                      enableArea={true}
+                      areaOpacity={0.15}
+                      useMesh={true}
+                      legends={[
+                        {
+                          anchor: 'top-right',
+                          direction: 'column',
+                          justify: false,
+                          translateX: 0,
+                          translateY: 0,
+                          itemsSpacing: 0,
+                          itemDirection: 'left-to-right',
+                          itemWidth: 80,
+                          itemHeight: 20,
+                          itemOpacity: 0.75,
+                          symbolSize: 12,
+                          symbolShape: 'circle',
+                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                          effects: [
+                            {
+                              on: 'hover',
+                              style: {
+                                itemBackground: 'rgba(0, 0, 0, .03)',
+                                itemOpacity: 1
+                              }
+                            }
+                          ]
+                        }
+                      ]}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+        
+        {/* Recent Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
             <CardHeader>
-              <CardTitle>Upcoming Meetings</CardTitle>
+              <CardTitle>Recent Prospects</CardTitle>
+              <CardDescription>Latest prospect additions</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">Strategy Call: ABC Corp</h4>
-                    <p className="text-sm text-gray-500">Today, 3:00 PM - 4:00 PM</p>
+                {recentProspects.map(prospect => (
+                  <div key={prospect.id} className="flex items-center space-x-4">
+                    <Avatar>
+                      <AvatarFallback>{prospect.contact_name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">{prospect.contact_name}</p>
+                      <p className="text-xs text-muted-foreground">{prospect.company_name || 'Individual'}</p>
+                    </div>
+                    <Badge className="capitalize">{prospect.status.replace('_', ' ')}</Badge>
                   </div>
-                  <Button variant="outline" size="sm">Join</Button>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">Project Review: XYZ Inc</h4>
-                    <p className="text-sm text-gray-500">Tomorrow, 10:00 AM - 11:00 AM</p>
+                ))}
+                {recentProspects.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No recent prospects</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Clients</CardTitle>
+              <CardDescription>Latest client conversions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentClients.map(client => (
+                  <div key={client.id} className="flex items-center space-x-4">
+                    <Avatar>
+                      <AvatarFallback>{client.contact_name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">{client.contact_name}</p>
+                      <p className="text-xs text-muted-foreground">{client.company_name || 'Individual'}</p>
+                    </div>
+                    <Badge className="capitalize" variant={client.status === 'active' ? 'default' : 'destructive'}>
+                      {client.status}
+                    </Badge>
                   </div>
-                  <Button variant="outline" size="sm">Join</Button>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-medium">Onboarding: New Client</h4>
-                    <p className="text-sm text-gray-500">May 2, 1:00 PM - 2:00 PM</p>
+                ))}
+                {recentClients.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No recent clients</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming Meetings</CardTitle>
+              <CardDescription>Your scheduled meetings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {upcomingMeetings.map(meeting => (
+                  <div key={meeting.id} className="flex items-center space-x-4">
+                    <div className="bg-primary/10 p-2 rounded-full">
+                      <CalendarIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <p className="text-sm font-medium leading-none">{meeting.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(meeting.start_time).toLocaleString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    {meeting.meet_link && (
+                      <Button variant="outline" size="sm" className="h-8">
+                        Join
+                      </Button>
+                    )}
                   </div>
-                  <Button variant="outline" size="sm">Join</Button>
-                </div>
+                ))}
+                {upcomingMeetings.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No upcoming meetings</p>
+                )}
               </div>
             </CardContent>
           </Card>

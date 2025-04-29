@@ -1,73 +1,110 @@
-# Welcome to your Lovable project
+# Advizall CRM
 
-## Project info
+A comprehensive CRM designed for Advizall, a Chicago-based marketing agency that acquires and manages U.S. clients for various services.
 
-**URL**: https://lovable.dev/projects/cb926f58-af49-4b36-aa19-3945f1d04b97
+## Features
 
-## How can I edit this code?
+- **Prospect Management**: Track leads through a simple pipeline until they become active clients
+- **Client Management**: Store client information and sensitive credentials (visible only to privileged roles)
+- **Meeting Scheduling**: Schedule meetings with Google Calendar integration with automatic Google Meet links
+- **Project Tracking**: Track projects and tasks for clients
+- **Role-Based Access**: Different permission levels for Users, Moderators, and Admins
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL + Row-Level Security)
+- **Authentication**: Supabase Auth
+- **Workflows**: N8n (for Google Calendar integration and automated emails)
+- **Data Fetching**: TanStack Query
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/cb926f58-af49-4b36-aa19-3945f1d04b97) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js (v18 or higher)
+- npm or pnpm
+- Supabase account
+- Google account (for Calendar/Meet integration)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
+1. Clone the repository
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+git clone <repository-url>
+cd advizall-flow-hub
 ```
 
-**Edit a file directly in GitHub**
+2. Install dependencies
+```sh
+npm install
+# or
+pnpm install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Set up environment variables
+```sh
+cp .env.example .env
+```
+Edit the `.env` file and add your Supabase URL and anon key.
 
-**Use GitHub Codespaces**
+4. Set up Supabase
+   - Create a new Supabase project
+   - Run the SQL migrations (to be created)
+   - Enable Row-Level Security policies
+   - Configure authentication settings
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+5. Start the development server
+```sh
+npm run dev
+# or
+pnpm dev
+```
 
-## What technologies are used for this project?
+### Database Setup
 
-This project is built with:
+The database requires several tables to be created:
+- `users`
+- `prospects`
+- `clients`
+- `credentials`
+- `projects`
+- `tasks`
+- `payments`
+- `meetings`
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Detailed SQL migrations will be provided in the future.
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/cb926f58-af49-4b36-aa19-3945f1d04b97) and click on Share -> Publish.
+```
+src/
+├── components/     # UI components
+│   ├── ui/         # Base components (shadcn/ui)
+│   └── layout/     # Layout components
+├── contexts/       # React contexts for state management
+├── hooks/          # Custom React hooks
+├── lib/            # Utilities and configurations
+│   └── supabase.ts # Supabase client and types
+├── pages/          # Main application pages
+├── services/       # API services for data fetching
+└── main.tsx        # Application entry point
+```
 
-## Can I connect a custom domain to my Lovable project?
+## Authentication and Authorization
 
-Yes, you can!
+This CRM implements a role-based access control system with three user roles:
+- **User**: Regular salesperson / account exec with limited access
+- **Moderator**: Senior staff / team lead with broader access
+- **Admin**: System owner with full access to all features
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Deployment
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+To deploy this application:
+1. Push to the main branch to trigger CI/CD pipeline
+2. Deploy Supabase functions and migrations
+3. Configure N8n for production
+
+## License
+
+This project is proprietary and confidential. Unauthorized copying, transferring, or reproduction of the contents of this project, via any medium, is strictly prohibited.

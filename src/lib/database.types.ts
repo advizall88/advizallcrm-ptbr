@@ -1,0 +1,477 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export interface Database {
+  public: {
+    Tables: {
+      clients: {
+        Row: {
+          id: string
+          owner_id: string
+          contact_name: string
+          company_name?: string
+          phone: string
+          email: string
+          lead_source: string
+          business_type: string
+          region_city: string
+          region_state: string
+          timezone: string
+          score: number
+          status: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at: string
+          updated_at: string
+          full_address: string
+          website?: string
+          social_links?: Record<string, string>
+          plan_name?: string
+          retainer_value?: number
+          ad_budget?: number
+        }
+        Insert: {
+          id?: string
+          owner_id: string
+          contact_name: string
+          company_name?: string
+          phone: string
+          email: string
+          lead_source: string
+          business_type: string
+          region_city: string
+          region_state: string
+          timezone: string
+          score?: number
+          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at?: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at?: string
+          updated_at?: string
+          full_address: string
+          website?: string
+          social_links?: Record<string, string>
+          plan_name?: string
+          retainer_value?: number
+          ad_budget?: number
+        }
+        Update: {
+          id?: string
+          owner_id?: string
+          contact_name?: string
+          company_name?: string
+          phone?: string
+          email?: string
+          lead_source?: string
+          business_type?: string
+          region_city?: string
+          region_state?: string
+          timezone?: string
+          score?: number
+          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at?: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at?: string
+          updated_at?: string
+          full_address?: string
+          website?: string
+          social_links?: Record<string, string>
+          plan_name?: string
+          retainer_value?: number
+          ad_budget?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      credentials: {
+        Row: {
+          id: string
+          client_id: string
+          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          login: string
+          password: string
+          notes?: string
+          visible_to: 'moderator' | 'admin'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          login: string
+          password: string
+          notes?: string
+          visible_to?: 'moderator' | 'admin'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          system?: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          login?: string
+          password?: string
+          notes?: string
+          visible_to?: 'moderator' | 'admin'
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credentials_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      meetings: {
+        Row: {
+          id: string
+          client_id?: string
+          prospect_id?: string
+          title: string
+          starts_at: string
+          ends_at: string
+          calendar_event_id?: string
+          meet_link?: string
+          created_by_id: string
+          notes?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id?: string
+          prospect_id?: string
+          title: string
+          starts_at: string
+          ends_at: string
+          calendar_event_id?: string
+          meet_link?: string
+          created_by_id: string
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          prospect_id?: string
+          title?: string
+          starts_at?: string
+          ends_at?: string
+          calendar_event_id?: string
+          meet_link?: string
+          created_by_id?: string
+          notes?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meetings_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_prospect_id_fkey"
+            columns: ["prospect_id"]
+            isOneToOne: false
+            referencedRelation: "prospects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meetings_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      payments: {
+        Row: {
+          id: string
+          client_id: string
+          amount: number
+          currency: string
+          description: string
+          invoice_date: string
+          paid: boolean
+          paid_at?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          amount: number
+          currency: string
+          description: string
+          invoice_date: string
+          paid?: boolean
+          paid_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          amount?: number
+          currency?: string
+          description?: string
+          invoice_date?: string
+          paid?: boolean
+          paid_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      projects: {
+        Row: {
+          id: string
+          client_id: string
+          service: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
+          status: 'todo' | 'doing' | 'done'
+          description?: string
+          deadline?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          service: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
+          status?: 'todo' | 'doing' | 'done'
+          description?: string
+          deadline?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          service?: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
+          status?: 'todo' | 'doing' | 'done'
+          description?: string
+          deadline?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      prospects: {
+        Row: {
+          id: string
+          owner_id: string
+          contact_name: string
+          company_name?: string
+          phone: string
+          email: string
+          lead_source: string
+          business_type: string
+          region_city: string
+          region_state: string
+          timezone: string
+          score: number
+          status: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          owner_id: string
+          contact_name: string
+          company_name?: string
+          phone: string
+          email: string
+          lead_source: string
+          business_type: string
+          region_city: string
+          region_state: string
+          timezone: string
+          score?: number
+          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at?: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          owner_id?: string
+          contact_name?: string
+          company_name?: string
+          phone?: string
+          email?: string
+          lead_source?: string
+          business_type?: string
+          region_city?: string
+          region_state?: string
+          timezone?: string
+          score?: number
+          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          first_contact_at?: string
+          call_summary?: string
+          notes?: string
+          next_follow_up_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prospects_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      tasks: {
+        Row: {
+          id: string
+          project_id: string
+          title: string
+          status: 'todo' | 'doing' | 'done'
+          due_at?: string
+          assignee_id?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          title: string
+          status?: 'todo' | 'doing' | 'done'
+          due_at?: string
+          assignee_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          title?: string
+          status?: 'todo' | 'doing' | 'done'
+          due_at?: string
+          assignee_id?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_assignee_id_fkey"
+            columns: ["assignee_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      users: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          role: 'user' | 'moderator' | 'admin'
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          role?: 'user' | 'moderator' | 'admin'
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          role?: 'user' | 'moderator' | 'admin'
+          created_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      convert_prospect_to_client: {
+        Args: {
+          prospect_id: string
+        }
+        Returns: string
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+  }
+}
+
+export type Tables<
+  T extends keyof Database['public']['Tables']
+> = Database['public']['Tables'][T]['Row']
+
+export type InsertTables<
+  T extends keyof Database['public']['Tables']
+> = Database['public']['Tables'][T]['Insert']
+
+export type UpdateTables<
+  T extends keyof Database['public']['Tables']
+> = Database['public']['Tables'][T]['Update'] 

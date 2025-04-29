@@ -1,0 +1,233 @@
+{
+  "title": "Cal.com API v2 – Consolidated Reference",
+  "source": "https://cal.com/docs/api-reference/v2/introduction",
+  "lastUpdated": "2025-04-29",
+  "sections": [
+    {
+      "id": "getting-started",
+      "title": "Getting Started",
+      "subsections": [
+        {
+          "id": "base-url",
+          "title": "Base URL & Version Header",
+          "content": "https://api.cal.com/v2",
+          "notes": "All requests must include an up-to-date cal-api-version header.",
+          "example": "cal-api-version: 2024-08-13"
+        },
+        {
+          "id": "authentication",
+          "title": "Authentication Methods",
+          "methods": [
+            {
+              "type": "API key",
+              "useCase": "Personal integrations",
+              "implementation": "Authorization: Bearer cal_live_…"
+            },
+            {
+              "type": "OAuth client credentials",
+              "useCase": "Platform customers managing managed users, creating client webhooks, or any Teams/Orgs resources",
+              "implementation": "Headers: x-cal-client-id: <id>, x-cal-secret-key: <secret>"
+            },
+            {
+              "type": "Managed user access token",
+              "useCase": "Acting on behalf of a managed user (schedules, event types, bookings)",
+              "implementation": "Authorization: Bearer <access-token> (valid 60 min; refresh token valid 1 year)"
+            }
+          ],
+          "tip": "Platform plans do not use API keys; rely on OAuth or managed-user tokens instead."
+        },
+        {
+          "id": "rate-limits",
+          "title": "Rate Limits",
+          "headers": [
+            {
+              "name": "X-RateLimit-Limit",
+              "description": "Max requests in the current window"
+            },
+            {
+              "name": "X-RateLimit-Remaining",
+              "description": "Requests left"
+            },
+            {
+              "name": "X-RateLimit-Reset",
+              "description": "Epoch timestamp when the window resets"
+            }
+          ],
+          "notes": "Exceeding the limit returns 429 Too Many Requests."
+        }
+      ]
+    },
+    {
+      "id": "endpoint-catalogue",
+      "title": "Endpoint Catalogue",
+      "note": "Unless noted, prepend /v2/ and include the authentication + version header.",
+      "categories": [
+        {
+          "name": "Platform",
+          "description": "Managed multi-tenant",
+          "resources": [
+            {
+              "name": "Managed Users",
+              "endpoints": [
+                "GET /platform/managed-users",
+                "POST /platform/managed-users",
+                "GET /platform/managed-users/{id}",
+                "DELETE /platform/managed-users/{id}",
+                "PATCH /platform/managed-users/{id}",
+                "POST /platform/managed-users/{id}/force-refresh-tokens",
+                "POST /platform/managed-users/{id}/refresh-tokens"
+              ]
+            },
+            {
+              "name": "Webhooks",
+              "endpoints": [
+                "GET /platform/webhooks",
+                "POST /platform/webhooks",
+                "DELETE /platform/webhooks",
+                "GET /platform/webhooks/{id}",
+                "DELETE /platform/webhooks/{id}",
+                "PATCH /platform/webhooks/{id}"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Organizations",
+          "resources": [
+            {
+              "name": "Attributes",
+              "description": "CRUD attributes + options; assign/unassign to users"
+            },
+            {
+              "name": "Bookings",
+              "endpoints": ["GET /orgs/{orgId}/bookings"]
+            },
+            {
+              "name": "Delegation Credentials",
+              "description": "save / update"
+            },
+            {
+              "name": "Memberships",
+              "description": "CRUD team/org memberships"
+            },
+            {
+              "name": "Routing Forms & Responses",
+              "description": "list & update responses"
+            },
+            {
+              "name": "Schedules",
+              "endpoints": ["GET /orgs/{orgId}/schedules"]
+            },
+            {
+              "name": "Teams",
+              "description": "full team management (GET/POST/GET/{id}/DEL/PATCH) incl. sub-resources (bookings, conferencing, event-types, memberships, routing forms, member schedules)"
+            },
+            {
+              "name": "Users",
+              "description": "CRUD users + sub-resources (bookings, OOO, schedules)"
+            },
+            {
+              "name": "Webhooks",
+              "description": "CRUD org-level webhooks"
+            }
+          ]
+        },
+        {
+          "name": "Core",
+          "note": "no prefix",
+          "resources": [
+            {
+              "name": "Bookings",
+              "description": "list, create, get, reschedule, cancel, confirm/decline, mark absence, reassign host, add-to-calendar"
+            },
+            {
+              "name": "Calendars",
+              "description": "save/check ICS feed, busy times, connect/disconnect Google/Outlook/Apple, check connection"
+            },
+            {
+              "name": "Conferencing",
+              "description": "connect app, OAuth URL, callback, list, set/get default, disconnect"
+            },
+            {
+              "name": "Destination Calendars",
+              "endpoints": ["PUT /destination-calendars"]
+            },
+            {
+              "name": "Event Types",
+              "description": "CRUD"
+            },
+            {
+              "name": "Event Types / Webhooks",
+              "description": "CRUD"
+            },
+            {
+              "name": "Managed Orgs",
+              "description": "CRUD child organizations"
+            },
+            {
+              "name": "Me",
+              "endpoints": ["GET /me", "PATCH /me"]
+            },
+            {
+              "name": "OAuth Clients",
+              "description": "CRUD"
+            },
+            {
+              "name": "Routing Forms",
+              "endpoints": ["POST /routing-forms/slots"]
+            },
+            {
+              "name": "Schedules",
+              "description": "list/create/get/default/delete/update"
+            },
+            {
+              "name": "Selected Calendars",
+              "description": "add / delete"
+            },
+            {
+              "name": "Slots",
+              "description": "availability lookup, reserve / get / update / delete reservation"
+            },
+            {
+              "name": "Stripe",
+              "description": "connect URL, save credentials, check connection"
+            },
+            {
+              "name": "Teams",
+              "description": "CRUD + sub-resources (event types, memberships, phone calls)"
+            },
+            {
+              "name": "Webhooks",
+              "description": "global CRUD"
+            }
+          ]
+        }
+      ],
+      "schema": "An official OpenAPI 3 spec (≈ 650 KB) is available at docs/api-reference/v2/openapi.json in the Cal.com GitHub repo."
+    },
+    {
+      "id": "sample-requests",
+      "title": "Sample Requests",
+      "examples": [
+        {
+          "title": "Create a Booking",
+          "curl": "curl --request POST --url https://api.cal.com/v2/bookings --header \"Content-Type: application/json\" --header \"cal-api-version: 2024-08-13\" --header \"Authorization: Bearer cal_live_xxx\" --data '{\n    \"start\": \"2025-05-02T14:00:00Z\",\n    \"attendee\": {\n      \"name\": \"Andre Souza\",\n      \"email\": \"[email protected]\",\n      \"timeZone\": \"America/Chicago\"\n    },\n    \"eventTypeId\": 123\n  }'"
+        },
+        {
+          "title": "Reserve a Slot",
+          "curl": "curl --request POST --url \"https://api.cal.com/v2/slots/reservations\" --header \"cal-api-version: 2024-08-13\" --data '{\"slotUid\":\"abc123\"}'"
+        }
+      ]
+    },
+    {
+      "id": "key-differences",
+      "title": "Key Differences vs v1",
+      "differences": [
+        "Version header – every request now requires cal-api-version",
+        "Improved response objects – richer, more consistent JSON",
+        "New OAuth & Platform concepts – managed users, child orgs, etc",
+        "Performance & security enhancements across the board"
+      ]
+    }
+  ]
+} 

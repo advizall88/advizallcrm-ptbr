@@ -29,9 +29,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
-import ScheduleMeetingDialog from "@/components/calendar/ScheduleMeetingDialog";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Calendar, MoreVertical } from "lucide-react";
 
 type ProspectCardProps = {
   prospect: Prospect;
@@ -49,7 +46,6 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
   index
 }) => {
   const [isAlreadyClient, setIsAlreadyClient] = useState<boolean>(false);
-  const [scheduleMeetingOpen, setScheduleMeetingOpen] = useState(false);
   
   useEffect(() => {
     // Verificar se o prospect já é um cliente
@@ -69,124 +65,94 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
   const showConvertButton = prospect.status !== 'lost' && !isAlreadyClient;
 
   return (
-    <>
-      <Draggable draggableId={prospect.id} index={index}>
-        {(provided, snapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            className={`mb-3 ${snapshot.isDragging ? 'z-10' : ''}`}
-          >
-            <Card className={`shadow-neumorph-sm ${snapshot.isDragging ? 'shadow-lg bg-gray-100' : ''}`}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-md font-bold">{prospect.contact_name}</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-2">
-                <div className="text-sm text-gray-500">{prospect.company_name || "N/A"}</div>
-                <div className="flex items-center mt-1">
-                  {Array.from({ length: prospect.score }).map((_, i) => (
-                    <span key={i} className="text-yellow-500">★</span>
-                  ))}
-                  {Array.from({ length: 5 - prospect.score }).map((_, i) => (
-                    <span key={i} className="text-gray-300">★</span>
-                  ))}
+    <Draggable draggableId={prospect.id} index={index}>
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          className={`mb-3 ${snapshot.isDragging ? 'z-10' : ''}`}
+        >
+          <Card className={`shadow-neumorph-sm ${snapshot.isDragging ? 'shadow-lg bg-gray-100' : ''}`}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-md font-bold">{prospect.contact_name}</CardTitle>
+            </CardHeader>
+            <CardContent className="pb-2">
+              <div className="text-sm text-gray-500">{prospect.company_name || "N/A"}</div>
+              <div className="flex items-center mt-1">
+                {Array.from({ length: prospect.score }).map((_, i) => (
+                  <span key={i} className="text-yellow-500">★</span>
+                ))}
+                {Array.from({ length: 5 - prospect.score }).map((_, i) => (
+                  <span key={i} className="text-gray-300">★</span>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="pt-0 flex flex-col space-y-2">
+              <div className="flex justify-between items-center w-full">
+                <div className="text-xs text-gray-500">
+                  Follow-up: {formattedFollowUp}
                 </div>
-              </CardContent>
-              <CardFooter className="pt-0 flex flex-col space-y-2">
-                <div className="flex justify-between items-center w-full">
-                  <div className="text-xs text-gray-500">
-                    Follow-up: {formattedFollowUp}
-                  </div>
-                  <div className="flex space-x-2">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onEdit(prospect)}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onViewDetails(prospect)}>
-                          View Details
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setScheduleMeetingOpen(true)}>
-                          <Calendar className="mr-2 h-4 w-4" />
-                          Schedule Meeting
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="flex space-x-2">
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    className="text-xs h-7"
+                    onClick={() => onEdit(prospect)}
+                  >
+                    Edit
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="text-xs h-7"
+                    onClick={() => onViewDetails(prospect)}
+                  >
+                    View
+                  </Button>
+                </div>
+              </div>
+              
+              {showConvertButton && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
                     <Button 
                       size="sm" 
-                      variant="ghost" 
-                      className="text-xs h-7"
-                      onClick={() => onEdit(prospect)}
+                      variant="outline" 
+                      className="text-xs h-7 w-full border-green-500 text-green-500 hover:bg-green-50"
                     >
-                      Edit
+                      Convert to Client
                     </Button>
-                    <Button 
-                      size="sm" 
-                      variant="secondary" 
-                      className="text-xs h-7"
-                      onClick={() => onViewDetails(prospect)}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </div>
-                
-                {showConvertButton && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs h-7 w-full border-green-500 text-green-500 hover:bg-green-50"
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Convert to Client</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will convert {prospect.contact_name} from {prospect.company_name || "N/A"} 
+                        to an active client. All prospect data will be preserved.
+                        
+                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700">
+                          After conversion, you'll be redirected to the new client page where you can add more details.
+                        </div>
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction 
+                        className="bg-green-500 hover:bg-green-600"
+                        onClick={() => onConvertToClient(prospect)}
                       >
                         Convert to Client
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Convert to Client</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This will convert {prospect.contact_name} from {prospect.company_name || "N/A"} 
-                          to an active client. All prospect data will be preserved.
-                          
-                          <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700">
-                            After conversion, you'll be redirected to the new client page where you can add more details.
-                          </div>
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction 
-                          className="bg-green-500 hover:bg-green-600"
-                          onClick={() => onConvertToClient(prospect)}
-                        >
-                          Convert to Client
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </CardFooter>
-            </Card>
-          </div>
-        )}
-      </Draggable>
-      
-      <ScheduleMeetingDialog
-        open={scheduleMeetingOpen}
-        onOpenChange={setScheduleMeetingOpen}
-        prospectId={prospect.id}
-        attendeeName={prospect.contact_name}
-        attendeeEmail={prospect.email || ''}
-        attendeeTimezone={prospect.timezone || 'America/New_York'}
-      />
-    </>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
+            </CardFooter>
+          </Card>
+        </div>
+      )}
+    </Draggable>
   );
 };
 

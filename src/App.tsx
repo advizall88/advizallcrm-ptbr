@@ -37,7 +37,6 @@ const App = () => (
             {/* Protected routes for moderators and admins */}
             <Route element={<ProtectedRoute requiredRole="moderator" />}>
               <Route path="/clients" element={<Clients />} />
-              <Route path="/clients/:id" element={<Clients />} />
               {/* Additional moderator-only routes can be added here */}
             </Route>
             

@@ -135,11 +135,10 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                       <AlertDialogDescription>
                         This will convert {prospect.contact_name} from {prospect.company_name || "N/A"} 
                         to an active client. All prospect data will be preserved.
-                        
-                        <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700">
-                          After conversion, you'll be redirected to the new client page where you can add more details.
-                        </div>
                       </AlertDialogDescription>
+                      <p className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700 text-sm">
+                        After conversion, you'll be redirected to the new client page where you can add more details.
+                      </p>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -392,12 +391,46 @@ const Prospects = () => {
   const handleConvertToClient = async (prospect: Prospect) => {
     try {
       setConvertLoading(true);
-      await convertToClientMutation.mutateAsync(prospect.id);
+      
+      toast({
+        title: "Converting prospect",
+        description: "Please wait while we convert this prospect to a client...",
+      });
+      
+      console.log(`Converting prospect to client: ${prospect.id} - ${prospect.contact_name}`);
+      
+      const result = await convertToClientMutation.mutateAsync(prospect.id);
+      
+      if (result.success && result.client_id) {
+        // Force cache invalidation to ensure lists are updated
+        await queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        await queryClient.invalidateQueries({ queryKey: ['clients'] });
+        
+        toast({
+          title: "Success",
+          description: "Prospect successfully converted to client",
+        });
+        
+        navigate(`/clients/${result.client_id}`);
+      } else if (result.already_exists && result.client_id) {
+        toast({
+          title: "Information",
+          description: "This prospect has already been converted to a client.",
+        });
+        
+        navigate(`/clients/${result.client_id}`);
+      } else {
+        toast({
+          title: "Warning",
+          description: result.message || "Unable to convert this prospect to a client",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error converting prospect:", error);
       toast({
         title: "Error",
-        description: "Failed to convert prospect to client.",
+        description: "Failed to convert prospect to client. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -98,13 +98,17 @@ const ProspectDetailsDialog = ({
         description: "Converting prospect to client...",
       });
       
+      console.log(`Attempting to convert prospect ${prospect.id} to client...`);
+      
       // Call the actual conversion function from prospectService
       const result = await prospectService.convertToClient(prospect.id);
       
       if (result.success && result.client_id) {
-        // Refresh data after successful conversion
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-        queryClient.invalidateQueries({ queryKey: ['clients'] });
+        console.log(`Successfully converted prospect ${prospect.id} to client!`);
+        
+        // Force refresh data after successful conversion
+        await queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        await queryClient.invalidateQueries({ queryKey: ['clients'] });
         
         toast({
           title: "Conversion completed",
@@ -119,6 +123,8 @@ const ProspectDetailsDialog = ({
           onConvertSuccess(prospect.id);
         }
       } else if (result.already_exists && result.client_id) {
+        console.log(`Prospect ${prospect.id} was already converted to client.`);
+        
         toast({
           title: "Information",
           description: "This prospect has already been converted to a client.",
@@ -130,6 +136,8 @@ const ProspectDetailsDialog = ({
           onConvertSuccess(result.client_id);
         }
       } else {
+        console.error(`Failed to convert prospect ${prospect.id} to client:`, result.message);
+        
         toast({
           title: "Error",
           description: result.message || "Unable to convert prospect to client",

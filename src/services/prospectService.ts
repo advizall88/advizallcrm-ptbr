@@ -1,5 +1,7 @@
 import { supabase, Prospect } from '@/lib/supabase';
 import { v4 as uuidv4 } from 'uuid';
+import { clientService } from './clientService';
+import type { Client } from '@/lib/supabase';
 
 export type ProspectFormData = {
   contact_name: string;
@@ -124,24 +126,34 @@ export const prospectService = {
         throw error;
       }
       
-      // Return all prospects without filtering for now
-      // This bypasses the 'this' context issue
-      return data as Prospect[];
-      
-      /* The filtering approach below was causing the 'this' context issue
-      // Filter out prospects that have already been converted to clients
       const prospects = data as Prospect[];
-      const filteredProspects = [];
       
-      for (const prospect of prospects) {
-        const isClient = await this.checkIfProspectIsClient(prospect.id);
-        if (!isClient) {
-          filteredProspects.push(prospect);
+      // Filter out prospects that have been converted to clients
+      // Using a more reliable approach with localStorage
+      let convertedProspectIds: string[] = [];
+      
+      // Get list of converted prospect IDs from localStorage
+      try {
+        const convertedProspects = localStorage.getItem('convertedProspects');
+        if (convertedProspects) {
+          const parsed = JSON.parse(convertedProspects);
+          if (Array.isArray(parsed)) {
+            convertedProspectIds = parsed;
+            console.log(`Found ${convertedProspectIds.length} converted prospects to filter out`);
+          }
         }
+      } catch (e) {
+        console.error('Error parsing convertedProspects:', e);
       }
       
+      // Filter out prospects that have been converted
+      const filteredProspects = prospects.filter(prospect => 
+        !convertedProspectIds.includes(prospect.id)
+      );
+      
+      console.log(`Filtered ${prospects.length - filteredProspects.length} converted prospects`);
+      
       return filteredProspects;
-      */
     } catch (error) {
       console.error('Error fetching prospects:', error);
       throw error;
@@ -314,86 +326,74 @@ export const prospectService = {
 
   async checkIfProspectIsClient(id: string): Promise<boolean> {
     try {
-      // In a real app, this would check the database
-      const { data, error } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('id', id)
-        .single();
+      // Check the localStorage for the list of converted prospects
+      const convertedList = localStorage.getItem('convertedProspects');
+      if (convertedList) {
+        const parsed = JSON.parse(convertedList);
+        if (Array.isArray(parsed) && parsed.includes(id)) {
+          console.log(`Prospect ${id} is already a client (found in convertedProspects)`);
+          return true;
+        }
+      }
       
-      if (error) {
-        if (error.code === 'PGRST116') { // no rows returned
-          // Additional check against localStorage for mock implementation
-          const convertedProspects = localStorage.getItem('convertedProspects');
-          if (convertedProspects) {
-            try {
-              const convertedList = JSON.parse(convertedProspects);
-              if (convertedList.includes(id)) {
-                return true;
-              }
-            } catch (e) {
-              console.error('Error parsing converted prospects from localStorage:', e);
-            }
+      // Double-check by trying to get the client directly
+      try {
+        const client = await clientService.getClient(id);
+        if (client) {
+          console.log(`Prospect ${id} is already a client (found in clients)`);
+          
+          // Ensure it's in the convertedList for future checks
+          const existingList = convertedList ? JSON.parse(convertedList) : [];
+          if (!existingList.includes(id)) {
+            existingList.push(id);
+            localStorage.setItem('convertedProspects', JSON.stringify(existingList));
+            console.log(`Added ${id} to convertedProspects list for consistency`);
           }
-          return false;
+          
+          return true;
         }
-        throw error;
+      } catch (error) {
+        console.error(`Error checking client existence for ${id}:`, error);
       }
       
-      return data !== null;
+      return false;
     } catch (error) {
-      console.error(`Error checking if prospect ${id} is already a client:`, error);
-      
-      // Fallback to localStorage check in case of error
-      const convertedProspects = localStorage.getItem('convertedProspects');
-      if (convertedProspects) {
-        try {
-          const convertedList = JSON.parse(convertedProspects);
-          return convertedList.includes(id);
-        } catch (e) {
-          console.error('Error parsing converted prospects from localStorage:', e);
-        }
-      }
-      
-      return false; // default to showing the button
+      console.error(`Error checking if prospect ${id} is client:`, error);
+      return false;
     }
   },
 
   async convertToClient(id: string): Promise<{ success: boolean; client_id?: string; error?: any; message?: string; already_exists?: boolean }> {
     try {
-      // In a real app, this would call the Supabase RPC function
-      // const { data, error } = await supabase
-      //   .rpc('convert_prospect_to_client', { prospect_id: id });
+      // First check if the prospect is already a client
+      const isAlreadyClient = await this.checkIfProspectIsClient(id);
       
-      // For the mock implementation:
-      // 1. First check if the prospect exists
-      const prospect = await this.getProspect(id);
-      if (!prospect) {
+      if (isAlreadyClient) {
+        console.log(`Prospect ${id} is already a client, returning existing client info`);
         return { 
           success: false, 
-          message: 'Prospect not found.' 
-        };
-      }
-      
-      // 2. Check if this prospect has already been converted to a client
-      const isClient = await this.checkIfProspectIsClient(id);
-      if (isClient) {
-        return { 
-          success: false, 
-          already_exists: true,
+          already_exists: true, 
           client_id: id,
           message: 'This prospect has already been converted to a client.' 
         };
       }
       
-      // 3. Create a new client from the prospect data
-      // Import clientService without creating circular dependency
-      const { clientService } = await import('./clientService');
+      // Get the prospect data to convert
+      const prospect = await this.getProspect(id);
+      if (!prospect) {
+        console.error(`Error converting prospect ${id} to client: Prospect not found`);
+        return { 
+          success: false, 
+          message: 'Prospect not found. Unable to convert to client.' 
+        };
+      }
       
-      // Create the client with prospect data
-      const newClient: any = {
+      console.log(`Creating client from prospect ${id}: ${prospect.contact_name}`);
+      
+      // Create the client with prospect data (with better type safety)
+      const newClient = {
         id: prospect.id,
-        owner_id: prospect.owner_id,
+        owner_id: prospect.owner_id || 'usr_1', // Fallback to default user
         contact_name: prospect.contact_name,
         company_name: prospect.company_name,
         phone: prospect.phone,
@@ -405,28 +405,45 @@ export const prospectService = {
         timezone: prospect.timezone,
         score: prospect.score,
         full_address: `${prospect.region_city || ''}, ${prospect.region_state || ''}`,
+        website: '', // Initialize with empty values
+        social_links: {},
         first_contact_at: prospect.first_contact_at,
         call_summary: prospect.call_summary,
         notes: prospect.notes,
-        status: 'active', // Use 'active' for client status, different from prospect status
+        status: 'active',
+        plan_name: 'Basic', // Set default plan
+        retainer_value: 0, // Default values can be set later
+        ad_budget: 0,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
       
-      // In a mock implementation, we'll add this client to the mock data
-      // This would be handled by the database in a real app
+      // Store in localStorage
       await clientService.addMockClient(newClient);
       
-      // Mark this prospect as a client in localStorage for filtering purposes
-      const convertedProspects = localStorage.getItem('convertedProspects') || '[]';
-      let convertedList = [];
-      try {
-        convertedList = JSON.parse(convertedProspects);
-      } catch (e) {
-        convertedList = [];
+      // Mark as converted in localStorage
+      let convertedList: string[] = [];
+      const storedConvertedList = localStorage.getItem('convertedProspects');
+      
+      if (storedConvertedList) {
+        try {
+          const parsed = JSON.parse(storedConvertedList);
+          if (Array.isArray(parsed)) {
+            convertedList = parsed;
+          }
+        } catch (e) {
+          console.error('Error parsing convertedProspects:', e);
+        }
       }
-      convertedList.push(id);
-      localStorage.setItem('convertedProspects', JSON.stringify(convertedList));
+      
+      // Add to converted list if not already there
+      if (!convertedList.includes(id)) {
+        convertedList.push(id);
+        localStorage.setItem('convertedProspects', JSON.stringify(convertedList));
+        console.log(`Added ${id} to convertedProspects list`);
+      }
+      
+      console.log(`Successfully converted prospect ${id} to client.`);
       
       return { success: true, client_id: id };
     } catch (error) {

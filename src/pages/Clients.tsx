@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { 
@@ -92,6 +93,8 @@ const Clients = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { user, isUserRole } = useAuth();
+  const { id: clientIdFromUrl } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -104,8 +107,36 @@ const Clients = () => {
   // Query to get clients
   const { data: clients = [], isLoading: isLoadingClients, error: clientsError } = useQuery({
     queryKey: ['clients'],
-    queryFn: clientService.getClients,
+    queryFn: () => clientService.getClients(),
   });
+  
+  // Handle client ID from URL - find and select that client when clients are loaded
+  useEffect(() => {
+    if (clientIdFromUrl && clients.length > 0) {
+      const clientFromUrl = clients.find(client => client.id === clientIdFromUrl);
+      if (clientFromUrl) {
+        setSelectedClient(clientFromUrl);
+        setDetailsDialogOpen(true);
+      } else {
+        // Client not found - show a toast and redirect to clients page
+        toast({
+          title: "Client Not Found",
+          description: `No client found with ID: ${clientIdFromUrl}`,
+          variant: "destructive"
+        });
+        navigate('/clients');
+      }
+    }
+  }, [clientIdFromUrl, clients, toast, navigate]);
+
+  // Handle dialog close to update URL
+  const handleDetailsDialogOpenChange = (open: boolean) => {
+    setDetailsDialogOpen(open);
+    if (!open && clientIdFromUrl) {
+      // Remove the ID from the URL when closing the dialog
+      navigate('/clients');
+    }
+  };
   
   // Query to get projects for the selected client
   const { data: projects = [], refetch: refetchProjects } = useQuery({
@@ -274,6 +305,8 @@ const Clients = () => {
   const handleViewClientDetails = (client: Client) => {
     setSelectedClient(client);
     setDetailsDialogOpen(true);
+    // Update URL with client ID for direct linking
+    navigate(`/clients/${client.id}`);
   };
   
   // Function to handle meeting scheduling
@@ -379,7 +412,7 @@ const Clients = () => {
         {/* Client Details Dialog */}
         <ClientDetailsDialog
           open={detailsDialogOpen}
-          onOpenChange={setDetailsDialogOpen}
+          onOpenChange={handleDetailsDialogOpenChange}
           client={selectedClient}
           projects={projects}
           payments={payments}

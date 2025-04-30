@@ -213,19 +213,23 @@ export const clientService = {
         }
       ];
       
-      // Check local storage for mock converted clients
-      const storedClients = localStorage.getItem('mockClients');
-      if (storedClients) {
-        try {
+      // Always check localStorage for stored clients (converted prospects)
+      let allClients = [...mockClients];
+      
+      try {
+        const storedClients = localStorage.getItem('mockClients');
+        if (storedClients) {
           const parsedClients = JSON.parse(storedClients);
-          // Add converted clients to our mock data
-          return [...mockClients, ...parsedClients];
-        } catch (e) {
-          console.error('Error parsing stored clients:', e);
+          if (Array.isArray(parsedClients) && parsedClients.length > 0) {
+            console.log(`Found ${parsedClients.length} converted clients in localStorage`);
+            allClients = [...allClients, ...parsedClients];
+          }
         }
+      } catch (e) {
+        console.error('Error retrieving clients from localStorage:', e);
       }
       
-      return mockClients;
+      return allClients;
     } catch (error) {
       console.error('Error fetching clients:', error);
       throw error;
@@ -235,23 +239,39 @@ export const clientService = {
   // Add a new client to mock data (used for prospect conversion)
   async addMockClient(client: any): Promise<Client> {
     try {
-      // In a real app, this would be handled by the database
-      // For now, we'll use localStorage to persist the converted clients
-      const storedClients = localStorage.getItem('mockClients');
+      console.log(`Adding/updating client: ${client.id} - ${client.contact_name}`);
+      
+      // Get existing clients from localStorage
+      const storedClients = localStorage.getItem('mockClients') || '[]';
       let clients = [];
       
-      if (storedClients) {
-        try {
-          clients = JSON.parse(storedClients);
-        } catch (e) {
-          console.error('Error parsing stored clients:', e);
-          clients = [];
-        }
+      try {
+        clients = JSON.parse(storedClients);
+      } catch (e) {
+        console.error('Error parsing stored clients:', e);
+        clients = [];
       }
       
-      // Add the new client to our mock storage
-      clients.push(client);
+      // Check if client already exists (by ID)
+      const existingIndex = clients.findIndex(c => c.id === client.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing client
+        console.log(`Updating existing client ${client.id}`);
+        clients[existingIndex] = {
+          ...clients[existingIndex],
+          ...client,
+          updated_at: new Date().toISOString()
+        };
+      } else {
+        // Add new client
+        console.log(`Adding new client ${client.id}`);
+        clients.push(client);
+      }
+      
+      // Save to localStorage
       localStorage.setItem('mockClients', JSON.stringify(clients));
+      console.log(`Successfully saved client ${client.id} to localStorage`);
       
       return client;
     } catch (error) {

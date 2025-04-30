@@ -48,10 +48,15 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
   const [isAlreadyClient, setIsAlreadyClient] = useState<boolean>(false);
   
   useEffect(() => {
-    // Verificar se o prospect já é um cliente
+    // Check if the prospect is already a client
     const checkClientStatus = async () => {
-      const isClient = await prospectService.checkIfProspectIsClient(prospect.id);
-      setIsAlreadyClient(isClient);
+      try {
+        const isClient = await prospectService.checkIfProspectIsClient(prospect.id);
+        setIsAlreadyClient(isClient);
+      } catch (error) {
+        console.error(`Error checking client status for prospect ${prospect.id}:`, error);
+        setIsAlreadyClient(false);
+      }
     };
     
     checkClientStatus();
@@ -61,7 +66,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
     ? format(new Date(prospect.next_follow_up_at), "MMM dd, yyyy")
     : "None";
 
-  // Don't show convert button for lost prospects or prospects that are already clients
+  // Don't show convert button only for lost prospects or prospects that are already clients
   const showConvertButton = prospect.status !== 'lost' && !isAlreadyClient;
 
   return (
@@ -218,15 +223,16 @@ const Prospects = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [formOpen, setFormOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedProspect, setSelectedProspect] = useState<Prospect | undefined>(undefined);
   const [convertLoading, setConvertLoading] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
 
   // Fetch prospects
   const { data: prospects = [], isLoading, error } = useQuery({
     queryKey: ['prospects'],
-    queryFn: prospectService.getProspects,
+    queryFn: () => prospectService.getProspects(),
   });
 
   // Create prospect mutation
@@ -238,6 +244,7 @@ const Prospects = () => {
         title: "Success",
         description: "Prospect created successfully",
       });
+      setIsEditDialogOpen(false);
     },
     onError: (error) => {
       toast({
@@ -259,6 +266,7 @@ const Prospects = () => {
         title: "Success",
         description: "Prospect updated successfully",
       });
+      setIsEditDialogOpen(false);
     },
     onError: (error) => {
       toast({
@@ -314,30 +322,30 @@ const Prospects = () => {
         queryClient.invalidateQueries({ queryKey: ['clients'] });
         
         toast({
-          title: "Sucesso",
-          description: "Prospect convertido para cliente com sucesso",
+          title: "Success",
+          description: "Prospect successfully converted to client",
         });
         
         navigate(`/clients/${data.client_id}`);
       } else if (data.already_exists && data.client_id) {
         toast({
-          title: "Informação",
-          description: "Este prospect já foi convertido para cliente anteriormente.",
+          title: "Information",
+          description: "This prospect has already been converted to a client.",
         });
         
         navigate(`/clients/${data.client_id}`);
       } else {
         toast({
-          title: "Atenção",
-          description: data.message || "Não foi possível converter este prospect para cliente",
+          title: "Warning",
+          description: data.message || "Unable to convert this prospect to a client",
           variant: "destructive",
         });
       }
     },
     onError: (error) => {
       toast({
-        title: "Erro",
-        description: "Falha ao converter prospect para cliente",
+        title: "Error",
+        description: "Failed to convert prospect to client",
         variant: "destructive",
       });
       console.error(error);
@@ -360,14 +368,6 @@ const Prospects = () => {
         id: selectedProspect.id,
         data,
       });
-      
-      toast({
-        title: "Success",
-        description: "Prospect updated successfully",
-      });
-      
-      // Não limpe o selectedProspect aqui, 
-      // isso será feito pelo handleFormClose
     } catch (error) {
       console.error("Error updating prospect:", error);
       toast({
@@ -380,7 +380,8 @@ const Prospects = () => {
 
   const handleEditProspect = (prospect: Prospect) => {
     setSelectedProspect(prospect);
-    setFormOpen(true);
+    setEditMode('edit');
+    setIsEditDialogOpen(true);
   };
 
   const handleViewDetails = (prospect: Prospect) => {
@@ -389,19 +390,35 @@ const Prospects = () => {
   };
 
   const handleConvertToClient = async (prospect: Prospect) => {
-    setConvertLoading(true);
     try {
-      const result = await convertToClientMutation.mutateAsync(prospect.id);
-      // Não é necessário fazer nada aqui, o onSuccess/onError da mutation já tratam da resposta
+      setConvertLoading(true);
+      await convertToClientMutation.mutateAsync(prospect.id);
     } catch (error) {
-      console.error("Error converting prospect to client:", error);
+      console.error("Error converting prospect:", error);
+      toast({
+        title: "Error",
+        description: "Failed to convert prospect to client.",
+        variant: "destructive",
+      });
     } finally {
       setConvertLoading(false);
     }
   };
 
+  // Function to handle conversion success from the dialog
+  const handleConvertSuccess = (prospectId: string) => {
+    // Redirect to clients page or specific client page
+    toast({
+      title: "Client created",
+      description: "Prospect successfully converted. Redirecting to Clients...",
+    });
+    
+    // Navigate immediately to the client page
+    navigate(`/clients/${prospectId}`);
+  };
+
   const handleFormSubmit = async (data: ProspectFormData) => {
-    if (selectedProspect) {
+    if (editMode === 'edit' && selectedProspect) {
       await handleUpdateProspect(data);
     } else {
       await handleCreateProspect(data);
@@ -409,9 +426,10 @@ const Prospects = () => {
   };
 
   const handleFormClose = () => {
-    setFormOpen(false);
+    setIsEditDialogOpen(false);
     setTimeout(() => {
       setSelectedProspect(undefined);
+      setEditMode('create');
     }, 100);
   };
 
@@ -420,119 +438,88 @@ const Prospects = () => {
     const { source, destination, draggableId } = result;
 
     // Dropped outside a valid droppable area
-    if (!destination) {
-      return;
-    }
+    if (!destination) return;
 
-    // Dropped in the same position
+    // No movement
     if (
       source.droppableId === destination.droppableId &&
       source.index === destination.index
-    ) {
-      return;
-    }
+    ) return;
 
-    // Get status values from droppableIds
-    const sourceStatus = source.droppableId as Prospect['status'];
-    const destinationStatus = destination.droppableId as Prospect['status'];
-
-    // Update the prospect optimistically in the UI
-    const updatedProspects = [...prospects];
-    const movedProspect = prospectsByStatus[sourceStatus][source.index];
-    
-    // Remove from source array
-    const sourceProspects = Array.from(prospectsByStatus[sourceStatus]);
-    sourceProspects.splice(source.index, 1);
-    
-    // Add to destination array
-    const destinationProspects = Array.from(prospectsByStatus[destinationStatus]);
-    destinationProspects.splice(destination.index, 0, {
-      ...movedProspect,
-      status: destinationStatus
-    });
-
-    // Update backend
+    // Handle status update
     updateProspectStatusMutation.mutate({
       prospectId: draggableId,
-      sourceStatus,
-      destinationStatus,
+      sourceStatus: source.droppableId as Prospect['status'],
+      destinationStatus: destination.droppableId as Prospect['status'],
       sourceIndex: source.index,
-      destinationIndex: destination.index
-    });
-
-    toast({
-      title: "Prospect Moved",
-      description: `Prospect moved to ${destinationStatus} stage`,
+      destinationIndex: destination.index,
     });
   };
 
   // Group prospects by status
   const prospectsByStatus = {
-    new: prospects.filter(p => p.status === "new"),
-    interested: prospects.filter(p => p.status === "interested"),
-    negotiation: prospects.filter(p => p.status === "negotiation"),
-    lost: prospects.filter(p => p.status === "lost"),
+    new: prospects.filter(p => p.status === 'new'),
+    interested: prospects.filter(p => p.status === 'interested'),
+    negotiation: prospects.filter(p => p.status === 'negotiation'),
+    lost: prospects.filter(p => p.status === 'lost')
   };
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Prospects</h1>
-            <p className="text-gray-500">Manage and track your sales pipeline.</p>
-          </div>
-          <Button 
-            variant="default" 
-            className="bg-secondary hover:bg-secondary/90"
-            onClick={() => setFormOpen(true)}
-          >
-            + Add Prospect
+      <div className="container py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Prospects</h1>
+          <Button onClick={() => {
+            setSelectedProspect(undefined);
+            setEditMode('create');
+            setIsEditDialogOpen(true);
+          }}>
+            Add Prospect
           </Button>
         </div>
-        
+
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p>Loading prospects...</p>
           </div>
         ) : error ? (
-          <div className="text-center text-red-500 py-8">
-            Error loading prospects. Please try again.
+          <div className="flex justify-center items-center h-64">
+            <p className="text-red-500">Error loading prospects. Please try again.</p>
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="kanban-board flex space-x-6 overflow-x-auto pb-4">
-              <KanbanColumn 
-                title="New" 
-                prospects={prospectsByStatus.new} 
-                color="bg-blue-500" 
+            <div className="flex space-x-4 overflow-x-auto pb-4">
+              <KanbanColumn
+                title="New"
+                prospects={prospectsByStatus.new}
+                color="bg-blue-500"
                 onEdit={handleEditProspect}
                 onViewDetails={handleViewDetails}
                 onConvertToClient={handleConvertToClient}
                 droppableId="new"
               />
-              <KanbanColumn 
-                title="Interested" 
-                prospects={prospectsByStatus.interested} 
-                color="bg-green-500" 
+              <KanbanColumn
+                title="Interested"
+                prospects={prospectsByStatus.interested}
+                color="bg-green-500"
                 onEdit={handleEditProspect}
                 onViewDetails={handleViewDetails}
                 onConvertToClient={handleConvertToClient}
                 droppableId="interested"
               />
-              <KanbanColumn 
-                title="Negotiation" 
-                prospects={prospectsByStatus.negotiation} 
-                color="bg-purple-500" 
+              <KanbanColumn
+                title="Negotiation"
+                prospects={prospectsByStatus.negotiation}
+                color="bg-purple-500"
                 onEdit={handleEditProspect}
                 onViewDetails={handleViewDetails}
                 onConvertToClient={handleConvertToClient}
                 droppableId="negotiation"
               />
-              <KanbanColumn 
-                title="Lost" 
-                prospects={prospectsByStatus.lost} 
-                color="bg-gray-500" 
+              <KanbanColumn
+                title="Lost"
+                prospects={prospectsByStatus.lost}
+                color="bg-gray-500"
                 onEdit={handleEditProspect}
                 onViewDetails={handleViewDetails}
                 onConvertToClient={handleConvertToClient}
@@ -541,23 +528,27 @@ const Prospects = () => {
             </div>
           </DragDropContext>
         )}
+
+        {/* Form dialog for creating/editing prospects */}
+        <ProspectFormDialog
+          open={isEditDialogOpen}
+          onOpenChange={handleFormClose}
+          onSubmit={handleFormSubmit}
+          initialData={selectedProspect}
+          mode={editMode}
+        />
+
+        {/* Details dialog */}
+        {selectedProspect && (
+          <ProspectDetailsDialog
+            open={detailsOpen}
+            onOpenChange={setDetailsOpen}
+            prospect={selectedProspect}
+            onEdit={handleEditProspect}
+            onConvertSuccess={handleConvertSuccess}
+          />
+        )}
       </div>
-
-      <ProspectFormDialog
-        open={formOpen}
-        onOpenChange={handleFormClose}
-        onSubmit={handleFormSubmit}
-        initialData={selectedProspect}
-        mode={selectedProspect ? "edit" : "create"}
-      />
-
-      <ProspectDetailsDialog
-        open={detailsOpen}
-        onOpenChange={setDetailsOpen}
-        prospect={selectedProspect}
-        onEdit={handleEditProspect}
-        onConvertToClient={handleConvertToClient}
-      />
     </AppLayout>
   );
 };

@@ -1,20 +1,22 @@
 import { format } from "date-fns";
-import { CalendarIcon, PhoneIcon, MailIcon, MapPinIcon, BadgeIcon, InfoIcon, StarIcon, ClockIcon, TagIcon } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { CalendarIcon, PhoneIcon, MailIcon, MapPinIcon, BadgeIcon, InfoIcon, StarIcon, ClockIcon, TagIcon, UserPlus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Prospect } from "@/lib/supabase";
+import { Prospect, supabase } from "@/lib/supabase";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useEffect, useState } from "react";
 import { prospectService } from "@/services/prospectService";
+import { useToast } from '@/components/ui/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ProspectDetailsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   prospect?: Prospect;
   onEdit: (prospect: Prospect) => void;
-  onConvertToClient: (prospect: Prospect) => void;
+  onConvertSuccess: (prospectId: string) => void;
 };
 
 const ProspectDetailsDialog = ({
@@ -22,16 +24,24 @@ const ProspectDetailsDialog = ({
   onOpenChange,
   prospect,
   onEdit,
-  onConvertToClient,
+  onConvertSuccess,
 }: ProspectDetailsDialogProps) => {
   const [isAlreadyClient, setIsAlreadyClient] = useState<boolean>(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isConverting, setIsConverting] = useState(false);
   
   useEffect(() => {
-    // Verificar se o prospect já é um cliente quando o diálogo é aberto e quando o prospect muda
+    // Check if the prospect is already a client when the dialog is opened and when the prospect changes
     if (open && prospect) {
       const checkClientStatus = async () => {
-        const isClient = await prospectService.checkIfProspectIsClient(prospect.id);
-        setIsAlreadyClient(isClient);
+        try {
+          const isClient = await prospectService.checkIfProspectIsClient(prospect.id);
+          setIsAlreadyClient(isClient);
+        } catch (error) {
+          console.error(`Error checking client status for prospect ${prospect.id}:`, error);
+          setIsAlreadyClient(false);
+        }
       };
       
       checkClientStatus();
@@ -53,7 +63,7 @@ const ProspectDetailsDialog = ({
     ? format(new Date(prospect.created_at), "MMM dd, yyyy")
     : "N/A";
   
-  // Don't show convert button for lost prospects or prospects that are already clients
+  // Don't show convert button only for lost prospects or prospects that are already clients
   const showConvertButton = prospect.status !== 'lost' && !isAlreadyClient;
 
   // Status colors
@@ -76,6 +86,66 @@ const ProspectDetailsDialog = ({
         ))}
       </div>
     );
+  };
+
+  // Function to convert prospect to client
+  const handleConvertToClient = async () => {
+    try {
+      setIsConverting(true);
+      
+      toast({
+        title: "Starting conversion",
+        description: "Converting prospect to client...",
+      });
+      
+      // Call the actual conversion function from prospectService
+      const result = await prospectService.convertToClient(prospect.id);
+      
+      if (result.success && result.client_id) {
+        // Refresh data after successful conversion
+        queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        queryClient.invalidateQueries({ queryKey: ['clients'] });
+        
+        toast({
+          title: "Conversion completed",
+          description: "Prospect successfully converted to client!",
+        });
+        
+        // Close dialog
+        onOpenChange(false);
+        
+        // Callback for success (redirect to clients page)
+        if (onConvertSuccess) {
+          onConvertSuccess(prospect.id);
+        }
+      } else if (result.already_exists && result.client_id) {
+        toast({
+          title: "Information",
+          description: "This prospect has already been converted to a client.",
+        });
+        
+        // Close dialog and redirect
+        onOpenChange(false);
+        if (onConvertSuccess) {
+          onConvertSuccess(result.client_id);
+        }
+      } else {
+        toast({
+          title: "Error",
+          description: result.message || "Unable to convert prospect to client",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error converting prospect to client:', error);
+      toast({
+        title: "Conversion Error",
+        description: "Failed to convert prospect to client. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConverting(false);
+    }
   };
 
   return (
@@ -233,12 +303,17 @@ const ProspectDetailsDialog = ({
           {showConvertButton && (
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
-              onClick={() => {
-                onConvertToClient(prospect);
-                onOpenChange(false);
-              }}
+              onClick={handleConvertToClient}
+              disabled={isConverting}
             >
-              Convert to Client
+              {isConverting ? (
+                <>Converting...</>
+              ) : (
+                <>
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Convert to Client
+                </>
+              )}
             </Button>
           )}
         </DialogFooter>

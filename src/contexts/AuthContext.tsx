@@ -17,7 +17,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Usuário e senha de teste
+// Test user and password
 const TEST_USER: User = {
   id: 'b391c27d-5f1f-4c93-9ef3-e3ce0880a8e2',
   name: 'Admin User',
@@ -26,13 +26,13 @@ const TEST_USER: User = {
   created_at: new Date().toISOString()
 };
 
-// Helpers para localStorage com tratamento de erros
+// Helpers for localStorage with error handling
 const safeLocalStorage = {
   getItem: (key: string): string | null => {
     try {
       return localStorage.getItem(key);
     } catch (error) {
-      console.warn('Erro ao acessar localStorage:', error);
+      console.warn('Error accessing localStorage:', error);
       return null;
     }
   },
@@ -40,14 +40,14 @@ const safeLocalStorage = {
     try {
       localStorage.setItem(key, value);
     } catch (error) {
-      console.warn('Erro ao salvar no localStorage:', error);
+      console.warn('Error saving to localStorage:', error);
     }
   },
   removeItem: (key: string): void => {
     try {
       localStorage.removeItem(key);
     } catch (error) {
-      console.warn('Erro ao remover do localStorage:', error);
+      console.warn('Error removing from localStorage:', error);
     }
   }
 };
@@ -55,12 +55,12 @@ const safeLocalStorage = {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true); // Começa como true para verificar autenticação
+  const [loading, setLoading] = useState(true); // Starts as true to check authentication
   const navigate = useNavigate();
 
-  // Verificar se há usuário já autenticado no localStorage ao iniciar
+  // Check if there's already an authenticated user in localStorage at startup
   useEffect(() => {
-    // Verificar se já temos um usuário armazenado
+    // Check if we already have a stored user
     const storedUser = safeLocalStorage.getItem('advizall_user');
     const storedSession = safeLocalStorage.getItem('advizall_session');
     
@@ -71,24 +71,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setSession(JSON.parse(storedSession));
         }
       } catch (e) {
-        console.warn('Erro ao parsear dados do localStorage:', e);
+        console.warn('Error parsing data from localStorage:', e);
       }
     }
     
     setLoading(false);
   }, []);
 
-  // Autenticação simplificada para desenvolvimento
+  // Simplified authentication for development
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
       
-      // Para simplificar durante o desenvolvimento, aceitamos qualquer login com este email
+      // To simplify during development, we accept any login with this email
       if (email === 'admin@advizall.com') {
-        // Login simplificado sem Supabase
+        // Simplified login without Supabase
         setUser(TEST_USER);
         
-        // Criar uma sessão simulada
+        // Create a simulated session
         const mockSession = { 
           user: { id: TEST_USER.id },
           access_token: 'mock_token',
@@ -98,11 +98,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         setSession(mockSession);
         
-        // Persistir no localStorage
+        // Persist in localStorage
         safeLocalStorage.setItem('advizall_user', JSON.stringify(TEST_USER));
         safeLocalStorage.setItem('advizall_session', JSON.stringify(mockSession));
         
-        // Navegar para a página inicial
+        // Navigate to the home page
         setTimeout(() => {
           navigate('/');
         }, 500);
@@ -111,7 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { error: null, success: true };
       }
       
-      // Tentar login real com Supabase
+      // Try real login with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -123,7 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data.user) {
-        // Criar um usuário simulado
+        // Create a simulated user
         const testUser: User = {
           id: data.user.id,
           name: 'Admin User',
@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(testUser);
         setSession(data.session);
         
-        // Persistir no localStorage
+        // Persist in localStorage
         safeLocalStorage.setItem('advizall_user', JSON.stringify(testUser));
         safeLocalStorage.setItem('advizall_session', JSON.stringify(data.session));
         
@@ -154,25 +154,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // Limpar dados locais
+      // Clear local data
       setUser(null);
       setSession(null);
       
-      // Remover do localStorage
+      // Remove from localStorage
       safeLocalStorage.removeItem('advizall_user');
       safeLocalStorage.removeItem('advizall_session');
       
-      // Tentar logout do Supabase
+      // Try to logout from Supabase
       try {
         await supabase.auth.signOut();
       } catch (e) {
-        console.warn('Erro ao deslogar do Supabase, ignorando...');
+        console.warn('Error logging out from Supabase, ignoring...');
       }
       
       navigate('/login');
       setLoading(false);
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error('Error during logout:', error);
       setLoading(false);
     }
   };

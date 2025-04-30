@@ -26,8 +26,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const loginFormSchema = z.object({
-  email: z.string().email({ message: "Email inválido." }),
-  password: z.string().min(1, { message: "Senha obrigatória." }),
+  email: z.string().email({ message: "Invalid email." }),
+  password: z.string().min(1, { message: "Password is required." }),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -40,23 +40,23 @@ const Login = () => {
   const location = useLocation();
   const { toast } = useToast();
   
-  // Obter a rota original que o usuário tentou acessar
+  // Get the original route that the user tried to access
   const from = location.state?.from?.pathname || "/";
   
-  // Se o usuário já estiver autenticado, redireciona
+  // If the user is already authenticated, redirect
   useEffect(() => {
     if (user) {
-      console.log("Login: Usuário já autenticado, redirecionando para:", from);
+      console.log("Login: User already authenticated, redirecting to:", from);
       navigate(from, { replace: true });
     }
   }, [user, navigate, from]);
 
-  // Log para debugging
+  // Log for debugging
   useEffect(() => {
-    console.log("Login: Montado");
-    console.log("Login: Rota original =", from);
+    console.log("Login: Mounted");
+    console.log("Login: Original route =", from);
     return () => {
-      console.log("Login: Desmontado");
+      console.log("Login: Unmounted");
     };
   }, [from]);
 
@@ -69,7 +69,7 @@ const Login = () => {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    console.log("Login: Tentando login com", data.email);
+    console.log("Login: Attempting login with", data.email);
     setIsLoading(true);
     setError("");
     
@@ -77,10 +77,10 @@ const Login = () => {
       const { error, success } = await signIn(data.email, data.password);
       
       if (error || !success) {
-        setError(error?.message || "Falha no login. Verifique suas credenciais.");
+        setError(error?.message || "Login failed. Check your credentials.");
         toast({
-          title: "Erro de Login",
-          description: error?.message || "Credenciais inválidas",
+          title: "Login Error",
+          description: error?.message || "Invalid credentials",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -88,17 +88,17 @@ const Login = () => {
       }
       
       toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo ao CRM Advizall",
+        title: "Login successful",
+        description: "Welcome to Advizall CRM",
       });
       
-      console.log("Login: Login bem-sucedido, redirecionando será feito pelo useEffect");
-      // O redirecionamento agora é feito pelo useEffect quando user for definido
+      console.log("Login: Login successful, redirection will be done by useEffect");
+      // Redirection is now done by useEffect when user is defined
     } catch (error: any) {
-      setError(error?.message || "Ocorreu um erro inesperado");
+      setError(error?.message || "An unexpected error occurred");
       toast({
-        title: "Erro",
-        description: error?.message || "Erro ao fazer login",
+        title: "Error",
+        description: error?.message || "Error during login",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -114,7 +114,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-2xl text-center">Advizall CRM</CardTitle>
           <CardDescription className="text-center">
-            Entre com suas credenciais para acessar o sistema
+            Enter your credentials to access the system
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -126,9 +126,9 @@ const Login = () => {
           
           <Alert className="bg-blue-50 border-blue-100">
             <AlertDescription className="text-blue-800">
-              <strong>Login para desenvolvimento:</strong><br />
+              <strong>Development login:</strong><br />
               Email: admin@advizall.com<br />
-              Senha: advizall-admin-123
+              Password: advizall-admin-123
             </AlertDescription>
           </Alert>
           
@@ -156,7 +156,7 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Senha</FormLabel>
+                    <FormLabel>Password</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
@@ -170,14 +170,14 @@ const Login = () => {
                 )}
               />
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Entrando..." : "Entrar"}
+                {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
           </Form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-500">
-            Desenvolvido por Advizall
+            Developed by Advizall
           </p>
         </CardFooter>
       </Card>

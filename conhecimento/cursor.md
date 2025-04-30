@@ -37,6 +37,8 @@ Advizall is a Chicago-based marketing agency serving U.S. clients with services 
 - Conversion creates a client record using prospect data
 - Proper filtering prevents converted prospects from appearing in Prospects view
 - Context handling is essential for ReactQuery function calls to avoid 'this' context loss
+- Client detail view accessible through `/clients/:id` route after conversion
+- Converted clients persist in localStorage and are tracked in a separate 'convertedProspects' list
 
 ### Kanban Board Implementation
 - Droppable zones for each status column
@@ -49,11 +51,18 @@ Advizall is a Chicago-based marketing agency serving U.S. clients with services 
 - Credentials only visible to Moderator and Admin roles
 - Row-Level Security (RLS) in Supabase for data access control
 
+### Data Backup and Restoration
+- Browser-based backup system captures all localStorage data
+- Node.js backup script for development environments
+- Restoration system allows importing previously backed-up data
+- Complete backup includes application state, localStorage, and mock database content
+
 ### Technical Challenges
 - Context loss when using React Query - needs arrow function wrappers
 - Proper filtering of prospects that have already been converted
 - Local storage used for persistence in mock implementation (real app uses Supabase)
 - Concurrent update patterns for Kanban drag-and-drop
+- React DOM nesting validation (div cannot be nested inside p elements)
 
 ## Implementation Stack
 - Frontend: React + TypeScript + Tailwind CSS + shadcn/ui
@@ -62,6 +71,7 @@ Advizall is a Chicago-based marketing agency serving U.S. clients with services 
 - State Management: React Context + Query invalidation
 - Storage: Supabase (PostgreSQL) / Mock services with localStorage
 - Authentication: Supabase Auth
+- Routing: React Router with route parameters for detail views
 
 ## Development Patterns
 1. Each service uses a mock implementation that will be replaced with real Supabase calls
@@ -69,15 +79,19 @@ Advizall is a Chicago-based marketing agency serving U.S. clients with services 
 3. Proper error handling with try/catch is essential in async operations
 4. ReactQuery requires careful context handling with arrow functions
 5. Components check client status asynchronously to control button visibility
+6. Route changes update URL with record IDs for direct linking (e.g., `/clients/:id`)
 
-## Common Issues
-- Context loss in async functions ('this' unavailable in callbacks)
-- Filter operations need careful implementation to maintain referential integrity
-- Type conflicts between imported types and local declarations
-- Status transition handling requires careful implementation
+## Common Issues & Solutions
+- Context loss in async functions - Use arrow functions to maintain 'this' context
+- Filter operations - Implement consistent localStorage tracking with error handling
+- Type conflicts - Ensure proper type definitions for consistent data handling
+- DOM nesting violations - Replace nested divs with appropriate elements (p, span)
+- Route handling - Add missing routes and URL parameters for complete navigation
+- Data persistence - Use consistent localStorage keys with structured error handling
 
 ## Key User Flows
-1. Prospect creation → status updates → client conversion
+1. Prospect creation → status updates → client conversion → client detail view
 2. Client management with projects, payments, and secure credentials
 3. Meeting scheduling with Google Calendar integration (planned)
-4. Role-based credential access and management 
+4. Role-based credential access and management
+5. Database backup and restoration 

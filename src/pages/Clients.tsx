@@ -245,6 +245,129 @@ const Clients = () => {
     },
   });
   
+  // Mutation to update a project
+  const updateProjectMutation = useMutation({
+    mutationFn: (data: { id: string; project: ProjectFormData }) => 
+      clientService.updateProject(data.id, data.project),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Project updated successfully",
+      });
+      refetchProjects();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update project",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
+  // Mutation to delete a project
+  const deleteProjectMutation = useMutation({
+    mutationFn: (id: string) => clientService.deleteProject(id),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Project deleted successfully",
+      });
+      refetchProjects();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete project",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
+  // Mutation to update a payment
+  const updatePaymentMutation = useMutation({
+    mutationFn: (data: { id: string; payment: Partial<PaymentFormData> }) => 
+      clientService.updatePayment(data.id, data.payment),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Payment updated successfully",
+      });
+      refetchPayments();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update payment",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
+  // Mutation to delete a payment
+  const deletePaymentMutation = useMutation({
+    mutationFn: (id: string) => clientService.deletePayment(id),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Payment deleted successfully",
+      });
+      refetchPayments();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete payment",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
+  // Mutation to update a credential
+  const updateCredentialMutation = useMutation({
+    mutationFn: (data: { id: string; credential: CredentialFormData }) => 
+      clientService.updateCredential(data.id, data.credential),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Credential updated successfully",
+      });
+      refetchCredentials();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update credential",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
+  // Mutation to delete a credential
+  const deleteCredentialMutation = useMutation({
+    mutationFn: (id: string) => clientService.deleteCredential(id),
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Credential deleted successfully",
+      });
+      refetchCredentials();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete credential",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+  
   // Function to handle client updates
   const handleUpdateClient = async (data: ClientFormData) => {
     if (!selectedClient) return;
@@ -327,7 +450,61 @@ const Clients = () => {
       client.region_state.toLowerCase().includes(searchLower)
     );
   });
-
+  
+  // Update project handler
+  const handleUpdateProject = async (id: string, data: ProjectFormData) => {
+    try {
+      await updateProjectMutation.mutateAsync({ id, project: data });
+    } catch (error) {
+      console.error("Error updating project:", error);
+    }
+  };
+  
+  // Delete project handler
+  const handleDeleteProject = async (id: string) => {
+    try {
+      await deleteProjectMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Error deleting project:", error);
+    }
+  };
+  
+  // Update payment handler
+  const handleUpdatePayment = async (id: string, data: Partial<PaymentFormData>) => {
+    try {
+      await updatePaymentMutation.mutateAsync({ id, payment: data });
+    } catch (error) {
+      console.error("Error updating payment:", error);
+    }
+  };
+  
+  // Delete payment handler
+  const handleDeletePayment = async (id: string) => {
+    try {
+      await deletePaymentMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+    }
+  };
+  
+  // Update credential handler
+  const handleUpdateCredential = async (id: string, data: CredentialFormData) => {
+    try {
+      await updateCredentialMutation.mutateAsync({ id, credential: data });
+    } catch (error) {
+      console.error("Error updating credential:", error);
+    }
+  };
+  
+  // Delete credential handler
+  const handleDeleteCredential = async (id: string) => {
+    try {
+      await deleteCredentialMutation.mutateAsync(id);
+    } catch (error) {
+      console.error("Error deleting credential:", error);
+    }
+  };
+  
   return (
     <AppLayout>
       <div className="container py-6">
@@ -342,12 +519,12 @@ const Clients = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-            </div>
+              </div>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
               Add Client
-            </Button>
-          </div>
+              </Button>
+            </div>
         </div>
         
         <Tabs defaultValue="all" className="mb-6">
@@ -398,13 +575,13 @@ const Clients = () => {
               {filteredClients
                 .filter(client => !client.plan_name || !client.retainer_value)
                 .map(client => (
-                  <ClientCard 
-                    key={client.id} 
-                    client={client} 
+                <ClientCard 
+                  key={client.id} 
+                  client={client} 
                     onViewDetails={handleViewClientDetails}
                     onScheduleMeeting={handleScheduleMeeting}
-                  />
-                ))}
+                />
+              ))}
             </div>
           </TabsContent>
         </Tabs>
@@ -423,6 +600,12 @@ const Clients = () => {
           onAddProject={handleAddProject}
           onAddPayment={handleAddPayment}
           onAddCredential={handleAddCredential}
+          onUpdateProject={handleUpdateProject}
+          onDeleteProject={handleDeleteProject}
+          onUpdatePayment={handleUpdatePayment}
+          onDeletePayment={handleDeletePayment}
+          onUpdateCredential={handleUpdateCredential}
+          onDeleteCredential={handleDeleteCredential}
         />
         
         {/* Meeting Schedule Dialog */}

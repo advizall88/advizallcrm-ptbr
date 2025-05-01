@@ -1,146 +1,702 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { calMeetingService } from '@/services/calMeetingService';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { formatDistanceToNow, format, parseISO, differenceInMinutes, isToday, isTomorrow } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import CalendarIframe from '@/components/meetings/CalendarIframe';
+import { Button } from '@/components/ui/button';
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { motion } from "framer-motion";
+import { 
+  Clipboard, 
+  ExternalLink, 
+  Calendar, 
+  Clock, 
+  MapPin, 
+  User, 
+  MessageSquare, 
+  Check,
+  AlertCircle,
+  RefreshCw,
+  X,
+  Phone,
+  Mail,
+  ChevronRight,
+  Info,
+  Video,
+  CalendarClock
+} from 'lucide-react';
+import AppLayout from '@/components/layout/AppLayout';
 
-import React from "react";
-import AppLayout from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const dummyMeetings = [
-  {
-    id: 1,
-    title: "Website Progress Review",
-    client: "ABC Corporation",
-    type: "Client",
-    startDate: "2025-04-28T15:00:00",
-    endDate: "2025-04-28T16:00:00",
-    meetLink: "https://meet.google.com/abc-defg-hij",
-    notes: "Review website development progress and gather feedback",
-  },
-  {
-    id: 2,
-    title: "Initial Discovery Call",
-    client: "Potential Lead LLC",
-    type: "Prospect",
-    startDate: "2025-04-29T10:00:00",
-    endDate: "2025-04-29T11:00:00",
-    meetLink: "https://meet.google.com/klm-nopq-rst",
-    notes: "Discuss marketing needs and potential services",
-  },
-  {
-    id: 3,
-    title: "Marketing Strategy Session",
-    client: "XYZ Inc",
-    type: "Client",
-    startDate: "2025-04-30T14:00:00",
-    endDate: "2025-04-30T15:30:00",
-    meetLink: "https://meet.google.com/uvw-xyz-123",
-    notes: "Quarterly marketing strategy planning",
-  },
-  {
-    id: 4,
-    title: "Proposal Presentation",
-    client: "Future Client Co",
-    type: "Prospect",
-    startDate: "2025-05-02T11:00:00",
-    endDate: "2025-05-02T12:00:00",
-    meetLink: "https://meet.google.com/456-789-abc",
-    notes: "Present service proposal and pricing",
-  },
-];
-
+// Helper function to format dates
 const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  }).format(date);
+  try {
+    const date = parseISO(dateString);
+    return format(date, "MMM dd, yyyy, h:mm a", { locale: enUS });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
 };
 
+// Helper function to format just the date part
+const formatDateOnly = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    if (isToday(date)) {
+      return "Today";
+    } else if (isTomorrow(date)) {
+      return "Tomorrow";
+    }
+    return format(date, "EEEE, MMMM d, yyyy", { locale: enUS });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+};
+
+// Helper function to format day and month
+const formatDayMonth = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    if (isToday(date)) {
+      return "Today";
+    } else if (isTomorrow(date)) {
+      return "Tomorrow";
+    }
+    return format(date, "MMM d", { locale: enUS });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+};
+
+// Helper function to get day of month
+const getDayOfMonth = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    return format(date, "d", { locale: enUS });
+  } catch (error) {
+    console.error('Error getting day of month:', error);
+    return "";
+  }
+};
+
+// Helper function to get month abbreviation
+const getMonthAbbr = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    return format(date, "MMM", { locale: enUS });
+  } catch (error) {
+    console.error('Error getting month abbreviation:', error);
+    return "";
+  }
+};
+
+// Helper function to format just the time part
 const formatTimeOnly = (dateString: string) => {
-  const date = new Date(dateString);
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  }).format(date);
+  try {
+    const date = parseISO(dateString);
+    return format(date, "h:mm a", { locale: enUS });
+  } catch (error) {
+    console.error('Error formatting time:', error);
+    return dateString;
+  }
 };
 
-const MeetingCard = ({ meeting }: { meeting: any }) => {
-  const startDate = new Date(meeting.startDate);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+// Helper function to get meeting duration
+const getMeetingDuration = (startTime: string, endTime: string) => {
+  try {
+    const start = parseISO(startTime);
+    const end = parseISO(endTime);
+    const minutes = differenceInMinutes(end, start);
+    
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    } else {
+      const hours = Math.floor(minutes / 60);
+      const remainingMinutes = minutes % 60;
+      return remainingMinutes > 0 
+        ? `${hours} hour${hours > 1 ? 's' : ''} ${remainingMinutes} minute${remainingMinutes > 1 ? 's' : ''}` 
+        : `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+  } catch (error) {
+    console.error('Error calculating duration:', error);
+    return '';
+  }
+};
+
+// Helper function to get relative time
+const getRelativeTime = (dateString: string) => {
+  try {
+    const date = parseISO(dateString);
+    return formatDistanceToNow(date, { addSuffix: true, locale: enUS });
+  } catch (error) {
+    console.error('Error getting relative time:', error);
+    return '';
+  }
+};
+
+// Get initials from name
+const getInitials = (name: string) => {
+  if (!name) return '??';
+  return name
+    .split(' ')
+    .map(part => part[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+};
+
+// Get status badge color and properties
+const getStatusBadge = (status: string) => {
+  switch (status?.toLowerCase() || 'pending') {
+    case 'accepted':
+    case 'confirmed':
+      return { 
+        color: "bg-emerald-50 text-emerald-700 border-emerald-200", 
+        hoverColor: "hover:bg-emerald-100",
+        icon: <Check className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Confirmed"
+      };
+    case 'rescheduled':
+      return { 
+        color: "bg-amber-50 text-amber-700 border-amber-200",
+        hoverColor: "hover:bg-amber-100",
+        icon: <RefreshCw className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Rescheduled"
+      };
+    case 'cancelled':
+    case 'canceled':
+      return { 
+        color: "bg-rose-50 text-rose-700 border-rose-200",
+        hoverColor: "hover:bg-rose-100",
+        icon: <X className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Cancelled"
+      };
+    case 'pending':
+      return { 
+        color: "bg-blue-50 text-blue-700 border-blue-200",
+        hoverColor: "hover:bg-blue-100",
+        icon: <AlertCircle className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Pending"
+      };
+    default:
+      return { 
+        color: "bg-gray-50 text-gray-700 border-gray-200",
+        hoverColor: "hover:bg-gray-100",
+        icon: <Info className="h-3.5 w-3.5 mr-1.5" />,
+        label: status || "Unknown"
+      };
+  }
+};
+
+// Get trigger event badge properties
+const getTriggerBadge = (triggerEvent: string) => {
+  switch (triggerEvent.toLowerCase()) {
+    case 'booking_created':
+      return {
+        color: "bg-indigo-50 text-indigo-700 border-indigo-200",
+        icon: <Calendar className="h-3.5 w-3.5 mr-1.5" />,
+        label: "New Booking"
+      };
+    case 'booking_rescheduled':
+      return {
+        color: "bg-amber-50 text-amber-700 border-amber-200",
+        icon: <CalendarClock className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Rescheduled"
+      };
+    case 'booking_cancelled':
+    case 'booking_canceled':
+      return {
+        color: "bg-rose-50 text-rose-700 border-rose-200",
+        icon: <X className="h-3.5 w-3.5 mr-1.5" />,
+        label: "Cancelled"
+      };
+    default:
+      return {
+        color: "bg-gray-50 text-gray-700 border-gray-200",
+        icon: <Info className="h-3.5 w-3.5 mr-1.5" />,
+        label: triggerEvent.replace(/_/g, ' ')
+      };
+  }
+};
+
+// Generate random pastel color for avatars based on name
+const getAvatarColor = (name: string) => {
+  const colors = [
+    'bg-rose-100 text-rose-800',
+    'bg-pink-100 text-pink-800',
+    'bg-fuchsia-100 text-fuchsia-800',
+    'bg-purple-100 text-purple-800',
+    'bg-violet-100 text-violet-800',
+    'bg-indigo-100 text-indigo-800',
+    'bg-blue-100 text-blue-800',
+    'bg-sky-100 text-sky-800',
+    'bg-cyan-100 text-cyan-800',
+    'bg-teal-100 text-teal-800',
+    'bg-emerald-100 text-emerald-800',
+    'bg-green-100 text-green-800',
+    'bg-lime-100 text-lime-800',
+    'bg-yellow-100 text-yellow-800',
+    'bg-amber-100 text-amber-800',
+    'bg-orange-100 text-orange-800',
+  ];
   
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  
-  const startDateDay = new Date(startDate);
-  startDateDay.setHours(0, 0, 0, 0);
-  
-  let dateLabel = formatDate(meeting.startDate);
-  
-  if (startDateDay.getTime() === today.getTime()) {
-    dateLabel = `Today, ${formatTimeOnly(meeting.startDate)}`;
-  } else if (startDateDay.getTime() === tomorrow.getTime()) {
-    dateLabel = `Tomorrow, ${formatTimeOnly(meeting.startDate)}`;
+  // Simple hash function for name
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   
+  // Ensure positive index
+  hash = Math.abs(hash);
+  return colors[hash % colors.length];
+};
+
+interface MeetingDetailsProps {
+  meeting: any;
+  onClose: () => void;
+}
+
+const MeetingDetails = ({ meeting, onClose }: MeetingDetailsProps) => {
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const statusInfo = getStatusBadge(meeting.status);
+  const triggerInfo = getTriggerBadge(meeting.trigger_event);
+  const hasValidPhone = meeting.phone_number && meeting.phone_number !== "integrations:google:meet";
+  const shouldShowMeetLink = meeting.meeting_link;
+
   return (
-    <Card className="mb-4 shadow-neumorph-sm">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg font-bold">{meeting.title}</CardTitle>
-            <p className="text-sm text-gray-500">{meeting.client}</p>
-          </div>
-          <span className={`text-xs px-2 py-1 rounded-full ${meeting.type === 'Client' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}`}>
-            {meeting.type}
-          </span>
+    <DialogContent className="max-w-4xl">
+      <DialogHeader className="pb-4 border-b">
+        <div className="flex items-center justify-between">
+          <DialogTitle className="text-2xl font-bold">{meeting.title}</DialogTitle>
+          <Badge 
+            variant="outline" 
+            className={`ml-2 ${statusInfo.color} border flex items-center py-1 px-2`}
+          >
+            {statusInfo.icon}
+            {statusInfo.label}
+          </Badge>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          <div className="flex items-center">
-            <span className="text-gray-500 mr-2">📅</span>
-            <span>{dateLabel}</span>
+        <DialogDescription className="flex items-center flex-wrap gap-2 mt-2">
+          <Badge variant="outline" className={`${triggerInfo.color} border flex items-center py-0.5`}>
+            {triggerInfo.icon}
+            {triggerInfo.label}
+          </Badge>
+          {meeting.ical_uid && (
+            <span className="text-xs text-muted-foreground font-mono">ID: {meeting.ical_uid}</span>
+          )}
+        </DialogDescription>
+      </DialogHeader>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 py-6">
+        <div className="space-y-6">
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 p-2 bg-blue-50 text-blue-700 rounded-full">
+              <Calendar className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-medium text-base mb-1">Date & Time</h4>
+              <p className="text-base font-medium">{formatDateOnly(meeting.start_time)}</p>
+              <p className="text-base mt-1">
+                {formatTimeOnly(meeting.start_time)} - {formatTimeOnly(meeting.end_time)}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {getMeetingDuration(meeting.start_time, meeting.end_time)}
+              </p>
+            </div>
           </div>
-          <div className="flex items-center">
-            <span className="text-gray-500 mr-2">⏱️</span>
-            <span>{formatTimeOnly(meeting.startDate)} - {formatTimeOnly(meeting.endDate)}</span>
-          </div>
-          {meeting.notes && (
-            <div className="text-sm text-gray-500">
-              <p className="font-medium">Notes:</p>
-              <p>{meeting.notes}</p>
+          
+          {meeting.attendee_name && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 p-2 bg-violet-50 text-violet-700 rounded-full">
+                <User className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-medium text-base mb-1">Attendee</h4>
+                <div className="flex items-center">
+                  <Avatar className="h-6 w-6 mr-2">
+                    <AvatarFallback className={`text-xs ${getAvatarColor(meeting.attendee_name)}`}>
+                      {getInitials(meeting.attendee_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-medium">{meeting.attendee_name}</span>
+                </div>
+                
+                <div className="mt-2 space-y-2">
+                  {meeting.attendee_email && (
+                    <div className="flex items-center text-sm">
+                      <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <a 
+                        href={`mailto:${meeting.attendee_email}`} 
+                        className="text-blue-600 hover:underline break-all"
+                      >
+                        {meeting.attendee_email}
+                      </a>
+                    </div>
+                  )}
+                  
+                  {hasValidPhone && (
+                    <div className="flex items-center text-sm">
+                      <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                      <a 
+                        href={`tel:${meeting.phone_number}`} 
+                        className="text-blue-600 hover:underline"
+                      >
+                        {meeting.phone_number}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           )}
-          <div className="flex space-x-2 mt-4">
-            <Button variant="default" size="sm" className="flex-1">
-              Join Meeting
-            </Button>
-            <Button variant="outline" size="sm" className="flex-1">
-              Copy Link
-            </Button>
+          
+          {shouldShowMeetLink && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 p-2 bg-emerald-50 text-emerald-700 rounded-full">
+                <Video className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-medium text-base mb-1">Meeting Link</h4>
+                <p className="text-sm break-all">
+                  <a 
+                    href={meeting.meeting_link} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-blue-600 hover:underline inline-flex items-center"
+                  >
+                    {meeting.meeting_link}
+                    <ExternalLink className="h-3.5 w-3.5 ml-1 inline-flex" />
+                  </a>
+                </p>
+                
+                <div className="mt-3 flex space-x-2">
+                  <Button 
+                    size="sm"
+                    variant="outline" 
+                    onClick={() => copyToClipboard(meeting.meeting_link)}
+                    className="h-8"
+                  >
+                    <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+                    {copied ? 'Copied!' : 'Copy Link'}
+                  </Button>
+                  
+                  <Button 
+                    size="sm"
+                    onClick={() => window.open(meeting.meeting_link, '_blank')}
+                    className="h-8 bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Video className="h-3.5 w-3.5 mr-1.5" />
+                    Join Meeting
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        <div className="space-y-6">
+          {(meeting.reschedule_reason || meeting.cancellation_reason) && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 p-2 bg-amber-50 text-amber-700 rounded-full">
+                <AlertCircle className="h-5 w-5" />
+              </div>
+              <div>
+                {meeting.reschedule_reason && (
+                  <>
+                    <h4 className="font-medium text-base mb-1">Rescheduling Reason</h4>
+                    <p className="text-base">{meeting.reschedule_reason}</p>
+                  </>
+                )}
+                {meeting.cancellation_reason && (
+                  <>
+                    <h4 className="font-medium text-base mb-1 mt-3">Cancellation Reason</h4>
+                    <p className="text-base">{meeting.cancellation_reason}</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {(meeting.description || meeting.additional_notes) && (
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 p-2 bg-indigo-50 text-indigo-700 rounded-full">
+                <MessageSquare className="h-5 w-5" />
+              </div>
+              <div className="flex-1">
+                {meeting.description && (
+                  <>
+                    <h4 className="font-medium text-base mb-1">Description</h4>
+                    <div className="p-3 bg-gray-50 rounded-md text-gray-800 whitespace-pre-line text-sm">
+                      {meeting.description}
+                    </div>
+                  </>
+                )}
+                
+                {meeting.additional_notes && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-base mb-1">Additional Notes</h4>
+                    <div className="p-3 bg-blue-50 rounded-md text-gray-800 whitespace-pre-line text-sm border border-blue-100">
+                      {meeting.additional_notes}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-start gap-3">
+            <div className="flex-shrink-0 p-2 bg-gray-100 text-gray-700 rounded-full">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-medium text-base mb-1">Created</h4>
+              <p className="text-sm text-muted-foreground">{formatDate(meeting.created_at)}</p>
+              {meeting.updated_at && meeting.updated_at !== meeting.created_at && (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Updated: {formatDate(meeting.updated_at)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+      
+      <DialogFooter className="flex flex-row justify-end border-t pt-4">
+        {shouldShowMeetLink && (
+          <Button 
+            onClick={() => window.open(meeting.meeting_link, '_blank')}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Join Meeting
+          </Button>
+        )}
+      </DialogFooter>
+    </DialogContent>
   );
 };
 
+const MeetingCard = ({ meeting }: { meeting: any }) => {
+  const [showDetails, setShowDetails] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const statusInfo = getStatusBadge(meeting.status);
+  const hasValidPhone = meeting.phone_number && meeting.phone_number !== "integrations:google:meet";
+  const shouldShowMeetLink = meeting.meeting_link;
+  
+  return (
+    <>
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      >
+        <Card 
+          className="relative overflow-hidden transition-all duration-200 hover:shadow-lg cursor-pointer group border border-gray-200 h-full"
+          onClick={() => setShowDetails(true)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className={`absolute top-0 left-0 w-1 h-full ${statusInfo.color.replace("bg-", "bg-")}`} />
+          
+          <div className="absolute top-0 right-0 w-2 h-2 mt-1 mr-1 rounded-full transition-all duration-300"
+            style={{ backgroundColor: isHovered ? '#6366f1' : 'transparent' }}
+          />
+          
+          <div className="flex flex-col h-full">
+            <CardHeader className="p-4 pb-2 flex-shrink-0">
+              <div className="flex justify-between items-start gap-2">
+                <div>
+                  <div className="flex-shrink-0 mb-1">
+                    <Badge 
+                      variant="outline" 
+                      className={`${statusInfo.color} border px-2 py-0 h-5 text-xs flex items-center font-medium`}
+                    >
+                      {statusInfo.icon}
+                      {statusInfo.label}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-base font-medium group-hover:text-primary transition-colors line-clamp-2">
+                    {meeting.title}
+                  </CardTitle>
+                </div>
+                <div className="flex-shrink-0 flex flex-col items-center justify-center p-2 w-12 h-12 bg-gray-50 rounded-md text-center border border-gray-100 group-hover:border-primary transition-colors">
+                  <span className="text-lg font-bold leading-none text-gray-800">{getDayOfMonth(meeting.start_time)}</span>
+                  <span className="text-xs uppercase text-gray-500 mt-1">{getMonthAbbr(meeting.start_time)}</span>
+                </div>
+              </div>
+              
+              <div className="mt-2">
+                <CardDescription className="flex items-center space-x-1">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    {formatTimeOnly(meeting.start_time)} - {formatTimeOnly(meeting.end_time)}
+                  </span>
+                </CardDescription>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-4 pt-2 flex-grow">
+              {meeting.attendee_name && (
+                <div className="flex items-center gap-2 mb-3">
+                  <Avatar className="h-6 w-6">
+                    <AvatarFallback className={`text-xs ${getAvatarColor(meeting.attendee_name)}`}>
+                      {getInitials(meeting.attendee_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium line-clamp-1">{meeting.attendee_name}</span>
+                </div>
+              )}
+              
+              {/* Phone number - Prominently displayed when available */}
+              {hasValidPhone && (
+                <div className="flex items-center gap-2 mb-3 p-2 bg-amber-50 border border-amber-200 rounded-md">
+                  <Phone className="h-4 w-4 text-amber-700" />
+                  <div className="flex flex-col">
+                    <span className="text-xs text-amber-800 font-semibold">Call this number:</span>
+                    <a 
+                      href={`tel:${meeting.phone_number}`} 
+                      className="text-sm text-blue-600 hover:underline font-medium"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {meeting.phone_number}
+                    </a>
+                  </div>
+                </div>
+              )}
+              
+              {meeting.description && (
+                <p className="text-xs text-gray-600 line-clamp-2 mb-2">{meeting.description}</p>
+              )}
+              
+              {meeting.additional_notes && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center text-xs text-blue-600 mt-1.5">
+                        <Info className="h-3 w-3 mr-1" />
+                        <span>Additional notes available</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">{meeting.additional_notes}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              
+              {meeting.cancellation_reason && (
+                <div className="flex items-center text-xs text-rose-600 mt-1.5">
+                  <X className="h-3 w-3 mr-1" />
+                  <span className="line-clamp-1">Cancelled: {meeting.cancellation_reason}</span>
+                </div>
+              )}
+            </CardContent>
+            
+            <CardFooter className="p-4 pt-0 mt-auto flex items-center justify-between border-t flex-shrink-0">
+              <div className="text-xs text-gray-500">{getRelativeTime(meeting.start_time)}</div>
+              
+              {shouldShowMeetLink && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="ml-auto text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 p-0 h-auto px-2 py-1"
+                  onClick={(e) => {
+                    e.stopPropagation(); 
+                    window.open(meeting.meeting_link, '_blank');
+                  }}
+                >
+                  <Video className="h-3.5 w-3.5 mr-1" />
+                  <span className="text-xs">Join</span>
+                </Button>
+              )}
+            </CardFooter>
+          </div>
+          
+          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <ChevronRight className="h-4 w-4 text-primary" />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">View details</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </Card>
+      </motion.div>
+      
+      <Dialog open={showDetails} onOpenChange={setShowDetails}>
+        <MeetingDetails meeting={meeting} onClose={() => setShowDetails(false)} />
+      </Dialog>
+    </>
+  );
+};
+
+const EmptyState = ({ type }: { type: 'upcoming' | 'past' }) => (
+  <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg">
+    <div className="bg-gray-50 p-3 rounded-full">
+      {type === 'upcoming' ? (
+        <Calendar className="h-8 w-8 text-gray-400" />
+      ) : (
+        <Clock className="h-8 w-8 text-gray-400" />
+      )}
+    </div>
+    <h3 className="mt-4 text-lg font-medium text-gray-900">
+      {type === 'upcoming' ? 'No upcoming meetings' : 'No past meetings'}
+    </h3>
+    <p className="mt-1 text-sm text-gray-500 text-center max-w-sm">
+      {type === 'upcoming' 
+        ? 'You don\'t have any meetings scheduled. Click "Schedule Meeting" to add one.'
+        : 'You haven\'t had any meetings yet. They will appear here once they\'ve passed.'}
+    </p>
+  </div>
+);
+
 const Meetings = () => {
-  const today = new Date();
-  const upcomingMeetings = dummyMeetings.filter(
-    (meeting) => new Date(meeting.startDate) >= today
-  ).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  const [showCalendar, setShowCalendar] = useState(false);
   
-  const pastMeetings = dummyMeetings.filter(
-    (meeting) => new Date(meeting.startDate) < today
-  ).sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  // Cal.com meetings from database
+  const {
+    data: upcomingMeetings = [],
+    isLoading: upcomingLoading,
+    error: upcomingError
+  } = useQuery({
+    queryKey: ['calUpcomingMeetings'],
+    queryFn: () => calMeetingService.getUpcomingMeetings(),
+    enabled: true
+  });
   
+  const {
+    data: pastMeetings = [],
+    isLoading: pastLoading,
+    error: pastError
+  } = useQuery({
+    queryKey: ['calPastMeetings'],
+    queryFn: () => calMeetingService.getPastMeetings(),
+    enabled: true
+  });
+
+  const isLoading = upcomingLoading || pastLoading;
+  const hasError = upcomingError || pastError;
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -149,43 +705,86 @@ const Meetings = () => {
             <h1 className="text-3xl font-bold text-gray-900">Meetings</h1>
             <p className="text-gray-500">Schedule and manage your client meetings.</p>
           </div>
-          <Button variant="default" className="bg-secondary hover:bg-secondary/90">
+          <Button 
+            variant="default" 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => setShowCalendar(true)}
+          >
             + Schedule Meeting
           </Button>
         </div>
-        
-        <Tabs defaultValue="upcoming" className="w-full">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="upcoming">Upcoming ({upcomingMeetings.length})</TabsTrigger>
-            <TabsTrigger value="past">Past Meetings ({pastMeetings.length})</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="upcoming">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {upcomingMeetings.map((meeting) => (
-                <MeetingCard key={meeting.id} meeting={meeting} />
-              ))}
-              {upcomingMeetings.length === 0 && (
-                <div className="col-span-2 text-center py-10 text-gray-500">
-                  No upcoming meetings scheduled.
+
+        {/* Calendar dialog that overlays the screen */}
+        <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
+          <DialogContent className="max-w-5xl w-[90vw] h-[85vh] p-0 overflow-hidden">
+            <div className="absolute top-4 right-4 z-50">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setShowCalendar(false)}
+                className="rounded-full h-8 w-8 bg-white/90 hover:bg-white"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="w-full h-full">
+              <CalendarIframe onClose={() => setShowCalendar(false)} />
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <p className="mt-4 text-sm text-gray-500">Loading your meetings...</p>
+          </div>
+        ) : hasError ? (
+          <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-red-200 rounded-lg bg-red-50">
+            <AlertCircle className="h-10 w-10 text-red-500" />
+            <h3 className="mt-4 text-lg font-medium text-red-700">Error Loading Meetings</h3>
+            <p className="mt-1 text-sm text-red-600 text-center max-w-md">
+              We couldn't load your meetings. Please try again later or contact support if the problem persists.
+            </p>
+            <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          </div>
+        ) : (
+          <Tabs defaultValue="upcoming" className="w-full">
+            <TabsList className="grid grid-cols-2 mb-6 w-full max-w-md mx-auto">
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                Upcoming ({upcomingMeetings.length})
+              </TabsTrigger>
+              <TabsTrigger value="past" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+                Past Meetings ({pastMeetings.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upcoming">
+              {upcomingMeetings.length === 0 ? (
+                <EmptyState type="upcoming" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {upcomingMeetings.map((meeting) => (
+                    <MeetingCard key={meeting.id} meeting={meeting} />
+                  ))}
                 </div>
               )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="past">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {pastMeetings.map((meeting) => (
-                <MeetingCard key={meeting.id} meeting={meeting} />
-              ))}
-              {pastMeetings.length === 0 && (
-                <div className="col-span-2 text-center py-10 text-gray-500">
-                  No past meetings found.
+            </TabsContent>
+            
+            <TabsContent value="past">
+              {pastMeetings.length === 0 ? (
+                <EmptyState type="past" />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pastMeetings.map((meeting) => (
+                    <MeetingCard key={meeting.id} meeting={meeting} />
+                  ))}
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </AppLayout>
   );

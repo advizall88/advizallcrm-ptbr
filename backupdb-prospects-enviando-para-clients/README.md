@@ -1,78 +1,85 @@
-# Advizall CRM Database Backup Tools
+# Advizall CRM Database Backup
 
-This directory contains tools for creating complete backups of the Advizall CRM database, including all data stored in localStorage and application state.
+This directory contains tools and files for backing up the Advizall CRM database structure and data.
 
-## Available Backup Methods
+## Contents
 
-### 1. Browser-Based Backup (Recommended)
+- `types.ts`: TypeScript type definitions for all database tables and relationships
+- `supabase-schema-backup.sql`: Complete SQL schema including tables, relationships, policies, and functions
+- `backup.sh`: Bash script for creating a complete backup of the database
+- `backup-database-browser.js`: JavaScript for browser-based backup of application data
 
-The browser-based method is the most reliable way to back up the application's current state since the application is primarily running in the browser with mock data stored in localStorage.
+## Latest Changes (May 2024)
 
-**To use the browser backup:**
+The database structure has been updated to include a new `cal_meetings` table that stores meetings from Cal.com:
 
-1. Start the Advizall CRM application (`npm run dev`)
-2. Navigate to any page in the application
-3. Open the browser developer console (F12 or right-click > Inspect > Console)
-4. Copy the entire contents of the `backup-database-browser.js` file
-5. Paste it into the console and press Enter
-6. A file named `advizall-db-backup-[timestamp].json` will automatically download
+```typescript
+cal_meetings: {
+  id: string
+  ical_uid: string
+  title: string
+  description: string | null
+  start_time: string
+  end_time: string
+  status: string
+  attendee_name: string | null
+  attendee_email: string | null
+  meeting_url: string | null
+  trigger_event: string
+  note: string | null
+  phone: string | null
+  reschedule_reason: string | null
+  cancellation_reason: string | null
+  created_at: string
+  updated_at: string
+}
+```
 
-This backup includes:
-- All localStorage data
-- Structured data for clients, prospects, projects, etc.
-- Metadata about the application state
+## Backup Methods
 
-### 2. Node.js Script (For Development)
+### Browser-Based Backup (Recommended)
 
-The Node.js script is primarily for development and may require modifications to work correctly with the specific implementation.
+1. Start the application
+2. Open the browser's developer console (F12)
+3. Paste and run the code from `backup-database-browser.js`
+4. A JSON file containing the localStorage data and application state will be downloaded
 
-**To use the Node.js backup:**
+### Node.js Script Backup (Development)
 
-1. Make sure you have Node.js installed
-2. Navigate to the project root directory
-3. Run the script with Node:
-   ```
-   node backup/backup-database.js
-   ```
-4. A backup file will be created in the `backup` directory
+Run the backup script:
 
-## Backup Contents
+```bash
+./backup.sh
+```
 
-The backup files contain:
-
-- **timestamp**: When the backup was created
-- **version**: Backup format version
-- **localStorage**: Raw contents of all localStorage items
-- **mockData**: Structured data extracted from localStorage:
-  - `clients`: Client records
-  - `prospects`: Prospect records
-  - `convertedProspects`: IDs of prospects converted to clients
-  - `projects`: Project records
-  - `payments`: Payment records
-  - `credentials`: Credential records
-  - `users`: User information
+This will create a complete backup of:
+- Database schema (SQL)
+- Type definitions (TypeScript)
+- LocalStorage data (if available)
 
 ## Restoring from Backup
 
 To restore from a backup:
 
-1. Open the browser console in the Advizall application
-2. Run the following JavaScript (replace with your backup data):
-   ```javascript
-   // Load the backup file (you'll need to copy-paste the JSON content)
-   const backup = {/* Your backup JSON data */};
-   
-   // Restore all localStorage items
-   Object.entries(backup.localStorage).forEach(([key, value]) => {
-     localStorage.setItem(key, value);
-   });
-   
-   // Reload the application
-   window.location.reload();
+1. For schema restoration: 
+   ```bash
+   psql -U postgres -d your_database_name -f supabase-schema-backup.sql
    ```
+
+2. For browser data restoration:
+   - Open the application
+   - Open browser console
+   - Load the backup JSON file and restore to localStorage
 
 ## Important Notes
 
 - Always create a backup before making significant changes to the application
-- The backup files contain sensitive information and should be stored securely
-- In a production environment, backups would typically be handled by the database system (Supabase) 
+- Backup files contain sensitive information - store them securely
+- In production, backups are typically managed by the database system (Supabase)
+
+## Contribution Guidelines
+
+When updating the database schema:
+1. Create proper migrations in the Supabase project
+2. Update the type definitions in `src/lib/database.types.ts`
+3. Run the backup script to update this backup directory 

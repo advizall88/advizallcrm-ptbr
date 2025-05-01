@@ -1,3 +1,6 @@
+// Database Type Definitions Backup
+// Generated from src/lib/database.types.ts
+
 export type Json =
   | string
   | number
@@ -524,6 +527,7 @@ export interface Database {
   }
 }
 
+// Convenience type helpers
 export type Tables<
   T extends keyof Database['public']['Tables']
 > = Database['public']['Tables'][T]['Row']
@@ -534,4 +538,14 @@ export type InsertTables<
 
 export type UpdateTables<
   T extends keyof Database['public']['Tables']
-> = Database['public']['Tables'][T]['Update'] 
+> = Database['public']['Tables'][T]['Update']
+
+export type User = Database['public']['Tables']['users']['Row'];
+export type Prospect = Database['public']['Tables']['prospects']['Row'];
+export type Client = Database['public']['Tables']['clients']['Row'];
+export type Credential = Database['public']['Tables']['credentials']['Row'];
+export type Project = Database['public']['Tables']['projects']['Row'];
+export type Task = Database['public']['Tables']['tasks']['Row'];
+export type Payment = Database['public']['Tables']['payments']['Row'];
+export type Meeting = Database['public']['Tables']['meetings']['Row'];
+export type CalMeeting = Database['public']['Tables']['cal_meetings']['Row']; 

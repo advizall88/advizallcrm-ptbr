@@ -8,16 +8,29 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Calendar } from "lucide-react";
+import { Search, Plus, Calendar, CreditCard, MapPin, Phone, Mail, Building2, Star, FileText } from "lucide-react";
 import { Client, Project, Payment, Credential } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
 import ClientDetailsDialog from "@/components/clients/ClientDetailsDialog";
 import { clientService, ClientFormData, ProjectFormData, PaymentFormData, CredentialFormData } from "@/services/clientService";
 import { useAuth } from "@/contexts/AuthContext";
-import MeetingScheduleDialog from "@/components/meetings/MeetingScheduleDialog";
+import { Badge } from "@/components/ui/badge";
+import { format } from 'date-fns';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogDescription
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { v4 as uuidv4 } from 'uuid';
 
 const ClientCard = ({ 
   client, 
@@ -29,44 +42,47 @@ const ClientCard = ({
   onScheduleMeeting: (client: Client) => void;
 }) => {
   return (
-    <Card className="mb-4 shadow-neumorph-sm">
-      <CardHeader className="pb-2">
+    <Card className="overflow-hidden">
+      <CardHeader className="bg-slate-50 pb-4">
         <div className="flex justify-between">
-          <CardTitle className="text-lg font-bold">{client.company_name || client.contact_name}</CardTitle>
-          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-            {client.plan_name || "No plan"}
-          </span>
+          <div>
+            <CardTitle className="flex items-center">
+              {client.contact_name}
+            </CardTitle>
+            <CardDescription>
+              {client.company_name || 'Individual Client'}
+            </CardDescription>
+          </div>
+          <div>
+            <Badge className="bg-primary">
+              {client.business_type}
+            </Badge>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-sm text-gray-500">Business Type</p>
-            <p className="font-medium">{client.business_type}</p>
+      <CardContent className="pt-4">
+        <div className="space-y-3 mb-4">
+          <div className="flex items-center text-sm">
+            <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+            {client.email}
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Location</p>
-            <p className="font-medium">{client.region_city}, {client.region_state}</p>
+          <div className="flex items-center text-sm">
+            <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+            {client.phone}
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Monthly Fee</p>
-            <p className="font-medium">
-              {client.retainer_value 
-                ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(client.retainer_value)
-                : "-"}
-            </p>
+          <div className="flex items-center text-sm">
+            <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+            {client.region_city}, {client.region_state}
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Ad Budget</p>
-            <p className="font-medium">
-              {client.ad_budget 
-                ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(client.ad_budget)
-                : "-"}
-            </p>
-          </div>
+          {client.plan_name && (
+            <div className="flex items-center text-sm">
+              <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
+              Plan: {client.plan_name}
+            </div>
+          )}
         </div>
-        <div className="flex space-x-2 mt-4">
-          <Button
+        <div className="flex gap-2 mt-4">
+          <Button 
             variant="default"
             size="sm"
             className="flex-1"
@@ -98,7 +114,24 @@ const Clients = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
-  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
+  const [addClientDialogOpen, setAddClientDialogOpen] = useState(false);
+  const [newClient, setNewClient] = useState<ClientFormData>({
+    contact_name: '',
+    company_name: '',
+    phone: '',
+    email: '',
+    full_address: '',
+    website: '',
+    business_type: '',
+    region_city: '',
+    region_state: '',
+    status: 'active',
+    lead_source: '',
+    plan_name: '',
+    monthly_fee: 0,
+    ad_budget: 0,
+    notes: '',
+  });
   
   // Check if user has admin or moderator privileges
   const isAdmin = isUserRole('admin');
@@ -368,6 +401,77 @@ const Clients = () => {
     },
   });
   
+  // Mutation to create a new client
+  const createClientMutation = useMutation({
+    mutationFn: (data: ClientFormData) => {
+      const newClientData = {
+        ...data,
+        id: uuidv4(),
+        owner_id: user?.id || 'unknown',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      return clientService.addMockClient(newClientData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Client created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['clients'] });
+      setAddClientDialogOpen(false);
+      resetNewClientForm();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to create client",
+        variant: "destructive",
+      });
+      console.error(error);
+    },
+  });
+
+  // Reset new client form
+  const resetNewClientForm = () => {
+    setNewClient({
+      contact_name: '',
+      company_name: '',
+      phone: '',
+      email: '',
+      full_address: '',
+      website: '',
+      business_type: '',
+      region_city: '',
+      region_state: '',
+      status: 'active',
+      lead_source: '',
+      plan_name: '',
+      monthly_fee: 0,
+      ad_budget: 0,
+      notes: '',
+    });
+  };
+
+  // Handle creating a new client
+  const handleCreateClient = async () => {
+    try {
+      // Validate required fields
+      if (!newClient.contact_name || !newClient.phone) {
+        toast({
+          title: "Validation Error",
+          description: "Contact name and phone are required",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      await createClientMutation.mutateAsync(newClient);
+    } catch (error) {
+      console.error("Error creating client:", error);
+    }
+  };
+
   // Function to handle client updates
   const handleUpdateClient = async (data: ClientFormData) => {
     if (!selectedClient) return;
@@ -434,8 +538,11 @@ const Clients = () => {
   
   // Function to handle meeting scheduling
   const handleScheduleMeeting = (client: Client) => {
-    setSelectedClient(client);
-    setMeetingDialogOpen(true);
+    const url = `https://cal.com/andre-uu15wu/reuniao-restrita` +
+      `?name=${encodeURIComponent(client.contact_name)}` +
+      `&email=${encodeURIComponent(client.email)}` +
+      `&clientid=${client.id}`;
+    window.open(url, '_blank');
   };
   
   // Filter clients based on search term
@@ -505,6 +612,11 @@ const Clients = () => {
     }
   };
   
+  // Handler for opening add client dialog
+  const handleOpenAddClientDialog = () => {
+    setAddClientDialogOpen(true);
+  };
+  
   return (
     <AppLayout>
       <div className="container py-6">
@@ -520,7 +632,7 @@ const Clients = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               </div>
-            <Button>
+            <Button onClick={handleOpenAddClientDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Add Client
               </Button>
@@ -558,7 +670,7 @@ const Clients = () => {
           <TabsContent value="active" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredClients
-                .filter(client => client.plan_name && client.retainer_value)
+                .filter(client => client.plan_name && client.status === 'active')
                 .map(client => (
                   <ClientCard 
                     key={client.id} 
@@ -573,13 +685,13 @@ const Clients = () => {
           <TabsContent value="inactive" className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredClients
-                .filter(client => !client.plan_name || !client.retainer_value)
+                .filter(client => client.status === 'inactive' || client.status === 'delinquent')
                 .map(client => (
                 <ClientCard 
                   key={client.id} 
                   client={client} 
-                    onViewDetails={handleViewClientDetails}
-                    onScheduleMeeting={handleScheduleMeeting}
+                  onViewDetails={handleViewClientDetails}
+                  onScheduleMeeting={handleScheduleMeeting}
                 />
               ))}
             </div>
@@ -591,11 +703,10 @@ const Clients = () => {
           open={detailsDialogOpen}
           onOpenChange={handleDetailsDialogOpenChange}
           client={selectedClient}
+          setClient={setSelectedClient}
           projects={projects}
           payments={payments}
           credentials={credentials}
-          isAdmin={isAdmin}
-          isModerator={isModerator}
           onUpdateClient={handleUpdateClient}
           onAddProject={handleAddProject}
           onAddPayment={handleAddPayment}
@@ -607,15 +718,256 @@ const Clients = () => {
           onUpdateCredential={handleUpdateCredential}
           onDeleteCredential={handleDeleteCredential}
         />
-        
-        {/* Meeting Schedule Dialog */}
-        {selectedClient && (
-          <MeetingScheduleDialog
-            open={meetingDialogOpen}
-            onOpenChange={setMeetingDialogOpen}
-            client={selectedClient}
-          />
-        )}
+
+        {/* Add Client Dialog */}
+        <Dialog open={addClientDialogOpen} onOpenChange={setAddClientDialogOpen}>
+          <DialogContent className="sm:max-w-[650px] max-h-[90vh] overflow-hidden flex flex-col p-0">
+            <DialogHeader className="px-6 pt-6 pb-2 sticky top-0 bg-background z-20 border-b">
+              <DialogTitle className="text-xl font-semibold">Add New Client</DialogTitle>
+              <DialogDescription>
+                Create a new client by filling out the details below. Required fields are marked with an asterisk (*).
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="overflow-y-auto px-6 py-4 flex-1">
+              <div className="space-y-6">
+                {/* Client Information Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Building2 className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Client Information</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <Label htmlFor="contact_name" className="after:content-['*'] after:ml-0.5 after:text-red-500">Contact Name</Label>
+                    <Input
+                      id="contact_name"
+                      value={newClient.contact_name}
+                      onChange={(e) => setNewClient({ ...newClient, contact_name: e.target.value })}
+                      placeholder="Full Name"
+                      className="focus-visible:ring-primary"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="company_name">Company</Label>
+                      <Input
+                        id="company_name"
+                        value={newClient.company_name || ''}
+                        onChange={(e) => setNewClient({ ...newClient, company_name: e.target.value })}
+                        placeholder="Company Name"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="business_type">Business Type</Label>
+                      <Input
+                        id="business_type"
+                        value={newClient.business_type || ''}
+                        onChange={(e) => setNewClient({ ...newClient, business_type: e.target.value })}
+                        placeholder="e.g. Restaurant, Retail"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Contact Information Section */}
+                <div className="pt-2 border-t">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Phone className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Contact Information</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="after:content-['*'] after:ml-0.5 after:text-red-500">Phone</Label>
+                      <Input
+                        id="phone"
+                        value={newClient.phone}
+                        onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
+                        placeholder="Phone Number"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={newClient.email || ''}
+                        onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
+                        placeholder="Email Address"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      value={newClient.website || ''}
+                      onChange={(e) => setNewClient({ ...newClient, website: e.target.value })}
+                      placeholder="https://example.com"
+                      className="focus-visible:ring-primary"
+                    />
+                  </div>
+                </div>
+                
+                {/* Location Section */}
+                <div className="pt-2 border-t">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Location</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="region_city">City</Label>
+                      <Input
+                        id="region_city"
+                        value={newClient.region_city || ''}
+                        onChange={(e) => setNewClient({ ...newClient, region_city: e.target.value })}
+                        placeholder="City"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="region_state">State</Label>
+                      <Input
+                        id="region_state"
+                        value={newClient.region_state || ''}
+                        onChange={(e) => setNewClient({ ...newClient, region_state: e.target.value })}
+                        placeholder="State"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 space-y-2">
+                    <Label htmlFor="full_address">Full Address</Label>
+                    <Input
+                      id="full_address"
+                      value={newClient.full_address || ''}
+                      onChange={(e) => setNewClient({ ...newClient, full_address: e.target.value })}
+                      placeholder="Street Address"
+                      className="focus-visible:ring-primary"
+                    />
+                  </div>
+                </div>
+                
+                {/* Billing Information Section */}
+                <div className="pt-2 border-t">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Billing Information</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="plan_name">Plan</Label>
+                      <Input
+                        id="plan_name"
+                        value={newClient.plan_name || ''}
+                        onChange={(e) => setNewClient({ ...newClient, plan_name: e.target.value })}
+                        placeholder="Service Plan"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="status">Status</Label>
+                      <select
+                        id="status"
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={newClient.status || 'active'}
+                        onChange={(e) => setNewClient({ ...newClient, status: e.target.value as 'active' | 'inactive' | 'delinquent' })}
+                      >
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="delinquent">Delinquent</option>
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="monthly_fee">Monthly Fee ($)</Label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                        <Input
+                          id="monthly_fee"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={newClient.monthly_fee || 0}
+                          onChange={(e) => setNewClient({ ...newClient, monthly_fee: Number(e.target.value) })}
+                          className="pl-7 focus-visible:ring-primary"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="ad_budget">Ad Budget ($)</Label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                        <Input
+                          id="ad_budget"
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={newClient.ad_budget || 0}
+                          onChange={(e) => setNewClient({ ...newClient, ad_budget: Number(e.target.value) })}
+                          className="pl-7 focus-visible:ring-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Notes Section */}
+                <div className="pt-2 border-t">
+                  <div className="flex items-center gap-2 mb-4">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-medium">Additional Information</h3>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      value={newClient.notes || ''}
+                      onChange={(e) => setNewClient({ ...newClient, notes: e.target.value })}
+                      placeholder="Client notes or additional information"
+                      rows={4}
+                      className="resize-none focus-visible:ring-primary"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter className="px-6 py-4 border-t">
+              <div className="flex gap-2 w-full justify-end">
+                <Button variant="outline" onClick={() => setAddClientDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  onClick={handleCreateClient} 
+                  disabled={createClientMutation.isPending}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  {createClientMutation.isPending ? (
+                    <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></span>Saving...</>
+                  ) : (
+                    <>Save Client</>
+                  )}
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );

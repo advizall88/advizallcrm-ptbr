@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,8 +8,40 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Topbar = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  
+  // Função para obter as iniciais do nome do usuário
+  const getUserInitials = () => {
+    if (!user || !user.name) return "?";
+    
+    // Divide o nome em partes e pega a primeira letra de cada parte
+    const parts = user.name.split(' ');
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    
+    // Se houver mais partes, pega a primeira letra da primeira e da última parte
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+  };
+  
+  // Função para lidar com o clique no Profile
+  const handleProfileClick = () => {
+    navigate('/settings');
+  };
+  
+  // Função para lidar com o clique no Log out
+  const handleLogoutClick = async () => {
+    try {
+      await signOut();
+      // O redirecionamento para a página de login é feito no contexto de autenticação
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
+  
   return (
     <header className="bg-white border-b border-gray-200 h-16">
       <div className="flex items-center justify-between h-full px-6">
@@ -19,10 +50,7 @@ const Topbar = () => {
             <span className="text-secondary">Advizall</span> CRM
           </h1>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button size="sm" variant="outline">
-            Quick Add +
-          </Button>
+        <div className="flex items-center">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -31,17 +59,16 @@ const Topbar = () => {
                 size="icon"
               >
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-secondary text-white">
-                  JD
+                  {getUserInitials()}
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuLabel>{user?.name || 'My Account'}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfileClick}>Profile</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogoutClick}>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

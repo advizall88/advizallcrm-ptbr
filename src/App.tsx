@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Prospects from "./pages/Prospects";
 import Clients from "./pages/Clients";
 import Meetings from "./pages/Meetings";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/prospects" element={<Prospects />} />
               <Route path="/meetings" element={<Meetings />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
             
             {/* Protected routes for moderators and admins */}

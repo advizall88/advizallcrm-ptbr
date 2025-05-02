@@ -109,283 +109,118 @@ export type Task = {
 
 export type TaskFormData = Omit<Task, 'id' | 'created_at' | 'updated_at'>;
 
-// Default mock projects data
-const mockProjects: Project[] = [
-  {
-    id: "p1",
-    client_id: "1",
-    service: "website",
-    status: "doing",
-    description: "Corporate website redesign",
-    deadline: "2025-06-15T00:00:00Z",
-    created_at: "2025-04-10T00:00:00Z",
-    updated_at: "2025-04-10T00:00:00Z"
-  },
-  {
-    id: "p2",
-    client_id: "1",
-    service: "paid_ads",
-    status: "todo",
-    description: "Google Ads Campaign",
-    deadline: "2025-06-20T00:00:00Z",
-    created_at: "2025-04-10T00:00:00Z",
-    updated_at: "2025-04-10T00:00:00Z"
-  },
-  {
-    id: "p3",
-    client_id: "2",
-    service: "branding",
-    status: "done",
-    description: "Logo redesign",
-    deadline: "2025-05-01T00:00:00Z",
-    created_at: "2025-03-01T00:00:00Z",
-    updated_at: "2025-04-25T00:00:00Z"
-  }
-];
-
-// Default mock payments data
-const mockPayments: Payment[] = [
-  {
-    id: "pay1",
-    client_id: "1",
-    amount: 2500,
-    currency: "USD",
-    description: "Monthly Fee - May 2025",
-    invoice_date: "2025-05-01T00:00:00Z",
-    paid: true,
-    paid_at: "2025-05-02T00:00:00Z",
-    created_at: "2025-04-25T00:00:00Z",
-    updated_at: "2025-05-02T00:00:00Z"
-  },
-  {
-    id: "pay2",
-    client_id: "1",
-    amount: 10000,
-    currency: "USD",
-    description: "Ad Budget - May 2025",
-    invoice_date: "2025-05-01T00:00:00Z",
-    paid: false,
-    paid_at: null,
-    created_at: "2025-04-25T00:00:00Z",
-    updated_at: "2025-04-25T00:00:00Z"
-  },
-  {
-    id: "pay3",
-    client_id: "2",
-    amount: 1500,
-    currency: "USD",
-    description: "Monthly Fee - May 2025",
-    invoice_date: "2025-05-01T00:00:00Z",
-    paid: true,
-    paid_at: "2025-05-03T00:00:00Z",
-    created_at: "2025-04-25T00:00:00Z",
-    updated_at: "2025-05-03T00:00:00Z"
-  }
-];
-
-// Default mock credentials
-const mockCredentials: Credential[] = [
-  {
-    id: uuidv4(),
-    client_id: "1",
-    system: "hosting",
-    login: "abc_admin",
-    password: "secure123pass",
-    notes: "AWS hosting credentials",
-    visible_to: "moderator",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: uuidv4(),
-    client_id: "1",
-    system: "domain",
-    login: "domains_admin",
-    password: "domain987pass",
-    notes: "Domain registrar credentials",
-    visible_to: "moderator",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  },
-  {
-    id: uuidv4(),
-    client_id: "2",
-    system: "facebook",
-    login: "xyz_social",
-    password: "fb_password123",
-    notes: "Facebook Business account",
-    visible_to: "moderator",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-];
-
 export const clientService = {
   // Client CRUD
   async getClients(): Promise<Client[]> {
     try {
-      // In a real app, this would call Supabase
-      // const { data, error } = await supabase
-      //   .from('clients')
-      //   .select('*')
-      //   .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false });
       
-      // if (error) throw error;
-      // return data;
-      
-      // For now, return mock data
-      const mockClients: Client[] = [
-        {
-          id: "1",
-          owner_id: "usr_1",
-          contact_name: "John Smith",
-          company_name: "ABC Corporation",
-          phone: "+1 (123) 456-7890",
-          email: "john@abc.com",
-          lead_source: "Referral",
-          business_type: "Technology",
-          region_city: "Chicago",
-          region_state: "IL",
-          timezone: "America/Chicago",
-          score: 4,
-          status: "active" as any, // Cast to any to avoid type conflict
-          first_contact_at: "2025-01-15T10:30:00Z",
-          call_summary: "Client interested in full digital marketing services. Initial meeting was productive.",
-          notes: "Technology company looking to expand, with needs to improve online presence and generate qualified leads.",
-          created_at: "2025-01-15T10:30:00Z",
-          updated_at: "2025-04-20T14:25:00Z",
-          full_address: "123 Business St, Chicago, IL, 60601",
-          website: "www.abccorp.com",
-          social_links: { facebook: "facebook.com/abccorp", linkedin: "linkedin.com/company/abccorp" },
-          plan_name: "Premium",
-          retainer_value: 2500,
-          ad_budget: 10000
-        },
-        {
-          id: "2",
-          owner_id: "usr_2",
-          contact_name: "Mary Johnson",
-          company_name: "XYZ Inc",
-          phone: "+1 (987) 654-3210",
-          email: "mary@xyz.com",
-          lead_source: "Google Ads",
-          business_type: "Marketing",
-          region_city: "New York",
-          region_state: "NY",
-          timezone: "America/New_York",
-          score: 3,
-          status: "active" as any, // Cast to any to avoid type conflict
-          first_contact_at: "2025-02-20T14:00:00Z",
-          call_summary: "Client interested in brand redesign and content strategy.",
-          notes: "Established company seeking new visual identity and improved social media engagement.",
-          created_at: "2025-02-20T14:00:00Z",
-          updated_at: "2025-04-15T11:30:00Z",
-          full_address: "456 Market Ave, New York, NY, 10001",
-          website: "www.xyzinc.com",
-          social_links: { instagram: "instagram.com/xyzinc", twitter: "twitter.com/xyzinc" },
-          plan_name: "Standard",
-          retainer_value: 1500,
-          ad_budget: 5000
-        }
-      ];
-      
-      // Always check localStorage for stored clients (converted prospects)
-      let allClients = [...mockClients];
-      
-      try {
-        const storedClients = localStorage.getItem('mockClients');
-        if (storedClients) {
-          const parsedClients = JSON.parse(storedClients);
-          if (Array.isArray(parsedClients) && parsedClients.length > 0) {
-            console.log(`Found ${parsedClients.length} converted clients in localStorage`);
-            allClients = [...allClients, ...parsedClients];
-          }
-        }
-      } catch (e) {
-        console.error('Error retrieving clients from localStorage:', e);
-      }
-      
-      return allClients;
+      if (error) throw error;
+      return data as Client[];
     } catch (error) {
       console.error('Error fetching clients:', error);
       throw error;
     }
   },
 
-  // Add a new client to mock data (used for prospect conversion)
+  // Este método é usado como fallback temporário para clientes convertidos
   async addMockClient(client: any): Promise<Client> {
     try {
-      console.log(`Adding/updating client: ${client.id} - ${client.contact_name}`);
+      const now = new Date().toISOString();
       
-      // Get existing clients from localStorage
-      const storedClients = localStorage.getItem('mockClients') || '[]';
-      let clients = [];
+      // Preparar dados do cliente
+      const clientData = {
+        ...client,
+        id: client.id || uuidv4(),
+        created_at: client.created_at || now,
+        updated_at: client.updated_at || now
+      };
       
-      try {
-        clients = JSON.parse(storedClients);
-      } catch (e) {
-        console.error('Error parsing stored clients:', e);
-        clients = [];
+      // Inserir na tabela de clientes
+      const { data, error } = await supabase
+        .from('clients')
+        .insert(clientData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating client:', error);
+        throw error;
       }
       
-      // Check if client already exists (by ID)
-      const existingIndex = clients.findIndex(c => c.id === client.id);
-      
-      if (existingIndex >= 0) {
-        // Update existing client
-        console.log(`Updating existing client ${client.id}`);
-        clients[existingIndex] = {
-          ...clients[existingIndex],
-          ...client,
-          updated_at: new Date().toISOString()
-        };
-      } else {
-        // Add new client
-        console.log(`Adding new client ${client.id}`);
-        clients.push(client);
-      }
-      
-      // Save to localStorage
-      localStorage.setItem('mockClients', JSON.stringify(clients));
-      console.log(`Successfully saved client ${client.id} to localStorage`);
-      
-      return client;
+      return data as Client;
     } catch (error) {
-      console.error('Error adding mock client:', error);
-      throw error;
+      console.error('Error adding client:', error);
+      
+      // Fallback para localStorage se o Supabase falhar
+      try {
+        // Para manter compatibilidade, mantemos o localStorage como fallback
+        const storageKey = 'clients';
+        const existingClientsJSON = localStorage.getItem(storageKey);
+        let existingClients: Client[] = [];
+        
+        if (existingClientsJSON) {
+          try {
+            existingClients = JSON.parse(existingClientsJSON);
+          } catch (e) {
+            console.error('Error parsing clients from localStorage:', e);
+            existingClients = [];
+          }
+        }
+        
+        const newClient = {
+          ...client,
+          id: client.id || uuidv4(),
+          created_at: client.created_at || new Date().toISOString(),
+          updated_at: client.updated_at || new Date().toISOString()
+        };
+        
+        existingClients.push(newClient);
+        localStorage.setItem(storageKey, JSON.stringify(existingClients));
+        
+        return newClient as Client;
+      } catch (fallbackError) {
+        console.error('Fallback to localStorage also failed:', fallbackError);
+        throw error;
+      }
     }
   },
 
   async getClientsByManager(managerId: string): Promise<Client[]> {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('owner_id', managerId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
+    try {
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('owner_id', managerId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Client[];
+    } catch (error) {
       console.error(`Error fetching clients for manager ${managerId}:`, error);
       throw error;
     }
-    
-    return data as unknown as Client[];
   },
 
   async getClient(id: string): Promise<Client | null> {
     try {
-      // In a real app, this would call Supabase
-      // const { data, error } = await supabase
-      //   .from('clients')
-      //   .select('*')
-      //   .eq('id', id)
-      //   .single();
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', id)
+        .single();
       
-      // if (error) throw error;
-      // return data;
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        throw error;
+      }
       
-      // For now, find the client in the mock data
-      const clients = await this.getClients();
-      return clients.find(client => client.id === id) || null;
+      return data as Client;
     } catch (error) {
       console.error(`Error fetching client ${id}:`, error);
       throw error;
@@ -394,30 +229,20 @@ export const clientService = {
 
   async updateClient(id: string, data: ClientFormData): Promise<Client> {
     try {
-      // In a real app, this would call Supabase
-      // const { data: updatedClient, error } = await supabase
-      //   .from('clients')
-      //   .update({ ...data, updated_at: new Date().toISOString() })
-      //   .eq('id', id)
-      //   .select()
-      //   .single();
-      
-      // if (error) throw error;
-      // return updatedClient;
-      
-      // For now, simulate an update
-      const client = await this.getClient(id);
-      if (!client) throw new Error(`Client with ID ${id} not found`);
-      
-      const updatedClient = {
-        ...client,
+      const updateData = {
         ...data,
         updated_at: new Date().toISOString()
       };
       
-      // In a real app, this would be handled by Supabase
-      // For simulation purposes, we'll return the updated client
-      return updatedClient;
+      const { data: updatedClient, error } = await supabase
+        .from('clients')
+        .update(updateData as any)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return updatedClient as Client;
     } catch (error) {
       console.error(`Error updating client ${id}:`, error);
       throw error;
@@ -427,24 +252,14 @@ export const clientService = {
   // Credentials CRUD
   async getCredentials(clientId: string): Promise<Credential[]> {
     try {
-      // Get credentials from localStorage
-      let allCredentials = [...mockCredentials];
+      const { data, error } = await supabase
+        .from('credentials')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false });
       
-      try {
-        const storedCredentials = localStorage.getItem('mockCredentials');
-        if (storedCredentials) {
-          const parsedCredentials = JSON.parse(storedCredentials);
-          if (Array.isArray(parsedCredentials) && parsedCredentials.length > 0) {
-            console.log(`Found ${parsedCredentials.length} credentials in localStorage`);
-            allCredentials = [...allCredentials, ...parsedCredentials];
-          }
-        }
-      } catch (e) {
-        console.error('Error retrieving credentials from localStorage:', e);
-      }
-      
-      // Filter credentials by client ID
-      return allCredentials.filter(cred => cred.client_id === clientId);
+      if (error) throw error;
+      return data as Credential[];
     } catch (error) {
       console.error(`Error fetching credentials for client ${clientId}:`, error);
       throw error;
@@ -453,41 +268,28 @@ export const clientService = {
 
   async createCredential(data: CredentialFormData): Promise<Credential> {
     try {
-    const now = new Date().toISOString();
-      const newCredential: Credential = {
+      const now = new Date().toISOString();
+      
+      const credentialData = {
         id: uuidv4(),
-        client_id: data.client_id || '',
-        system: data.system || 'other',
-        login: data.login || '',
-        password: data.password || '',
-        notes: data.notes || '',
+        client_id: data.client_id,
+        system: data.system,
+        login: data.login,
+        password: data.password,
+        notes: data.notes || null,
         visible_to: data.visible_to || 'moderator',
         created_at: now,
         updated_at: now
       };
       
-      // Store the credential in localStorage
-      const storedCredentials = localStorage.getItem('mockCredentials') || '[]';
-      let credentials = [];
+      const { data: newCredential, error } = await supabase
+        .from('credentials')
+        .insert(credentialData)
+        .select()
+        .single();
       
-      try {
-        credentials = JSON.parse(storedCredentials);
-        if (!Array.isArray(credentials)) {
-          credentials = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored credentials:', e);
-        credentials = [];
-      }
-      
-      // Add the new credential
-      credentials.push(newCredential);
-      
-      // Save to localStorage
-      localStorage.setItem('mockCredentials', JSON.stringify(credentials));
-      console.log(`Credential ${newCredential.id} saved to localStorage`);
-      
-      return newCredential;
+      if (error) throw error;
+      return newCredential as Credential;
     } catch (error) {
       console.error('Error creating credential:', error);
       throw error;
@@ -496,65 +298,20 @@ export const clientService = {
 
   async updateCredential(id: string, data: CredentialFormData): Promise<Credential> {
     try {
-      const now = new Date().toISOString();
+      const updateData = {
+        ...data,
+        updated_at: new Date().toISOString()
+      };
       
-      // Get existing credentials from localStorage
-      const storedCredentials = localStorage.getItem('mockCredentials') || '[]';
-      let credentials = [];
+      const { data: updatedCredential, error } = await supabase
+        .from('credentials')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
       
-      try {
-        credentials = JSON.parse(storedCredentials);
-        if (!Array.isArray(credentials)) {
-          credentials = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored credentials:', e);
-        credentials = [];
-      }
-      
-      // Find the credential to update
-      const credentialIndex = credentials.findIndex(c => c.id === id);
-      
-      // Create the updated credential
-      let updatedCredential: Credential;
-      
-      if (credentialIndex >= 0) {
-        updatedCredential = {
-          ...credentials[credentialIndex],
-          system: data.system,
-          login: data.login,
-          password: data.password,
-          notes: data.notes || '',
-          visible_to: data.visible_to || 'moderator',
-          updated_at: now
-        };
-        credentials[credentialIndex] = updatedCredential;
-      } else {
-        // Try to find in mock data
-        const mockCredIndex = mockCredentials.findIndex(c => c.id === id);
-        if (mockCredIndex >= 0) {
-          updatedCredential = {
-            id,
-            client_id: data.client_id || mockCredentials[mockCredIndex].client_id,
-            system: data.system,
-            login: data.login,
-            password: data.password,
-            notes: data.notes || '',
-            visible_to: data.visible_to || 'moderator',
-            created_at: mockCredentials[mockCredIndex].created_at,
-            updated_at: now
-          };
-          credentials.push(updatedCredential);
-        } else {
-          throw new Error(`Credential with ID ${id} not found`);
-        }
-      }
-      
-      // Save to localStorage
-      localStorage.setItem('mockCredentials', JSON.stringify(credentials));
-      console.log(`Credential ${id} updated in localStorage`);
-      
-      return updatedCredential;
+      if (error) throw error;
+      return updatedCredential as Credential;
     } catch (error) {
       console.error(`Error updating credential ${id}:`, error);
       throw error;
@@ -563,31 +320,12 @@ export const clientService = {
 
   async deleteCredential(id: string): Promise<void> {
     try {
-      // Get existing credentials from localStorage
-      const storedCredentials = localStorage.getItem('mockCredentials') || '[]';
-      let credentials = [];
+      const { error } = await supabase
+        .from('credentials')
+        .delete()
+        .eq('id', id);
       
-      try {
-        credentials = JSON.parse(storedCredentials);
-        if (!Array.isArray(credentials)) {
-          credentials = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored credentials:', e);
-        credentials = [];
-      }
-      
-      // Find the credential to delete
-      const credentialIndex = credentials.findIndex(c => c.id === id);
-      
-      // Remove if found
-      if (credentialIndex >= 0) {
-        credentials.splice(credentialIndex, 1);
-        localStorage.setItem('mockCredentials', JSON.stringify(credentials));
-        console.log(`Credential ${id} deleted from localStorage`);
-      } else {
-        console.log(`Credential ${id} not found in localStorage, nothing to delete`);
-      }
+      if (error) throw error;
     } catch (error) {
       console.error(`Error deleting credential ${id}:`, error);
       throw error;
@@ -597,58 +335,14 @@ export const clientService = {
   // Projects CRUD
   async getProjects(clientId: string): Promise<Project[]> {
     try {
-      // Define the hardcoded mock projects
-      const mockProjects: Project[] = [
-        {
-          id: "p1",
-          client_id: "1",
-          service: "website",
-          status: "doing",
-          description: "Corporate website redesign",
-          deadline: "2025-06-15T00:00:00Z",
-          created_at: "2025-04-10T00:00:00Z",
-          updated_at: "2025-04-10T00:00:00Z"
-        },
-        {
-          id: "p2",
-          client_id: "1",
-          service: "paid_ads",
-          status: "todo",
-          description: "Google Ads Campaign",
-          deadline: "2025-06-20T00:00:00Z",
-          created_at: "2025-04-10T00:00:00Z",
-          updated_at: "2025-04-10T00:00:00Z"
-        },
-        {
-          id: "p3",
-          client_id: "2",
-          service: "branding",
-          status: "done",
-          description: "Logo redesign",
-          deadline: "2025-05-01T00:00:00Z",
-          created_at: "2025-03-01T00:00:00Z",
-          updated_at: "2025-04-25T00:00:00Z"
-        }
-      ];
+      const { data, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('created_at', { ascending: false });
       
-      // Get projects from localStorage
-      let allProjects = [...mockProjects];
-      
-      try {
-        const storedProjects = localStorage.getItem('mockProjects');
-        if (storedProjects) {
-          const parsedProjects = JSON.parse(storedProjects);
-          if (Array.isArray(parsedProjects) && parsedProjects.length > 0) {
-            console.log(`Found ${parsedProjects.length} projects in localStorage`);
-            allProjects = [...allProjects, ...parsedProjects];
-          }
-        }
-      } catch (e) {
-        console.error('Error retrieving projects from localStorage:', e);
-      }
-      
-      // Filter projects by client ID
-      return allProjects.filter(project => project.client_id === clientId);
+      if (error) throw error;
+      return data as Project[];
     } catch (error) {
       console.error(`Error fetching projects for client ${clientId}:`, error);
       throw error;
@@ -657,40 +351,27 @@ export const clientService = {
 
   async createProject(data: ProjectFormData): Promise<Project> {
     try {
-    const now = new Date().toISOString();
-      const newProject: Project = {
+      const now = new Date().toISOString();
+      
+      const projectData = {
         id: uuidv4(),
-        client_id: data.client_id || '',
-        service: data.service || 'website',
-        status: data.status || 'todo',
-        description: data.description || '',
+        client_id: data.client_id,
+        service: data.service,
+        status: data.status,
+        description: data.description,
         deadline: data.deadline || null,
         created_at: now,
         updated_at: now
       };
       
-      // Store the project in localStorage
-      const storedProjects = localStorage.getItem('mockProjects') || '[]';
-      let projects = [];
+      const { data: newProject, error } = await supabase
+        .from('projects')
+        .insert(projectData)
+        .select()
+        .single();
       
-      try {
-        projects = JSON.parse(storedProjects);
-        if (!Array.isArray(projects)) {
-          projects = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
-        projects = [];
-      }
-      
-      // Add the new project
-      projects.push(newProject);
-      
-      // Save to localStorage
-      localStorage.setItem('mockProjects', JSON.stringify(projects));
-      console.log(`Project ${newProject.id} saved to localStorage`);
-      
-      return newProject;
+      if (error) throw error;
+      return newProject as Project;
     } catch (error) {
       console.error('Error creating project:', error);
       throw error;
@@ -699,55 +380,20 @@ export const clientService = {
 
   async updateProject(id: string, data: ProjectFormData): Promise<Project> {
     try {
-      const now = new Date().toISOString();
-      
-      // Get existing projects from localStorage
-      const storedProjects = localStorage.getItem('mockProjects') || '[]';
-      let projects = [];
-      
-      try {
-        projects = JSON.parse(storedProjects);
-        if (!Array.isArray(projects)) {
-          projects = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
-        projects = [];
-      }
-      
-      // Find the project to update
-      const projectIndex = projects.findIndex(p => p.id === id);
-      
-      // Create the updated project
-      const updatedProject: Project = {
-        id,
-        client_id: data.client_id || '',
-        service: data.service || 'website',
-        status: data.status || 'todo',
-        description: data.description || '',
-        deadline: data.deadline || null,
-        created_at: projectIndex >= 0 ? projects[projectIndex].created_at : now,
-        updated_at: now
+      const updateData = {
+        ...data,
+        updated_at: new Date().toISOString()
       };
       
-      // Update existing or add as new
-      if (projectIndex >= 0) {
-        projects[projectIndex] = updatedProject;
-      } else {
-        // Also check mock projects
-        const mockProjectIndex = mockProjects.findIndex(p => p.id === id);
-        if (mockProjectIndex >= 0) {
-          projects.push(updatedProject);
-        } else {
-          throw new Error(`Project with ID ${id} not found`);
-        }
-      }
+      const { data: updatedProject, error } = await supabase
+        .from('projects')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
       
-      // Save to localStorage
-      localStorage.setItem('mockProjects', JSON.stringify(projects));
-      console.log(`Project ${id} updated in localStorage`);
-      
-      return updatedProject;
+      if (error) throw error;
+      return updatedProject as Project;
     } catch (error) {
       console.error(`Error updating project ${id}:`, error);
       throw error;
@@ -756,31 +402,21 @@ export const clientService = {
 
   async deleteProject(id: string): Promise<void> {
     try {
-      // Get existing projects from localStorage
-      const storedProjects = localStorage.getItem('mockProjects') || '[]';
-      let projects = [];
+      // Primeiro apagamos todas as tarefas relacionadas ao projeto
+      const { error: tasksError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('project_id', id);
       
-      try {
-        projects = JSON.parse(storedProjects);
-        if (!Array.isArray(projects)) {
-          projects = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored projects:', e);
-        projects = [];
-      }
+      if (tasksError) throw tasksError;
       
-      // Find the project to delete
-      const projectIndex = projects.findIndex(p => p.id === id);
+      // Depois removemos o projeto
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', id);
       
-      // Remove if found
-      if (projectIndex >= 0) {
-        projects.splice(projectIndex, 1);
-        localStorage.setItem('mockProjects', JSON.stringify(projects));
-        console.log(`Project ${id} deleted from localStorage`);
-      } else {
-        console.log(`Project ${id} not found in localStorage, nothing to delete`);
-      }
+      if (error) throw error;
     } catch (error) {
       console.error(`Error deleting project ${id}:`, error);
       throw error;
@@ -789,67 +425,75 @@ export const clientService = {
 
   // Tasks CRUD
   async getTasks(projectId: string): Promise<Task[]> {
-    const { data, error } = await supabase
-      .from('tasks')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('created_at', { ascending: false });
-    
-    if (error) {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Task[];
+    } catch (error) {
       console.error(`Error fetching tasks for project ${projectId}:`, error);
       throw error;
     }
-    
-    return data as Task[];
   },
 
   async createTask(task: TaskFormData): Promise<Task> {
-    const now = new Date().toISOString();
-    
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert({
+    try {
+      const now = new Date().toISOString();
+      
+      const taskData = {
+        id: uuidv4(),
         ...task,
         created_at: now,
-        updated_at: now,
-      } as any)
-      .select()
-      .single();
-    
-    if (error) {
+        updated_at: now
+      };
+      
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert(taskData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as Task;
+    } catch (error) {
       console.error('Error creating task:', error);
       throw error;
     }
-    
-    return data as Task;
   },
 
   async updateTask(id: string, updates: Partial<TaskFormData>): Promise<Task> {
-    const { data, error } = await supabase
-      .from('tasks')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      } as any)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) {
+    try {
+      const { data, error } = await supabase
+        .from('tasks')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as Task;
+    } catch (error) {
       console.error(`Error updating task ${id}:`, error);
       throw error;
     }
-    
-    return data as Task;
   },
 
   async deleteTask(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
-    
-    if (error) {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', id);
+      
+      if (error) throw error;
+    } catch (error) {
       console.error(`Error deleting task ${id}:`, error);
       throw error;
     }
@@ -858,64 +502,14 @@ export const clientService = {
   // Payments CRUD
   async getPayments(clientId: string): Promise<Payment[]> {
     try {
-      // Define the hardcoded mock payments
-      const mockPayments: Payment[] = [
-        {
-          id: "pay1",
-          client_id: "1",
-          amount: 2500,
-          currency: "USD",
-          description: "Monthly Fee - May 2025",
-          invoice_date: "2025-05-01T00:00:00Z",
-          paid: true,
-          paid_at: "2025-05-02T00:00:00Z",
-          created_at: "2025-04-25T00:00:00Z",
-          updated_at: "2025-05-02T00:00:00Z"
-        },
-        {
-          id: "pay2",
-          client_id: "1",
-          amount: 10000,
-          currency: "USD",
-          description: "Ad Budget - May 2025",
-          invoice_date: "2025-05-01T00:00:00Z",
-          paid: false,
-          paid_at: null,
-          created_at: "2025-04-25T00:00:00Z",
-          updated_at: "2025-04-25T00:00:00Z"
-        },
-        {
-          id: "pay3",
-          client_id: "2",
-          amount: 1500,
-          currency: "USD",
-          description: "Monthly Fee - May 2025",
-          invoice_date: "2025-05-01T00:00:00Z",
-          paid: true,
-          paid_at: "2025-05-03T00:00:00Z",
-          created_at: "2025-04-25T00:00:00Z",
-          updated_at: "2025-05-03T00:00:00Z"
-        }
-      ];
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('client_id', clientId)
+        .order('invoice_date', { ascending: false });
       
-      // Get payments from localStorage
-      let allPayments = [...mockPayments];
-      
-      try {
-        const storedPayments = localStorage.getItem('mockPayments');
-        if (storedPayments) {
-          const parsedPayments = JSON.parse(storedPayments);
-          if (Array.isArray(parsedPayments) && parsedPayments.length > 0) {
-            console.log(`Found ${parsedPayments.length} payments in localStorage`);
-            allPayments = [...allPayments, ...parsedPayments];
-          }
-        }
-      } catch (e) {
-        console.error('Error retrieving payments from localStorage:', e);
-      }
-      
-      // Filter payments by client ID
-      return allPayments.filter(payment => payment.client_id === clientId);
+      if (error) throw error;
+      return data as Payment[];
     } catch (error) {
       console.error(`Error fetching payments for client ${clientId}:`, error);
       throw error;
@@ -924,42 +518,29 @@ export const clientService = {
 
   async createPayment(data: PaymentFormData): Promise<Payment> {
     try {
-    const now = new Date().toISOString();
-      const newPayment: Payment = {
+      const now = new Date().toISOString();
+      
+      const paymentData = {
         id: uuidv4(),
-        client_id: data.client_id || '',
-        amount: data.amount || 0,
-        currency: data.currency || 'USD',
-        description: data.description || '',
-        invoice_date: data.invoice_date || now,
-        paid: data.paid || false,
+        client_id: data.client_id,
+        amount: data.amount,
+        currency: data.currency,
+        description: data.description,
+        invoice_date: data.invoice_date,
+        paid: data.paid,
         paid_at: data.paid ? data.paid_at || now : null,
         created_at: now,
         updated_at: now
       };
       
-      // Store the payment in localStorage
-      const storedPayments = localStorage.getItem('mockPayments') || '[]';
-      let payments = [];
+      const { data: newPayment, error } = await supabase
+        .from('payments')
+        .insert(paymentData)
+        .select()
+        .single();
       
-      try {
-        payments = JSON.parse(storedPayments);
-        if (!Array.isArray(payments)) {
-          payments = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored payments:', e);
-        payments = [];
-      }
-      
-      // Add the new payment
-      payments.push(newPayment);
-      
-      // Save to localStorage
-      localStorage.setItem('mockPayments', JSON.stringify(payments));
-      console.log(`Payment ${newPayment.id} saved to localStorage`);
-      
-      return newPayment;
+      if (error) throw error;
+      return newPayment as Payment;
     } catch (error) {
       console.error('Error creating payment:', error);
       throw error;
@@ -968,55 +549,31 @@ export const clientService = {
 
   async updatePayment(id: string, updates: Partial<PaymentFormData>): Promise<Payment> {
     try {
-      const now = new Date().toISOString();
-      
-      // Get existing payments from localStorage
-      const storedPayments = localStorage.getItem('mockPayments') || '[]';
-      let payments = [];
-      
-      try {
-        payments = JSON.parse(storedPayments);
-        if (!Array.isArray(payments)) {
-          payments = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored payments:', e);
-        payments = [];
-      }
-      
-      // Find the payment to update
-      const paymentIndex = payments.findIndex(p => p.id === id);
-      
-      // Create the updated payment
-      let updatedPayment: Payment;
-      
-      if (paymentIndex >= 0) {
-        updatedPayment = {
-          ...payments[paymentIndex],
-          ...updates,
-          updated_at: now
-        };
-        payments[paymentIndex] = updatedPayment;
-      } else {
-        // Try to find in mock data
-        const mockPaymentIndex = mockPayments.findIndex(p => p.id === id);
-        if (mockPaymentIndex >= 0) {
-          updatedPayment = {
-            ...mockPayments[mockPaymentIndex],
+      const updateData: any = {
         ...updates,
-            updated_at: now
-          };
-          payments.push(updatedPayment);
-        } else {
-          throw new Error(`Payment with ID ${id} not found`);
-        }
+        updated_at: new Date().toISOString()
+      };
+      
+      // Se o pagamento for marcado como pago e não tiver data de pagamento,
+      // definir a data atual como data de pagamento
+      if (updates.paid && !updates.paid_at) {
+        updateData.paid_at = new Date().toISOString();
       }
       
-      // Save to localStorage
-      localStorage.setItem('mockPayments', JSON.stringify(payments));
-      console.log(`Payment ${id} updated in localStorage`);
+      // Se o pagamento for marcado como não pago, remover a data de pagamento
+      if (updates.paid === false) {
+        updateData.paid_at = null;
+      }
       
-      return updatedPayment;
+      const { data, error } = await supabase
+        .from('payments')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data as Payment;
     } catch (error) {
       console.error(`Error updating payment ${id}:`, error);
       throw error;
@@ -1025,34 +582,15 @@ export const clientService = {
 
   async deletePayment(id: string): Promise<void> {
     try {
-      // Get existing payments from localStorage
-      const storedPayments = localStorage.getItem('mockPayments') || '[]';
-      let payments = [];
+      const { error } = await supabase
+        .from('payments')
+        .delete()
+        .eq('id', id);
       
-      try {
-        payments = JSON.parse(storedPayments);
-        if (!Array.isArray(payments)) {
-          payments = [];
-        }
-      } catch (e) {
-        console.error('Error parsing stored payments:', e);
-        payments = [];
-      }
-      
-      // Find the payment to delete
-      const paymentIndex = payments.findIndex(p => p.id === id);
-      
-      // Remove if found
-      if (paymentIndex >= 0) {
-        payments.splice(paymentIndex, 1);
-        localStorage.setItem('mockPayments', JSON.stringify(payments));
-        console.log(`Payment ${id} deleted from localStorage`);
-      } else {
-        console.log(`Payment ${id} not found in localStorage, nothing to delete`);
-      }
+      if (error) throw error;
     } catch (error) {
       console.error(`Error deleting payment ${id}:`, error);
       throw error;
     }
-  },
+  }
 }; 

@@ -74,7 +74,7 @@ const Login = () => {
     setError("");
     
     try {
-      const { error, success } = await signIn(data.email, data.password);
+      const { error, success } = await signIn(data.email, data.password, navigate);
       
       if (error || !success) {
         setError(error?.message || "Login failed. Check your credentials.");

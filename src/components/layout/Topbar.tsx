@@ -35,7 +35,7 @@ const Topbar = () => {
   // Função para lidar com o clique no Log out
   const handleLogoutClick = async () => {
     try {
-      await signOut();
+      await signOut(navigate);
       // O redirecionamento para a página de login é feito no contexto de autenticação
     } catch (error) {
       console.error("Erro ao fazer logout:", error);

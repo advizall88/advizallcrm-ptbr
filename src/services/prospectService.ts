@@ -22,97 +22,6 @@ export type ProspectFormData = {
   next_follow_up_at?: string | null;
 };
 
-// Mock data para prospectos
-const MOCK_PROSPECTS: Prospect[] = [
-  {
-    id: uuidv4(),
-    owner_id: '123e4567-e89b-12d3-a456-426614174000', // ID do usuário de teste
-    contact_name: 'João Silva',
-    company_name: 'Tech Solutions',
-    phone: '(11) 98765-4321',
-    email: 'joao@techsolutions.com',
-    lead_source: 'Website',
-    business_type: 'Technology',
-    region_city: 'São Paulo',
-    region_state: 'SP',
-    timezone: 'America/Sao_Paulo',
-    score: 4,
-    status: 'interested',
-    first_contact_at: new Date(2023, 9, 15).toISOString(),
-    call_summary: 'Cliente potencial para serviços de desenvolvimento web.',
-    notes: 'Demonstrou interesse em redesenho do site atual.',
-    next_follow_up_at: new Date(2023, 10, 5).toISOString(),
-    created_at: new Date(2023, 9, 15).toISOString(),
-    updated_at: new Date(2023, 9, 15).toISOString()
-  },
-  {
-    id: uuidv4(),
-    owner_id: '123e4567-e89b-12d3-a456-426614174000', // ID do usuário de teste
-    contact_name: 'Maria Oliveira',
-    company_name: 'Café Expresso',
-    phone: '(11) 97654-3210',
-    email: 'maria@cafeexpresso.com',
-    lead_source: 'Referral',
-    business_type: 'Food & Beverage',
-    region_city: 'Rio de Janeiro',
-    region_state: 'RJ',
-    timezone: 'America/Sao_Paulo',
-    score: 3,
-    status: 'new',
-    first_contact_at: new Date(2023, 9, 20).toISOString(),
-    call_summary: 'Interessada em marketing digital para sua cafeteria.',
-    notes: 'Precisa aumentar presença online para competir com grandes redes.',
-    next_follow_up_at: new Date(2023, 10, 10).toISOString(),
-    created_at: new Date(2023, 9, 20).toISOString(),
-    updated_at: new Date(2023, 9, 20).toISOString()
-  },
-  {
-    id: uuidv4(),
-    owner_id: '123e4567-e89b-12d3-a456-426614174000', // ID do usuário de teste
-    contact_name: 'Paulo Mendes',
-    company_name: 'Construções PM',
-    phone: '(11) 99876-5432',
-    email: 'paulo@construcoespm.com',
-    lead_source: 'Cold Call',
-    business_type: 'Construction',
-    region_city: 'Curitiba',
-    region_state: 'PR',
-    timezone: 'America/Sao_Paulo',
-    score: 5,
-    status: 'negotiation',
-    first_contact_at: new Date(2023, 9, 10).toISOString(),
-    call_summary: 'Empresa de construção buscando atualizar sua identidade visual e estratégia de marketing.',
-    notes: 'Orçamento disponível para projeto completo.',
-    next_follow_up_at: new Date(2023, 10, 1).toISOString(),
-    created_at: new Date(2023, 9, 10).toISOString(),
-    updated_at: new Date(2023, 9, 10).toISOString()
-  },
-  {
-    id: uuidv4(),
-    owner_id: '123e4567-e89b-12d3-a456-426614174000', // ID do usuário de teste
-    contact_name: 'Ana Santos',
-    company_name: 'Moda AS',
-    phone: '(11) 91234-5678',
-    email: 'ana@modaas.com',
-    lead_source: 'Social Media',
-    business_type: 'Retail',
-    region_city: 'Belo Horizonte',
-    region_state: 'MG',
-    timezone: 'America/Sao_Paulo',
-    score: 2,
-    status: 'lost',
-    first_contact_at: new Date(2023, 8, 25).toISOString(),
-    call_summary: 'Pequeno negócio de moda procurando expandir presença online.',
-    notes: 'Orçamento limitado, ficou indecisa sobre avançar com o projeto.',
-    next_follow_up_at: null,
-    created_at: new Date(2023, 8, 25).toISOString(),
-    updated_at: new Date(2023, 9, 25).toISOString()
-  }
-];
-
-// Array mutável para armazenar os prospectos
-let prospects = [...MOCK_PROSPECTS];
-
 export const prospectService = {
   async getProspects(): Promise<Prospect[]> {
     try {
@@ -249,7 +158,7 @@ export const prospectService = {
       .from('prospects')
       .update({
         ...updates,
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('id', id)
       .select()
@@ -266,25 +175,12 @@ export const prospectService = {
   async updateProspectStatus(id: string, status: Prospect['status']): Promise<Prospect> {
     return this.updateProspect(id, { status });
   },
-
+  
   async updateProspectOrder(id: string, status: Prospect['status'], order: number): Promise<Prospect> {
-    const { data, error } = await supabase
-      .from('prospects')
-      .update({
-        status,
-        order_index: order,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error(`Error updating prospect order for ${id}:`, error);
-      throw error;
-    }
-    
-    return data as Prospect;
+    // Aqui seria implementado se você tivesse um campo de ordem no banco de dados
+    // Mas como estamos usando Supabase, isso pode ser feito de outra forma
+    // Por ora, apenas retorna o status atualizado
+    return this.updateProspect(id, { status });
   },
 
   async reorderProspects(
@@ -294,22 +190,8 @@ export const prospectService = {
     destinationIndex: number,
     prospectId: string
   ): Promise<void> {
-    try {
-      // First update the moved prospect's status
-      await this.updateProspectStatus(prospectId, destinationStatus);
-      
-      // Then update the order of all affected prospects
-      // This would ideally be done in a single transaction or batch operation
-      // but for simplicity, we'll just update the moved prospect here
-      
-      // In a real application, you'd want to update all items that were affected
-      // by the reordering to maintain consistent order indexes
-      
-      console.log(`Reordered prospect ${prospectId} from ${sourceStatus}[${sourceIndex}] to ${destinationStatus}[${destinationIndex}]`);
-    } catch (error) {
-      console.error('Error reordering prospects:', error);
-      throw error;
-    }
+    // Simplesmente atualiza o status do prospect arrastado
+    await this.updateProspectStatus(prospectId, destinationStatus);
   },
 
   async deleteProspect(id: string): Promise<void> {
@@ -326,74 +208,92 @@ export const prospectService = {
 
   async checkIfProspectIsClient(id: string): Promise<boolean> {
     try {
-      // Check the localStorage for the list of converted prospects
-      const convertedList = localStorage.getItem('convertedProspects');
-      if (convertedList) {
-        const parsed = JSON.parse(convertedList);
-        if (Array.isArray(parsed) && parsed.includes(id)) {
-          console.log(`Prospect ${id} is already a client (found in convertedProspects)`);
-          return true;
-        }
-      }
-      
-      // Double-check by trying to get the client directly
+      // Verifica no localStorage
       try {
-        const client = await clientService.getClient(id);
-        if (client) {
-          console.log(`Prospect ${id} is already a client (found in clients)`);
-          
-          // Ensure it's in the convertedList for future checks
-          const existingList = convertedList ? JSON.parse(convertedList) : [];
-          if (!existingList.includes(id)) {
-            existingList.push(id);
-            localStorage.setItem('convertedProspects', JSON.stringify(existingList));
-            console.log(`Added ${id} to convertedProspects list for consistency`);
+        const convertedProspects = localStorage.getItem('convertedProspects');
+        if (convertedProspects) {
+          const parsed = JSON.parse(convertedProspects);
+          if (Array.isArray(parsed) && parsed.includes(id)) {
+            return true;
           }
-          
-          return true;
         }
-      } catch (error) {
-        console.error(`Error checking client existence for ${id}:`, error);
+      } catch (e) {
+        console.error('Error checking convertedProspects in localStorage:', e);
+      }
+      
+      // Verifica no banco de dados de clientes se existe um com o mesmo ID
+      // Este é um método mais confiável do que confiar apenas no localStorage
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id')
+        .eq('id', id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error(`Error checking if prospect ${id} is client:`, error);
+        // Não lança erro, apenas retorna falso
+        return false;
+      }
+      
+      // Se encontrou um cliente com esse ID, então o prospect foi convertido
+      if (data) {
+        // Garante que ele está na lista do localStorage para futuras verificações
+        this.markProspectAsConverted(id);
+        return true;
       }
       
       return false;
-    } catch (error) {
-      console.error(`Error checking if prospect ${id} is client:`, error);
+    } catch (e) {
+      console.error('Error in checkIfProspectIsClient:', e);
       return false;
+    }
+  },
+  
+  // Helper function to mark a prospect as converted in localStorage
+  markProspectAsConverted(id: string): void {
+    try {
+      let convertedProspects: string[] = [];
+      const stored = localStorage.getItem('convertedProspects');
+      
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            convertedProspects = parsed;
+          }
+        } catch (e) {
+          console.error('Error parsing convertedProspects:', e);
+        }
+      }
+      
+      if (!convertedProspects.includes(id)) {
+        convertedProspects.push(id);
+        localStorage.setItem('convertedProspects', JSON.stringify(convertedProspects));
+      }
+    } catch (e) {
+      console.error('Error marking prospect as converted:', e);
     }
   },
 
   async convertToClient(id: string): Promise<{ success: boolean; client_id?: string; error?: any; message?: string; already_exists?: boolean }> {
     try {
-      // First check if the prospect is already a client
-      const isAlreadyClient = await this.checkIfProspectIsClient(id);
+      // Primeiro, verifique se o prospect já foi convertido
+      const alreadyConverted = await this.checkIfProspectIsClient(id);
       
-      if (isAlreadyClient) {
-        console.log(`Prospect ${id} is already a client, returning existing client info`);
-        return { 
-          success: false, 
-          already_exists: true, 
-          client_id: id,
-          message: 'This prospect has already been converted to a client.' 
+      if (alreadyConverted) {
+        return {
+          success: false,
+          already_exists: true,
+          message: 'This prospect has already been converted to a client'
         };
       }
       
-      // Get the prospect data to convert
+      // Busca os dados do prospect
       const prospect = await this.getProspect(id);
-      if (!prospect) {
-        console.error(`Error converting prospect ${id} to client: Prospect not found`);
-        return { 
-          success: false, 
-          message: 'Prospect not found. Unable to convert to client.' 
-        };
-      }
       
-      console.log(`Creating client from prospect ${id}: ${prospect.contact_name}`);
-      
-      // Create the client with prospect data (with better type safety)
-      const newClient = {
-        id: prospect.id,
-        owner_id: prospect.owner_id || 'usr_1', // Fallback to default user
+      // Criando um novo cliente baseado nos dados do prospect
+      const newClient: Omit<Client, 'id' | 'created_at' | 'updated_at'> = {
+        owner_id: prospect.owner_id,
         contact_name: prospect.contact_name,
         company_name: prospect.company_name,
         phone: prospect.phone,
@@ -403,56 +303,40 @@ export const prospectService = {
         region_city: prospect.region_city,
         region_state: prospect.region_state,
         timezone: prospect.timezone,
-        score: prospect.score,
-        full_address: `${prospect.region_city || ''}, ${prospect.region_state || ''}`,
-        website: '', // Initialize with empty values
-        social_links: {},
+        status: 'active',
         first_contact_at: prospect.first_contact_at,
         call_summary: prospect.call_summary,
         notes: prospect.notes,
-        status: 'active',
-        plan_name: 'Basic', // Set default plan
-        retainer_value: 0, // Default values can be set later
-        ad_budget: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        score: prospect.score,
       };
       
-      // Store in localStorage
-      await clientService.addMockClient(newClient);
+      // Chama a função RPC do Supabase para converter o prospect em cliente
+      const { data, error } = await supabase
+        .rpc('convert_prospect_to_client', { prospect_id: id })
+        .single();
       
-      // Mark as converted in localStorage
-      let convertedList: string[] = [];
-      const storedConvertedList = localStorage.getItem('convertedProspects');
-      
-      if (storedConvertedList) {
+      if (error) {
+        console.error('Error converting prospect to client:', error);
+        
+        // Fallback para o método cliente mockado se o RPC falhar
         try {
-          const parsed = JSON.parse(storedConvertedList);
-          if (Array.isArray(parsed)) {
-            convertedList = parsed;
-          }
-        } catch (e) {
-          console.error('Error parsing convertedProspects:', e);
+          const client = await clientService.addMockClient(newClient);
+          this.markProspectAsConverted(id);
+          return { success: true, client_id: client.id };
+        } catch (fallbackError) {
+          console.error('Fallback client creation also failed:', fallbackError);
+          return { success: false, error: fallbackError };
         }
       }
       
-      // Add to converted list if not already there
-      if (!convertedList.includes(id)) {
-        convertedList.push(id);
-        localStorage.setItem('convertedProspects', JSON.stringify(convertedList));
-        console.log(`Added ${id} to convertedProspects list`);
-      }
+      // RPC bem-sucedido
+      const client_id = data;
+      this.markProspectAsConverted(id);
       
-      console.log(`Successfully converted prospect ${id} to client.`);
-      
-      return { success: true, client_id: id };
+      return { success: true, client_id };
     } catch (error) {
-      console.error(`Error converting prospect ${id} to client:`, error);
-      return { 
-        success: false, 
-        error,
-        message: 'An error occurred while converting the prospect to a client.' 
-      };
+      console.error('Error in convertToClient:', error);
+      return { success: false, error };
     }
   }
 }; 

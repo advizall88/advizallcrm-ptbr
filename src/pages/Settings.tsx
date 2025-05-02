@@ -236,7 +236,7 @@ const Settings = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={signOut}>
+                <Button variant="outline" onClick={() => signOut(navigate)}>
                   Sign Out
                 </Button>
                 <Button 

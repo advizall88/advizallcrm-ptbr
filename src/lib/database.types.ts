@@ -487,24 +487,101 @@ export interface Database {
           id: string
           name: string
           email: string
-          role: 'user' | 'moderator' | 'admin'
+          role: string
           created_at: string
+          avatar_url: string | null
+          phone: string | null
+          title: string | null
+          department: string | null
+          bio: string | null
+          last_login_at: string | null
+          last_active_at: string | null
         }
         Insert: {
-          id?: string
+          id: string
           name: string
           email: string
-          role?: 'user' | 'moderator' | 'admin'
+          role: string
           created_at?: string
+          avatar_url?: string | null
+          phone?: string | null
+          title?: string | null
+          department?: string | null
+          bio?: string | null
+          last_login_at?: string | null
+          last_active_at?: string | null
         }
         Update: {
           id?: string
           name?: string
           email?: string
-          role?: 'user' | 'moderator' | 'admin'
+          role?: string
           created_at?: string
+          avatar_url?: string | null
+          phone?: string | null
+          title?: string | null
+          department?: string | null
+          bio?: string | null
+          last_login_at?: string | null
+          last_active_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_settings: {
+        Row: {
+          id: string
+          theme: string
+          email_notifications: boolean
+          push_notifications: boolean
+          meeting_reminders: boolean
+          language: string
+          timezone: string
+          date_format: string
+          time_format: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          theme?: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          meeting_reminders?: boolean
+          language?: string
+          timezone?: string
+          date_format?: string
+          time_format?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          theme?: string
+          email_notifications?: boolean
+          push_notifications?: boolean
+          meeting_reminders?: boolean
+          language?: string
+          timezone?: string
+          date_format?: string
+          time_format?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_id_fkey"
+            columns: ["id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
@@ -534,4 +611,6 @@ export type InsertTables<
 
 export type UpdateTables<
   T extends keyof Database['public']['Tables']
-> = Database['public']['Tables'][T]['Update'] 
+> = Database['public']['Tables'][T]['Update']
+
+export type Enums<T extends keyof Database['public']['Enums']> = Database['public']['Enums'][T] 

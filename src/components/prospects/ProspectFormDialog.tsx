@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, AlertCircle, Loader2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { Prospect } from "@/lib/supabase";
 import { ProspectFormData } from "@/services/prospectService";
 import { useAuth } from "@/contexts/AuthContext";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
   contact_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -56,6 +57,10 @@ const ProspectFormDialog = ({
   const { user } = useAuth();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(!!initialData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "submitting" | "saving-locally" | "retrying">("idle");
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 2;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -110,20 +115,39 @@ const ProspectFormDialog = ({
     }
   }, [form, initialData, open]);
 
+  const saveFormDataLocally = (data: ProspectFormData) => {
+    try {
+      // Save the current form data to localStorage
+      const pendingForms = JSON.parse(localStorage.getItem('pendingProspectForms') || '[]');
+      pendingForms.push({ 
+        data, 
+        timestamp: new Date().toISOString(),
+        id: initialData?.id || `pending-${Date.now()}`
+      });
+      localStorage.setItem('pendingProspectForms', JSON.stringify(pendingForms));
+      return true;
+    } catch (error) {
+      console.error("Failed to save form data locally:", error);
+      return false;
+    }
+  };
+
   const handleSubmit = async (values: FormValues) => {
     try {
       setIsSubmitting(true);
+      setError(null);
+      setSubmitStatus("submitting");
       
       // Ensure required fields are present for ProspectFormData
       const formattedData: ProspectFormData = {
         contact_name: values.contact_name,
         company_name: values.company_name || null,
         phone: values.phone,
-        email: values.email || null,
+        email: values.email,
         lead_source: values.lead_source || "Other",
         business_type: values.business_type || "Other",
-        region_city: values.region_city || null,
-        region_state: values.region_state || null,
+        region_city: values.region_city,
+        region_state: values.region_state,
         timezone: values.timezone || "America/Los_Angeles",
         score: values.score || 3,
         status: values.status || "new",
@@ -134,17 +158,66 @@ const ProspectFormDialog = ({
         owner_id: initialData?.owner_id || user?.id || "",
       };
       
-      await onSubmit(formattedData);
-      onOpenChange(false);
+      // Increase timeout to 20 seconds
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request is taking too long. Saving data locally...")), 20000);
+      });
+      
+      try {
+        // Try to submit the form
+        await Promise.race([onSubmit(formattedData), timeoutPromise]);
+        onOpenChange(false);
+      } catch (error) {
+        if (retryCount < MAX_RETRIES) {
+          // First try to retry
+          setSubmitStatus("retrying");
+          setRetryCount(prev => prev + 1);
+          setError(`Submit attempt ${retryCount + 1}/${MAX_RETRIES + 1} failed. Retrying...`);
+          
+          // Wait 2 seconds before retrying
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          try {
+            await onSubmit(formattedData);
+            onOpenChange(false);
+            return;
+          } catch (retryError) {
+            throw retryError; // Let the outer catch handle it
+          }
+        }
+        
+        // If we reach here, all retries failed or it's a timeout
+        setSubmitStatus("saving-locally");
+        
+        // Save the form data locally
+        const savedLocally = saveFormDataLocally(formattedData);
+        
+        if (savedLocally) {
+          setError("We couldn't save your data online, but we've saved it locally. The system will try to sync when you return to the application.");
+          // Keep the dialog open so the user can see the message
+          // But enable the Cancel button so they can dismiss it if they want
+        } else {
+          throw new Error("Failed to save data locally. Please try again or copy your data elsewhere.");
+        }
+      }
     } catch (error) {
       console.error("Error submitting prospect form:", error);
+      setError(error instanceof Error ? error.message : "Failed to submit form. Please try again.");
     } finally {
       setIsSubmitting(false);
+      if (submitStatus !== "saving-locally") {
+        setSubmitStatus("idle");
+      }
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      // Only allow closing if we're not in the middle of submitting
+      if (!isSubmitting || submitStatus === "saving-locally") {
+        onOpenChange(newOpen);
+      }
+    }}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>
@@ -156,6 +229,13 @@ const ProspectFormDialog = ({
         </DialogHeader>
         
         <ScrollArea className="flex-1 overflow-auto pr-4 max-h-[calc(80vh-10rem)]">
+          {error && (
+            <Alert variant={submitStatus === "saving-locally" ? "default" : "destructive"} className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -503,16 +583,24 @@ const ProspectFormDialog = ({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
+            disabled={isSubmitting && submitStatus !== "saving-locally"}
           >
-            Cancel
+            {submitStatus === "saving-locally" ? "Close" : "Cancel"}
           </Button>
           <Button 
             onClick={form.handleSubmit(handleSubmit)}
             disabled={isSubmitting}
+            className="min-w-[120px]"
           >
+            {isSubmitting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             {isSubmitting
-              ? "Saving..."
+              ? submitStatus === "retrying" 
+                ? `Retry ${retryCount}/${MAX_RETRIES}`
+                : submitStatus === "saving-locally"
+                ? "Saved Locally"
+                : "Saving..."
               : mode === "create"
               ? "Create Prospect"
               : "Update Prospect"}

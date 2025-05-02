@@ -29,6 +29,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+
+// Add necessary type for Promise.allSettled
+type PromiseFulfilledResult<T> = {
+  status: 'fulfilled';
+  value: T;
+};
 
 type ProspectCardProps = {
   prospect: Prospect;
@@ -227,6 +234,7 @@ const Prospects = () => {
   const [convertLoading, setConvertLoading] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // Fetch prospects
   const { data: prospects = [], isLoading, error } = useQuery({
@@ -497,18 +505,112 @@ const Prospects = () => {
     lost: prospects.filter(p => p.status === 'lost')
   };
 
+  // Function to attempt syncing locally saved forms
+  const syncLocalForms = async () => {
+    try {
+      const pendingFormsString = localStorage.getItem('pendingProspectForms');
+      if (!pendingFormsString) return;
+      
+      const pendingForms = JSON.parse(pendingFormsString);
+      if (!Array.isArray(pendingForms) || pendingForms.length === 0) return;
+      
+      setIsSyncing(true);
+      toast({
+        title: "Syncing data",
+        description: `Attempting to sync ${pendingForms.length} pending prospect forms...`,
+      });
+      
+      // Process each pending form
+      const results = await Promise.allSettled(
+        pendingForms.map(async (item) => {
+          try {
+            if (item.data.id) {
+              // If it's an update
+              await prospectService.updateProspect(item.data.id, item.data);
+            } else {
+              // If it's a new prospect
+              await prospectService.createProspect(item.data);
+            }
+            return item.id; // Return the ID for successful items
+          } catch (error) {
+            console.error(`Failed to sync form ${item.id}:`, error);
+            throw error;
+          }
+        })
+      );
+      
+      // Filter out successful forms
+      const successfulIds = results
+        .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+        .map(result => result.value);
+      
+      // Remove successfully synced forms from localStorage
+      if (successfulIds.length > 0) {
+        const remainingForms = pendingForms.filter(
+          (form) => !successfulIds.includes(form.id)
+        );
+        
+        if (remainingForms.length > 0) {
+          localStorage.setItem('pendingProspectForms', JSON.stringify(remainingForms));
+        } else {
+          localStorage.removeItem('pendingProspectForms');
+        }
+        
+        // Refresh the data
+        queryClient.invalidateQueries({ queryKey: ['prospects'] });
+        
+        toast({
+          title: "Sync complete",
+          description: `Successfully synced ${successfulIds.length} of ${pendingForms.length} pending forms.`,
+        });
+      }
+      
+      if (successfulIds.length < pendingForms.length) {
+        toast({
+          title: "Sync incomplete",
+          description: `${pendingForms.length - successfulIds.length} forms could not be synced and will be retried later.`,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error syncing local forms:", error);
+      toast({
+        title: "Sync failed",
+        description: "Failed to sync some locally saved data. We'll try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+  
+  // Try to sync local forms when the component mounts
+  useEffect(() => {
+    if (!isLoading && !error) {
+      syncLocalForms();
+    }
+  }, [isLoading]);
+
   return (
     <AppLayout>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Prospects</h1>
-          <Button onClick={() => {
-            setSelectedProspect(undefined);
-            setEditMode('create');
-            setIsEditDialogOpen(true);
-          }}>
-            Add Prospect
-          </Button>
+          <div className="flex gap-2">
+            {isSyncing && (
+              <Button variant="outline" disabled>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Syncing...
+              </Button>
+            )}
+            <Button onClick={() => {
+              setSelectedProspect(undefined);
+              setEditMode('create');
+              setIsEditDialogOpen(true);
+            }}>
+              + Add Prospect
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (

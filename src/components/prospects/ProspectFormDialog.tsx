@@ -22,12 +22,12 @@ const formSchema = z.object({
   contact_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   company_name: z.string().nullable().optional(),
   phone: z.string().min(5, { message: "Phone number is required" }),
-  email: z.string().email({ message: "Invalid email address" }).optional(),
+  email: z.string().min(1, { message: "Email is required" }).email({ message: "Invalid email address" }),
   lead_source: z.string().default("Other"),
   business_type: z.string().optional(),
-  region_city: z.string().optional(),
-  region_state: z.string().optional(),
-  timezone: z.string().default("America/Chicago").optional(),
+  region_city: z.string().min(1, { message: "City is required" }),
+  region_state: z.string().min(1, { message: "State is required" }),
+  timezone: z.string().default("America/Los_Angeles"),
   score: z.coerce.number().min(1).max(5).default(3).optional(),
   status: z.enum(["new", "interested", "negotiation", "lost"]).default("new").optional(),
   first_contact_at: z.date().default(() => new Date()).optional(),
@@ -73,7 +73,7 @@ const ProspectFormDialog = ({
           status: "new",
           score: 3,
           first_contact_at: new Date(),
-          timezone: "America/Chicago",
+          timezone: "America/Los_Angeles",
           lead_source: "Other",
           business_type: "Other",
         },
@@ -101,7 +101,7 @@ const ProspectFormDialog = ({
           status: "new",
           score: 3,
           first_contact_at: new Date(),
-          timezone: "America/Chicago",
+          timezone: "America/Los_Angeles",
           lead_source: "Other",
           business_type: "Other",
         });
@@ -124,7 +124,7 @@ const ProspectFormDialog = ({
         business_type: values.business_type || "Other",
         region_city: values.region_city || null,
         region_state: values.region_state || null,
-        timezone: values.timezone || "America/Chicago",
+        timezone: values.timezone || "America/Los_Angeles",
         score: values.score || 3,
         status: values.status || "new",
         first_contact_at: values.first_contact_at?.toISOString() || new Date().toISOString(),
@@ -164,7 +164,7 @@ const ProspectFormDialog = ({
                   name="contact_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Name</FormLabel>
+                      <FormLabel>Contact Name *</FormLabel>
                       <FormControl>
                         <Input placeholder="John Doe" {...field} />
                       </FormControl>
@@ -192,7 +192,7 @@ const ProspectFormDialog = ({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Email *</FormLabel>
                       <FormControl>
                         <Input placeholder="email@example.com" {...field} />
                       </FormControl>
@@ -206,7 +206,7 @@ const ProspectFormDialog = ({
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel>Phone *</FormLabel>
                       <FormControl>
                         <Input placeholder="(555) 123-4567" {...field} />
                       </FormControl>
@@ -274,7 +274,7 @@ const ProspectFormDialog = ({
                   name="region_city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
+                      <FormLabel>City *</FormLabel>
                       <FormControl>
                         <Input placeholder="New York" {...field} />
                       </FormControl>
@@ -288,7 +288,7 @@ const ProspectFormDialog = ({
                   name="region_state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State</FormLabel>
+                      <FormLabel>State *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>

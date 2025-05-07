@@ -3,6 +3,49 @@ import { v4 as uuidv4 } from 'uuid';
 import { clientService } from './clientService';
 import type { Client } from '@/lib/supabase';
 
+// In-memory fallback storage when localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
+// Helpers for storage with error handling and fallback to in-memory storage
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      // First try localStorage
+      const value = localStorage.getItem(key);
+      if (value !== null) return value;
+      
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      // Always store in memory
+      memoryStorage[key] = value;
+      
+      // Try to store in localStorage
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Error saving to localStorage:', error);
+      // Already saved to memory storage
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      // Remove from both storages
+      delete memoryStorage[key];
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn('Error removing from localStorage:', error);
+      // Already removed from memory storage
+    }
+  }
+};
+
 export type ProspectFormData = {
   contact_name: string;
   phone: string;
@@ -38,12 +81,12 @@ export const prospectService = {
       const prospects = data as Prospect[];
       
       // Filter out prospects that have been converted to clients
-      // Using a more reliable approach with localStorage
+      // Using a more reliable approach with storage
       let convertedProspectIds: string[] = [];
       
-      // Get list of converted prospect IDs from localStorage
+      // Get list of converted prospect IDs from storage
       try {
-        const convertedProspects = localStorage.getItem('convertedProspects');
+        const convertedProspects = safeStorage.getItem('convertedProspects');
         if (convertedProspects) {
           const parsed = JSON.parse(convertedProspects);
           if (Array.isArray(parsed)) {
@@ -208,9 +251,9 @@ export const prospectService = {
 
   async checkIfProspectIsClient(id: string): Promise<boolean> {
     try {
-      // Verifica no localStorage
+      // Verifica no armazenamento
       try {
-        const convertedProspects = localStorage.getItem('convertedProspects');
+        const convertedProspects = safeStorage.getItem('convertedProspects');
         if (convertedProspects) {
           const parsed = JSON.parse(convertedProspects);
           if (Array.isArray(parsed) && parsed.includes(id)) {
@@ -218,11 +261,11 @@ export const prospectService = {
           }
         }
       } catch (e) {
-        console.error('Error checking convertedProspects in localStorage:', e);
+        console.error('Error checking convertedProspects in storage:', e);
       }
       
       // Verifica no banco de dados de clientes se existe um com o mesmo ID
-      // Este é um método mais confiável do que confiar apenas no localStorage
+      // Este é um método mais confiável do que confiar apenas no armazenamento local
       const { data, error } = await supabase
         .from('clients')
         .select('id')
@@ -237,7 +280,7 @@ export const prospectService = {
       
       // Se encontrou um cliente com esse ID, então o prospect foi convertido
       if (data) {
-        // Garante que ele está na lista do localStorage para futuras verificações
+        // Garante que ele está na lista do armazenamento para futuras verificações
         this.markProspectAsConverted(id);
         return true;
       }
@@ -249,11 +292,11 @@ export const prospectService = {
     }
   },
   
-  // Helper function to mark a prospect as converted in localStorage
+  // Helper function to mark a prospect as converted in storage
   markProspectAsConverted(id: string): void {
     try {
       let convertedProspects: string[] = [];
-      const stored = localStorage.getItem('convertedProspects');
+      const stored = safeStorage.getItem('convertedProspects');
       
       if (stored) {
         try {
@@ -268,7 +311,7 @@ export const prospectService = {
       
       if (!convertedProspects.includes(id)) {
         convertedProspects.push(id);
-        localStorage.setItem('convertedProspects', JSON.stringify(convertedProspects));
+        safeStorage.setItem('convertedProspects', JSON.stringify(convertedProspects));
       }
     } catch (e) {
       console.error('Error marking prospect as converted:', e);

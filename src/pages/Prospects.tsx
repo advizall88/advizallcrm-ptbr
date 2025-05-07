@@ -31,6 +31,49 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 
+// In-memory fallback storage when localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
+// Helpers for storage with error handling and fallback to in-memory storage
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      // First try localStorage
+      const value = localStorage.getItem(key);
+      if (value !== null) return value;
+      
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      // Always store in memory
+      memoryStorage[key] = value;
+      
+      // Try to store in localStorage
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Error saving to localStorage:', error);
+      // Already saved to memory storage
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      // Remove from both storages
+      delete memoryStorage[key];
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn('Error removing from localStorage:', error);
+      // Already removed from memory storage
+    }
+  }
+};
+
 // Add necessary type for Promise.allSettled
 type PromiseFulfilledResult<T> = {
   status: 'fulfilled';
@@ -508,7 +551,7 @@ const Prospects = () => {
   // Function to attempt syncing locally saved forms
   const syncLocalForms = async () => {
     try {
-      const pendingFormsString = localStorage.getItem('pendingProspectForms');
+      const pendingFormsString = safeStorage.getItem('pendingProspectForms');
       if (!pendingFormsString) return;
       
       const pendingForms = JSON.parse(pendingFormsString);
@@ -544,16 +587,16 @@ const Prospects = () => {
         .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
         .map(result => result.value);
       
-      // Remove successfully synced forms from localStorage
+      // Remove successfully synced forms from storage
       if (successfulIds.length > 0) {
         const remainingForms = pendingForms.filter(
           (form) => !successfulIds.includes(form.id)
         );
         
         if (remainingForms.length > 0) {
-          localStorage.setItem('pendingProspectForms', JSON.stringify(remainingForms));
+          safeStorage.setItem('pendingProspectForms', JSON.stringify(remainingForms));
         } else {
-          localStorage.removeItem('pendingProspectForms');
+          safeStorage.removeItem('pendingProspectForms');
         }
         
         // Refresh the data

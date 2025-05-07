@@ -17,28 +17,56 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helpers for localStorage with error handling
-const safeLocalStorage = {
+// In-memory fallback storage when localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
+// Helpers for localStorage with error handling and fallback to in-memory storage
+const safeStorage = {
   getItem: (key: string): string | null => {
     try {
-      return localStorage.getItem(key);
+      // First try localStorage
+      const value = localStorage.getItem(key);
+      if (value !== null) return value;
+      
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
     } catch (error) {
       console.warn('Error accessing localStorage:', error);
-      return null;
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
     }
   },
   setItem: (key: string, value: string): void => {
     try {
+      // Always store in memory
+      memoryStorage[key] = value;
+      
+      // Try to store in localStorage
       localStorage.setItem(key, value);
     } catch (error) {
       console.warn('Error saving to localStorage:', error);
+      // Already saved to memory storage
     }
   },
   removeItem: (key: string): void => {
     try {
+      // Remove from both storages
+      delete memoryStorage[key];
       localStorage.removeItem(key);
     } catch (error) {
       console.warn('Error removing from localStorage:', error);
+      // Already removed from memory storage
+    }
+  },
+  isAvailable: (): boolean => {
+    try {
+      const testKey = '_test_storage_';
+      localStorage.setItem(testKey, 'test');
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (error) {
+      console.warn('localStorage is not available:', error);
+      return false;
     }
   }
 };
@@ -56,6 +84,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true); // Starts as true to check authentication
+  const [storageAvailable, setStorageAvailable] = useState<boolean | null>(null);
+
+  // Check if storage is available
+  useEffect(() => {
+    setStorageAvailable(safeStorage.isAvailable());
+  }, []);
 
   // Check for existing session on load
   useEffect(() => {
@@ -89,9 +123,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(userData as User);
           }
         } else {
-          // Sem sessão no Supabase, verificar o localStorage 
-          const storedUser = safeLocalStorage.getItem('advizall_user');
-          const storedSession = safeLocalStorage.getItem('advizall_session');
+          // Sem sessão no Supabase, verificar o armazenamento
+          const storedUser = safeStorage.getItem('advizall_user');
+          const storedSession = safeStorage.getItem('advizall_session');
           
           if (storedUser && storedSession) {
             try {
@@ -100,8 +134,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } catch (e) {
               console.warn('Error parsing stored auth data:', e);
               // Limpar dados inválidos
-              safeLocalStorage.removeItem('advizall_user');
-              safeLocalStorage.removeItem('advizall_session');
+              safeStorage.removeItem('advizall_user');
+              safeStorage.removeItem('advizall_session');
             }
           }
         }
@@ -142,19 +176,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(userData as User);
           }
           
-          // Persistir no localStorage para backup
-          safeLocalStorage.setItem('advizall_user', JSON.stringify(userData || {
+          // Persistir no armazenamento para backup
+          const userToStore = userData || {
             id: session.user.id,
             name: session.user.email?.split('@')[0] || 'Unknown User',
             email: session.user.email || '',
             role: 'user',
             created_at: new Date().toISOString()
-          }));
-          safeLocalStorage.setItem('advizall_session', JSON.stringify(session));
+          };
+          
+          safeStorage.setItem('advizall_user', JSON.stringify(userToStore));
+          safeStorage.setItem('advizall_session', JSON.stringify(session));
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
-          safeLocalStorage.removeItem('advizall_user');
-          safeLocalStorage.removeItem('advizall_session');
+          safeStorage.removeItem('advizall_user');
+          safeStorage.removeItem('advizall_session');
         }
       }
     );
@@ -190,8 +226,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUser(DEV_USER);
           setSession(mockSession);
           
-          safeLocalStorage.setItem('advizall_user', JSON.stringify(DEV_USER));
-          safeLocalStorage.setItem('advizall_session', JSON.stringify(mockSession));
+          safeStorage.setItem('advizall_user', JSON.stringify(DEV_USER));
+          safeStorage.setItem('advizall_session', JSON.stringify(mockSession));
           
           setTimeout(() => {
             navigate('/');
@@ -240,9 +276,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(userToSet);
         setSession(data.session);
         
-        // Persiste no localStorage como backup
-        safeLocalStorage.setItem('advizall_user', JSON.stringify(userToSet));
-        safeLocalStorage.setItem('advizall_session', JSON.stringify(data.session));
+        // Persiste no armazenamento como backup
+        safeStorage.setItem('advizall_user', JSON.stringify(userToSet));
+        safeStorage.setItem('advizall_session', JSON.stringify(data.session));
         
         navigate('/');
       }
@@ -250,6 +286,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
       return { error: null, success: true };
     } catch (error) {
+      console.error('Unexpected error during login:', error);
       setLoading(false);
       return { error: error as Error, success: false };
     }
@@ -263,9 +300,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setSession(null);
       
-      // Remove do localStorage
-      safeLocalStorage.removeItem('advizall_user');
-      safeLocalStorage.removeItem('advizall_session');
+      // Remove do armazenamento
+      safeStorage.removeItem('advizall_user');
+      safeStorage.removeItem('advizall_session');
       
       // Logout do Supabase
       await supabase.auth.signOut();
@@ -293,17 +330,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
 
+  // Valor para o contexto
+  const contextValue: AuthContextType = {
+    user,
+    session,
+    loading,
+    signIn,
+    signOut,
+    isUserRole,
+  };
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        signIn,
-        signOut,
-        isUserRole,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

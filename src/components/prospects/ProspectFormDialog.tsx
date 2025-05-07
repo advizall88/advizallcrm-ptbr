@@ -47,6 +47,49 @@ type ProspectFormDialogProps = {
   mode?: "create" | "edit";
 };
 
+// In-memory fallback storage when localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
+// Helpers for storage with error handling and fallback to in-memory storage
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      // First try localStorage
+      const value = localStorage.getItem(key);
+      if (value !== null) return value;
+      
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    } catch (error) {
+      console.warn('Error accessing localStorage:', error);
+      // Fallback to memory storage
+      return memoryStorage[key] || null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      // Always store in memory
+      memoryStorage[key] = value;
+      
+      // Try to store in localStorage
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn('Error saving to localStorage:', error);
+      // Already saved to memory storage
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      // Remove from both storages
+      delete memoryStorage[key];
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn('Error removing from localStorage:', error);
+      // Already removed from memory storage
+    }
+  }
+};
+
 const ProspectFormDialog = ({
   open,
   onOpenChange,
@@ -117,14 +160,14 @@ const ProspectFormDialog = ({
 
   const saveFormDataLocally = (data: ProspectFormData) => {
     try {
-      // Save the current form data to localStorage
-      const pendingForms = JSON.parse(localStorage.getItem('pendingProspectForms') || '[]');
+      // Save the current form data to storage
+      const pendingForms = JSON.parse(safeStorage.getItem('pendingProspectForms') || '[]');
       pendingForms.push({ 
         data, 
         timestamp: new Date().toISOString(),
         id: initialData?.id || `pending-${Date.now()}`
       });
-      localStorage.setItem('pendingProspectForms', JSON.stringify(pendingForms));
+      safeStorage.setItem('pendingProspectForms', JSON.stringify(pendingForms));
       return true;
     } catch (error) {
       console.error("Failed to save form data locally:", error);

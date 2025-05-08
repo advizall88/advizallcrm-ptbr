@@ -118,14 +118,14 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md shadow-md">
+    <div className="flex h-screen items-center justify-center bg-gradient-to-b from-gray-50 to-gray-100 p-4">
+      <Card className="w-full max-w-md shadow-lg border border-gray-100 bg-white/95 backdrop-blur-sm rounded-xl">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
-            <img src="/images/logo.png" alt="Advizall" className="h-12" />
+            <img src="/images/logo.png" alt="Advizall" className="h-12 drop-shadow-md" />
           </div>
-          <CardTitle className="text-2xl text-center">Advizall CRM</CardTitle>
-          <CardDescription className="text-center">
+          <CardTitle className="text-2xl text-center font-semibold">Advizall CRM</CardTitle>
+          <CardDescription className="text-center text-gray-500">
             Login to access the system
           </CardDescription>
         </CardHeader>
@@ -145,11 +145,12 @@ const Login = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel className="text-gray-700">Email</FormLabel>
                     <FormControl>
                       <Input 
                         placeholder="your@email.com" 
                         autoComplete="email"
+                        className="focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 border-gray-200"
                         {...field} 
                       />
                     </FormControl>
@@ -162,12 +163,13 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className="text-gray-700">Password</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
                         placeholder="••••••••" 
                         autoComplete="current-password"
+                        className="focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 border-gray-200"
                         {...field} 
                       />
                     </FormControl>
@@ -175,7 +177,11 @@ const Login = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 hover:bg-blue-700 transition-all shadow-md hover:shadow-lg" 
+                disabled={isLoading}
+              >
                 {isLoading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
@@ -184,15 +190,15 @@ const Login = () => {
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500">
               Don't have an account?{" "}
-              <Link to="/register" className="text-blue-600 hover:underline">
+              <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
                 Register
               </Link>
             </p>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center">
+        <CardFooter className="flex justify-center border-t border-gray-100 pt-4">
           <p className="text-sm text-gray-500">
-            Developed by Advizall
+            Developed by <span className="font-medium text-gray-700">Advizall</span>
           </p>
         </CardFooter>
       </Card>

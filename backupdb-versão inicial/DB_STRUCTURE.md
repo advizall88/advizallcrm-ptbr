@@ -1,6 +1,6 @@
 # Documentação da Estrutura do Banco de Dados - AdvizallCRM
 
-Última atualização: 22 de Maio de 2024
+Última atualização: 24 de Maio de 2024
 
 ## Visão Geral
 
@@ -43,23 +43,24 @@ Armazena informações sobre leads/prospects antes de se tornarem clientes.
 | Coluna | Tipo | Descrição |
 |--------|------|-----------|
 | id | UUID | Chave primária, gerada automaticamente |
+| owner_id | TEXT | ID do usuário responsável |
 | contact_name | TEXT | Nome do contato |
-| company_name | TEXT | Nome da empresa |
-| email | TEXT | Email do contato (único) |
+| company_name | TEXT | Nome da empresa (opcional) |
 | phone | TEXT | Telefone do contato |
-| business_type | TEXT | Tipo de negócio |
-| status | TEXT | Status do prospect (new, contacted, qualified, etc) |
+| email | TEXT | Email do contato (opcional) |
+| lead_source | TEXT | Origem do lead (padrão 'Other') |
+| business_type | TEXT | Tipo de negócio (padrão 'Other') |
+| region_city | TEXT | Cidade (opcional) |
+| region_state | TEXT | Estado (opcional) |
+| timezone | TEXT | Fuso horário (padrão 'America/Chicago') |
+| score | INTEGER | Pontuação do prospect (1-5, padrão 3) |
+| status | TEXT | Status (new, interested, negotiation, lost) |
+| first_contact_at | TIMESTAMPTZ | Data do primeiro contato |
+| call_summary | TEXT | Resumo da ligação inicial |
+| notes | TEXT | Observações gerais |
+| next_follow_up_at | TIMESTAMPTZ | Data do próximo follow-up |
 | created_at | TIMESTAMPTZ | Data de criação do registro |
 | updated_at | TIMESTAMPTZ | Data de atualização do registro |
-| assigned_to | UUID | Referência ao usuário responsável |
-| notes | TEXT | Observações |
-| address | TEXT | Endereço |
-| city | TEXT | Cidade |
-| state | TEXT | Estado |
-| zip | TEXT | CEP |
-| country | TEXT | País (padrão 'Brasil') |
-| source | TEXT | Origem do prospect |
-| website | TEXT | Website |
 
 ### Clients
 
@@ -68,25 +69,30 @@ Armazena informações sobre clientes ativos.
 | Coluna | Tipo | Descrição |
 |--------|------|-----------|
 | id | UUID | Chave primária, gerada automaticamente |
+| account_manager_id | TEXT | ID do gerente de conta responsável |
 | contact_name | TEXT | Nome do contato |
-| company_name | TEXT | Nome da empresa |
-| email | TEXT | Email do contato (único) |
+| company_name | TEXT | Nome da empresa (opcional) |
 | phone | TEXT | Telefone do contato |
-| business_type | TEXT | Tipo de negócio |
-| status | TEXT | Status do cliente (active, inactive, etc) |
+| email | TEXT | Email do contato (opcional) |
+| lead_source | TEXT | Origem do cliente (padrão 'Other') |
+| business_type | TEXT | Tipo de negócio (padrão 'Other') |
+| region_city | TEXT | Cidade (opcional) |
+| region_state | TEXT | Estado (opcional) |
+| timezone | TEXT | Fuso horário (padrão 'America/Chicago') |
+| score | INTEGER | Pontuação do cliente (1-5) |
+| plan_name | TEXT | Nome do plano contratado |
+| full_address | TEXT | Endereço completo |
+| website | TEXT | Website do cliente |
+| social_links | TEXT | Links para redes sociais |
+| first_contact_at | TIMESTAMPTZ | Data do primeiro contato |
+| call_summary | TEXT | Resumo da ligação inicial |
+| notes | TEXT | Observações gerais |
+| zip_code | TEXT | Código postal |
 | created_at | TIMESTAMPTZ | Data de criação do registro |
 | updated_at | TIMESTAMPTZ | Data de atualização do registro |
-| assigned_to | UUID | Referência ao usuário responsável |
-| notes | TEXT | Observações |
-| address | TEXT | Endereço |
-| city | TEXT | Cidade |
-| state | TEXT | Estado |
-| zip | TEXT | CEP |
-| country | TEXT | País (padrão 'Brasil') |
-| website | TEXT | Website |
-| plan_name | TEXT | Nome do plano contratado |
 | monthly_fee | NUMERIC(10,2) | Valor mensal cobrado (em reais) |
 | ad_budget | NUMERIC(10,2) | Orçamento para anúncios (em reais) |
+| status | VARCHAR(20) | Status do cliente (active, inactive, delinquent) |
 
 ### Projects
 

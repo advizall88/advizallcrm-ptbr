@@ -23,11 +23,11 @@ const formSchema = z.object({
   contact_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
   company_name: z.string().nullable().optional(),
   phone: z.string().min(5, { message: "Phone number is required" }),
-  email: z.string().min(1, { message: "Email is required" }).email({ message: "Invalid email address" }),
+  email: z.string().email({ message: "Invalid email address" }).optional().nullable(),
   lead_source: z.string().default("Other"),
   business_type: z.string().optional(),
-  region_city: z.string().min(1, { message: "City is required" }),
-  region_state: z.string().min(1, { message: "State is required" }),
+  region_city: z.string().optional().nullable(),
+  region_state: z.string().optional().nullable(),
   timezone: z.string().default("America/Los_Angeles"),
   score: z.coerce.number().min(1).max(5).default(3).optional(),
   status: z.enum(["new", "interested", "negotiation", "lost"]).default("new").optional(),
@@ -186,11 +186,11 @@ const ProspectFormDialog = ({
         contact_name: values.contact_name,
         company_name: values.company_name || null,
         phone: values.phone,
-        email: values.email,
+        email: values.email || null,
         lead_source: values.lead_source || "Other",
         business_type: values.business_type || "Other",
-        region_city: values.region_city,
-        region_state: values.region_state,
+        region_city: values.region_city || null,
+        region_state: values.region_state || null,
         timezone: values.timezone || "America/Los_Angeles",
         score: values.score || 3,
         status: values.status || "new",
@@ -315,7 +315,7 @@ const ProspectFormDialog = ({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email *</FormLabel>
+                      <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input placeholder="email@example.com" {...field} />
                       </FormControl>
@@ -397,7 +397,7 @@ const ProspectFormDialog = ({
                   name="region_city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City *</FormLabel>
+                      <FormLabel>City</FormLabel>
                       <FormControl>
                         <Input placeholder="New York" {...field} />
                       </FormControl>
@@ -411,7 +411,7 @@ const ProspectFormDialog = ({
                   name="region_state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State *</FormLabel>
+                      <FormLabel>State</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>

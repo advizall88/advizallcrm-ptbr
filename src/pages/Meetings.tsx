@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { calMeetingService } from '@/services/calMeetingService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { formatDistanceToNow, format, parseISO, differenceInMinutes, isToday, isTomorrow } from 'date-fns';
-import { enUS } from 'date-fns/locale';
+import { formatDistanceToNow, format, parseISO, differenceInMinutes, isToday, isTomorrow, isPast } from 'date-fns';
+import { enUS, ptBR } from 'date-fns/locale';
 import CalendarIframe from '@/components/meetings/CalendarIframe';
 import { Button } from '@/components/ui/button';
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { motion } from "framer-motion";
@@ -30,9 +30,14 @@ import {
   ChevronRight,
   Info,
   Video,
-  CalendarClock
+  CalendarClock,
+  Plus,
+  Search
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
+import { useToast } from "@/components/ui/use-toast";
+import { Input } from "@/components/ui/input";
+import { CalMeeting } from '@/lib/supabase';
 
 // Helper function to format dates
 const formatDate = (dateString: string) => {
@@ -650,141 +655,151 @@ const MeetingCard = ({ meeting }: { meeting: any }) => {
   );
 };
 
-const EmptyState = ({ type }: { type: 'upcoming' | 'past' }) => (
+const EmptyState = ({ title, description, action }: { title: string; description: string; action?: React.ReactNode }) => (
   <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-gray-200 rounded-lg">
     <div className="bg-gray-50 p-3 rounded-full">
-      {type === 'upcoming' ? (
-        <Calendar className="h-8 w-8 text-gray-400" />
-      ) : (
-        <Clock className="h-8 w-8 text-gray-400" />
-      )}
+      <Calendar className="h-8 w-8 text-gray-400" />
     </div>
-    <h3 className="mt-4 text-lg font-medium text-gray-900">
-      {type === 'upcoming' ? 'No upcoming meetings' : 'No past meetings'}
-    </h3>
-    <p className="mt-1 text-sm text-gray-500 text-center max-w-sm">
-      {type === 'upcoming' 
-        ? 'You don\'t have any meetings scheduled. Click "Schedule Meeting" to add one.'
-        : 'You haven\'t had any meetings yet. They will appear here once they\'ve passed.'}
-    </p>
+    <h3 className="mt-4 text-lg font-medium text-gray-900">{title}</h3>
+    <p className="mt-1 text-sm text-gray-500 text-center max-w-sm">{description}</p>
+    {action && <div className="mt-4">{action}</div>}
   </div>
 );
 
 const Meetings = () => {
-  const [showCalendar, setShowCalendar] = useState(false);
-  
-  // Cal.com meetings from database
-  const {
-    data: upcomingMeetings = [],
-    isLoading: upcomingLoading,
-    error: upcomingError
-  } = useQuery({
-    queryKey: ['calUpcomingMeetings'],
-    queryFn: () => calMeetingService.getUpcomingMeetings(),
-    enabled: true
-  });
-  
-  const {
-    data: pastMeetings = [],
-    isLoading: pastLoading,
-    error: pastError
-  } = useQuery({
-    queryKey: ['calPastMeetings'],
-    queryFn: () => calMeetingService.getPastMeetings(),
-    enabled: true
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<string>("upcoming");
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["meetings"],
+    queryFn: calMeetingService.getMeetings,
   });
 
-  const isLoading = upcomingLoading || pastLoading;
-  const hasError = upcomingError || pastError;
+  // Converter data para array de CalMeeting
+  const meetings = (data || []) as CalMeeting[];
+
+  // Filtrar reuniões baseado no termo de pesquisa
+  const filterMeetings = (meetings: CalMeeting[]) => {
+    if (!searchTerm.trim()) return meetings;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return meetings.filter(meeting => {
+      return (
+        meeting.title.toLowerCase().includes(searchLower) ||
+        (meeting.description && meeting.description.toLowerCase().includes(searchLower)) ||
+        (meeting.attendee_name && meeting.attendee_name.toLowerCase().includes(searchLower)) ||
+        (meeting.attendee_email && meeting.attendee_email.toLowerCase().includes(searchLower))
+      );
+    });
+  };
+
+  const filteredMeetings = filterMeetings(meetings);
+  const upcomingMeetings = filteredMeetings.filter((meeting) => !isPast(new Date(meeting.end_time)));
+  const pastMeetings = filteredMeetings.filter((meeting) => isPast(new Date(meeting.end_time)));
 
   return (
     <AppLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Meetings</h1>
-            <p className="text-gray-500">Schedule and manage your client meetings.</p>
+      <div className="container py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Meetings</h1>
+          <div className="flex gap-2 items-center">
+            {/* Barra de pesquisa */}
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"/>
+              <Input
+                placeholder="Search meetings..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Dialog open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Meeting
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Schedule a Meeting</DialogTitle>
+                </DialogHeader>
+                <CalendarIframe onClose={() => setIsCalendarOpen(false)} />
+              </DialogContent>
+            </Dialog>
           </div>
-          <Button 
-            variant="default" 
-            className="bg-primary hover:bg-primary/90"
-            onClick={() => setShowCalendar(true)}
-          >
-            + Schedule Meeting
-          </Button>
         </div>
 
-        {/* Calendar dialog that overlays the screen */}
-        <Dialog open={showCalendar} onOpenChange={setShowCalendar}>
-          <DialogContent className="max-w-5xl w-[90vw] h-[85vh] p-0 overflow-hidden">
-            <div className="absolute top-4 right-4 z-50">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setShowCalendar(false)}
-                className="rounded-full h-8 w-8 bg-white/90 hover:bg-white"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="w-full h-full">
-              <CalendarIframe onClose={() => setShowCalendar(false)} />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList>
+            <TabsTrigger value="upcoming">
+              Upcoming ({upcomingMeetings.length})
+            </TabsTrigger>
+            <TabsTrigger value="past">
+              Past ({pastMeetings.length})
+            </TabsTrigger>
+          </TabsList>
 
-        {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-            <p className="mt-4 text-sm text-gray-500">Loading your meetings...</p>
-          </div>
-        ) : hasError ? (
-          <div className="flex flex-col items-center justify-center py-16 px-4 border-2 border-dashed border-red-200 rounded-lg bg-red-50">
-            <AlertCircle className="h-10 w-10 text-red-500" />
-            <h3 className="mt-4 text-lg font-medium text-red-700">Error Loading Meetings</h3>
-            <p className="mt-1 text-sm text-red-600 text-center max-w-md">
-              We couldn't load your meetings. Please try again later or contact support if the problem persists.
-            </p>
-            <Button variant="outline" className="mt-4" onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </div>
-        ) : (
-          <Tabs defaultValue="upcoming" className="w-full">
-            <TabsList className="grid grid-cols-2 mb-6 w-full max-w-md mx-auto">
-              <TabsTrigger value="upcoming" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-                Upcoming ({upcomingMeetings.length})
-              </TabsTrigger>
-              <TabsTrigger value="past" className="data-[state=active]:bg-primary data-[state=active]:text-white">
-                Past Meetings ({pastMeetings.length})
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="upcoming">
-              {upcomingMeetings.length === 0 ? (
-                <EmptyState type="upcoming" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {upcomingMeetings.map((meeting) => (
-                    <MeetingCard key={meeting.id} meeting={meeting} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="past">
-              {pastMeetings.length === 0 ? (
-                <EmptyState type="past" />
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {pastMeetings.map((meeting) => (
-                    <MeetingCard key={meeting.id} meeting={meeting} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
+          <TabsContent value="upcoming" className="mt-6">
+            {isLoading ? (
+              <div className="my-8 text-center">Loading meetings...</div>
+            ) : error ? (
+              <div className="my-8 text-center text-red-500">
+                Error loading meetings. Please try again.
+              </div>
+            ) : upcomingMeetings.length === 0 && searchTerm ? (
+              <EmptyState
+                title="No meetings found"
+                description={`No upcoming meetings matching "${searchTerm}"`}
+              />
+            ) : upcomingMeetings.length === 0 ? (
+              <EmptyState
+                title="No upcoming meetings"
+                description="Schedule a meeting to get started"
+                action={
+                  <Button onClick={() => setIsCalendarOpen(true)}>
+                    <Calendar className="h-4 w-4 mr-2" />
+                    Schedule Meeting
+                  </Button>
+                }
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {upcomingMeetings.map((meeting) => (
+                  <MeetingCard key={meeting.id} meeting={meeting} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="past" className="mt-6">
+            {isLoading ? (
+              <div className="my-8 text-center">Loading meetings...</div>
+            ) : error ? (
+              <div className="my-8 text-center text-red-500">
+                Error loading meetings. Please try again.
+              </div>
+            ) : pastMeetings.length === 0 && searchTerm ? (
+              <EmptyState
+                title="No meetings found"
+                description={`No past meetings matching "${searchTerm}"`}
+              />
+            ) : pastMeetings.length === 0 ? (
+              <EmptyState
+                title="No past meetings"
+                description="Past meetings will appear here"
+              />
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {pastMeetings.map((meeting) => (
+                  <MeetingCard key={meeting.id} meeting={meeting} />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
     </AppLayout>
   );

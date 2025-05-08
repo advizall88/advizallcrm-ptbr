@@ -1,6 +1,6 @@
 # AdvizallCRM - Backup do Banco de Dados
 
-Última atualização: 22 de Maio de 2024
+Última atualização: 24 de Maio de 2024
 
 ## Visão geral
 
@@ -41,6 +41,11 @@ node restore-database-browser.js
 
 ### Atualizações recentes do banco de dados
 
+- **24/05/2024**:
+  - Alterados `email`, `region_city` e `region_state` para aceitarem valores NULL nas tabelas `prospects` e `clients`
+  - Adicionado valor padrão (CURRENT_TIMESTAMP) para a coluna `first_contact_at` na tabela `clients`
+  - Adicionada coluna `status` na tabela `clients`
+
 - **22/05/2024**:
   - Adicionados usuários administradores padrão
   - Ajustados os gatilhos para consistência de timestamps
@@ -48,6 +53,7 @@ node restore-database-browser.js
 - **20/05/2024**:
   - Adicionada tabela `tasks` para gerenciamento de tarefas 
   - Adicionadas colunas `monthly_fee` e `ad_budget` na tabela `clients`
+  - Adicionada coluna `zip_code` na tabela `clients`
 
 ### Estrutura atual do banco
 

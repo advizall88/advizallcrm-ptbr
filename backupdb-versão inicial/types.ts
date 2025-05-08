@@ -26,13 +26,13 @@ export interface User {
   name: string | null;
   role: UserRole;
   created_at: string;
-  avatar_url: string | null;
-  phone: string | null;
-  title: string | null;
-  department: string | null;
-  bio: string | null;
-  last_login_at: string | null;
-  last_active_at: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
+  title?: string | null;
+  department?: string | null;
+  bio?: string | null;
+  last_login_at?: string | null;
+  last_active_at?: string | null;
 }
 
 /**
@@ -46,15 +46,15 @@ export type ProspectStatus = 'new' | 'contacted' | 'qualified' | 'negotiation' |
 export interface Prospect {
   id: string;
   contact_name: string;
-  company_name: string;
-  email: string;
-  phone: string | null;
-  business_type: string | null;
+  company_name?: string | null;
+  email?: string | null;
+  phone: string;
+  business_type?: string | null;
   status: ProspectStatus;
   created_at: string;
   updated_at: string;
   assigned_to: string | null;
-  notes: string | null;
+  notes?: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
@@ -75,24 +75,24 @@ export type ClientStatus = 'active' | 'inactive' | 'pending' | 'archived';
 export interface Client {
   id: string;
   contact_name: string;
-  company_name: string;
-  email: string;
-  phone: string | null;
-  business_type: string | null;
+  company_name?: string | null;
+  email?: string | null;
+  phone: string;
+  business_type?: string | null;
   status: ClientStatus;
   created_at: string;
   updated_at: string;
   assigned_to: string | null;
-  notes: string | null;
+  notes?: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
   zip: string | null;
   country: string | null;
   website: string | null;
-  plan_name: string | null;
-  monthly_fee: number;
-  ad_budget: number;
+  plan_name?: string | null;
+  monthly_fee?: number | null;
+  ad_budget?: number | null;
 }
 
 /**
@@ -107,13 +107,13 @@ export interface Project {
   id: string;
   client_id: string;
   name: string;
-  description: string | null;
+  description?: string | null;
   status: ProjectStatus;
   created_at: string;
   updated_at: string;
-  start_date: string | null;
-  end_date: string | null;
-  progress: number;
+  start_date?: string | null;
+  end_date?: string | null;
+  progress?: number;
 }
 
 /**
@@ -132,19 +132,19 @@ export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
 export interface Task {
   id: string;
   title: string;
-  description: string | null;
+  description?: string | null;
   status: TaskStatus;
   priority: TaskPriority;
-  due_date: string | null;
-  client_id: string | null;
-  project_id: string | null;
-  assigned_to: string | null;
+  due_date?: string | null;
+  client_id?: string | null;
+  project_id?: string | null;
+  assigned_to?: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
-  completed_at: string | null;
-  tags: string[] | null;
-  time_estimate: number | null;
+  completed_at?: string | null;
+  tags?: string[] | null;
+  time_estimate?: number | null;
 }
 
 /**
@@ -160,13 +160,13 @@ export interface Payment {
   client_id: string;
   amount: number;
   status: PaymentStatus;
-  payment_date: string | null;
-  due_date: string | null;
-  description: string | null;
+  payment_date?: string | null;
+  due_date?: string | null;
+  description?: string | null;
   created_at: string;
   updated_at: string;
-  payment_method: string | null;
-  invoice_number: string | null;
+  payment_method?: string | null;
+  invoice_number?: string | null;
 }
 
 /**
@@ -176,11 +176,11 @@ export interface Credential {
   id: string;
   client_id: string;
   service_name: string;
-  username: string | null;
-  password: string | null;
-  url: string | null;
-  api_key: string | null;
-  notes: string | null;
+  username?: string | null;
+  password?: string | null;
+  url?: string | null;
+  api_key?: string | null;
+  notes?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -196,18 +196,18 @@ export type MeetingStatus = 'scheduled' | 'completed' | 'cancelled' | 'reschedul
 export interface Meeting {
   id: string;
   title: string;
-  description: string | null;
+  description?: string | null;
   meeting_date: string;
   duration: number;
-  client_id: string | null;
-  prospect_id: string | null;
-  created_by: string | null;
+  client_id?: string | null;
+  prospect_id?: string | null;
+  created_by?: string | null;
   created_at: string;
   updated_at: string;
   status: MeetingStatus;
-  meeting_link: string | null;
-  notes: string | null;
-  location: string | null;
+  meeting_link?: string | null;
+  notes?: string | null;
+  location?: string | null;
 }
 
 /**
@@ -222,20 +222,20 @@ export interface CalMeeting {
   id: string;
   uid: string;
   title: string;
-  description: string | null;
+  description?: string | null;
   start_time: string;
   end_time: string;
-  attendees: any | null;
-  organizer: any | null;
-  calendar_event_id: string | null;
-  location: string | null;
+  attendees?: Record<string, any> | null;
+  organizer?: Record<string, any> | null;
+  calendar_event_id?: string | null;
+  location?: string | null;
   status: CalMeetingStatus;
-  event_type: any | null;
-  cal_user_id: string | null;
+  event_type?: Record<string, any> | null;
+  cal_user_id?: string | null;
   created_at: string;
   updated_at: string;
   processed: boolean;
-  metadata: any | null;
+  metadata?: Record<string, any> | null;
 }
 
 /**
@@ -365,4 +365,54 @@ export interface FilterOptions {
   };
   assignedTo?: string[];
   searchTerm?: string;
+}
+
+/**
+ * Prospect form data interface
+ */
+export interface ProspectFormData {
+  contact_name: string;
+  phone: string;
+  owner_id: string;
+  company_name?: string | null;
+  email?: string | null;
+  lead_source?: string | null;
+  business_type?: string | null;
+  region_city?: string | null;
+  region_state?: string | null;
+  timezone?: string | null;
+  score?: number;
+  status?: 'new' | 'interested' | 'negotiation' | 'lost';
+  first_contact_at?: string | null;
+  call_summary?: string | null;
+  notes?: string | null;
+  next_follow_up_at?: string | null;
+}
+
+/**
+ * Client form data interface
+ */
+export interface ClientFormData {
+  contact_name: string;
+  phone: string;
+  account_manager_id: string;
+  company_name?: string | null;
+  email?: string | null;
+  lead_source?: string | null;
+  business_type?: string | null;
+  region_city?: string | null;
+  region_state?: string | null;
+  timezone?: string | null;
+  score?: number;
+  status?: 'active' | 'inactive' | 'delinquent';
+  plan_name?: string | null;
+  full_address?: string | null;
+  website?: string | null;
+  social_links?: string | null;
+  first_contact_at?: string | null;
+  call_summary?: string | null;
+  notes?: string | null;
+  zip_code?: string | null;
+  monthly_fee?: number | null;
+  ad_budget?: number | null;
 } 

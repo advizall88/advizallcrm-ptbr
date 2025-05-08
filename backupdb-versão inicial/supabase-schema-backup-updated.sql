@@ -1,5 +1,5 @@
 -- AdvizallCRM Database Schema Backup
--- Updated: May 22, 2024
+-- Updated: May 24, 2024
 -- This file contains the complete database schema for the AdvizallCRM application
 
 -- Enable necessary extensions
@@ -51,51 +51,55 @@ CREATE TABLE IF NOT EXISTS "public"."users" (
 -- Prospects table
 CREATE TABLE IF NOT EXISTS "public"."prospects" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "owner_id" TEXT NOT NULL,
     "contact_name" TEXT NOT NULL,
-    "company_name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
-    "business_type" TEXT,
+    "company_name" TEXT,
+    "phone" TEXT NOT NULL,
+    "email" TEXT,
+    "lead_source" TEXT DEFAULT 'Other',
+    "business_type" TEXT DEFAULT 'Other',
+    "region_city" TEXT,
+    "region_state" TEXT,
+    "timezone" TEXT DEFAULT 'America/Chicago',
+    "score" INTEGER DEFAULT 3,
     "status" TEXT NOT NULL DEFAULT 'new',
+    "first_contact_at" TIMESTAMPTZ DEFAULT now(),
+    "call_summary" TEXT,
+    "notes" TEXT,
+    "next_follow_up_at" TIMESTAMPTZ,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-    "assigned_to" UUID REFERENCES "public"."users"("id"),
-    "notes" TEXT,
-    "address" TEXT,
-    "city" TEXT,
-    "state" TEXT,
-    "zip" TEXT,
-    "country" TEXT DEFAULT 'Brasil',
-    "source" TEXT,
-    "website" TEXT,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "prospects_email_key" UNIQUE ("email")
+    PRIMARY KEY ("id")
 );
 
 -- Clients table
 CREATE TABLE IF NOT EXISTS "public"."clients" (
     "id" UUID NOT NULL DEFAULT uuid_generate_v4(),
+    "account_manager_id" TEXT NOT NULL,
     "contact_name" TEXT NOT NULL,
-    "company_name" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
-    "business_type" TEXT,
-    "status" TEXT NOT NULL DEFAULT 'active',
+    "company_name" TEXT,
+    "phone" TEXT NOT NULL,
+    "email" TEXT,
+    "lead_source" TEXT DEFAULT 'Other',
+    "business_type" TEXT DEFAULT 'Other',
+    "region_city" TEXT,
+    "region_state" TEXT,
+    "timezone" TEXT DEFAULT 'America/Chicago',
+    "score" INTEGER DEFAULT 3,
+    "plan_name" TEXT,
+    "full_address" TEXT,
+    "website" TEXT,
+    "social_links" TEXT,
+    "first_contact_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
+    "call_summary" TEXT,
+    "notes" TEXT,
+    "zip_code" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT now(),
-    "assigned_to" UUID REFERENCES "public"."users"("id"),
-    "notes" TEXT,
-    "address" TEXT,
-    "city" TEXT,
-    "state" TEXT,
-    "zip" TEXT,
-    "country" TEXT DEFAULT 'Brasil',
-    "website" TEXT,
-    "plan_name" TEXT,
     "monthly_fee" NUMERIC(10,2) DEFAULT 0,
     "ad_budget" NUMERIC(10,2) DEFAULT 0,
-    PRIMARY KEY ("id"),
-    CONSTRAINT "clients_email_key" UNIQUE ("email")
+    "status" VARCHAR(20) DEFAULT 'active' NOT NULL,
+    PRIMARY KEY ("id")
 );
 
 -- Projects table
@@ -265,39 +269,56 @@ FOR EACH ROW
 EXECUTE FUNCTION "public"."update_updated_at"();
 
 -- Convert prospect to client function
-CREATE OR REPLACE FUNCTION "public"."convert_prospect_to_client"(
-  prospect_id UUID
-) RETURNS UUID
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
+CREATE OR REPLACE FUNCTION "public"."convert_prospect_to_client"(prospect_id UUID)
+RETURNS UUID AS $$
 DECLARE
-  new_client_id UUID;
-  p record;
+    new_client_id UUID;
+    p RECORD;
 BEGIN
-  -- Get the prospect data
-  SELECT * INTO p FROM prospects WHERE id = prospect_id;
-  
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Prospect with ID % not found', prospect_id;
-  END IF;
-  
-  -- Insert into clients table
-  INSERT INTO clients (
-    contact_name, company_name, email, phone, business_type,
-    status, assigned_to, notes, address, city, state, zip, country, website
-  ) VALUES (
-    p.contact_name, p.company_name, p.email, p.phone, p.business_type,
-    'active', p.assigned_to, p.notes, p.address, p.city, p.state, p.zip, p.country, p.website
-  ) RETURNING id INTO new_client_id;
-  
-  -- Delete the prospect
-  DELETE FROM prospects WHERE id = prospect_id;
-  
-  RETURN new_client_id;
+    -- Get prospect data
+    SELECT * INTO p FROM prospects WHERE id = prospect_id;
+    
+    -- Insert client record
+    INSERT INTO clients (
+        id,
+        account_manager_id,
+        contact_name,
+        company_name,
+        phone,
+        email,
+        lead_source,
+        business_type,
+        region_city,
+        region_state,
+        timezone,
+        score,
+        first_contact_at,
+        call_summary,
+        notes,
+        status
+    ) VALUES (
+        prospect_id,
+        p.owner_id,
+        p.contact_name,
+        p.company_name,
+        p.phone,
+        p.email,
+        p.lead_source,
+        p.business_type,
+        p.region_city,
+        p.region_state,
+        p.timezone,
+        p.score,
+        p.first_contact_at,
+        p.call_summary,
+        p.notes,
+        'active'
+    )
+    RETURNING id INTO new_client_id;
+    
+    RETURN new_client_id;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 
 -- Insert default admin users
 INSERT INTO "public"."users" (id, email, name, role, created_at, avatar_url, phone, last_login_at, last_active_at)

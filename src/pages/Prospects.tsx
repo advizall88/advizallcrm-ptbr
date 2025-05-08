@@ -29,7 +29,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 // In-memory fallback storage when localStorage is unavailable
 const memoryStorage: Record<string, string> = {};
@@ -278,6 +279,7 @@ const Prospects = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch prospects
   const { data: prospects = [], isLoading, error } = useQuery({
@@ -540,12 +542,31 @@ const Prospects = () => {
     });
   };
 
-  // Group prospects by status
+  // Filtrar prospectos baseado no termo de pesquisa
+  // Esta função filtra os prospectos antes de agrupá-los por status
+  const filterProspects = (prospects: Prospect[]) => {
+    if (!searchTerm.trim()) return prospects;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return prospects.filter(prospect => {
+      return (
+        prospect.contact_name.toLowerCase().includes(searchLower) ||
+        (prospect.company_name && prospect.company_name.toLowerCase().includes(searchLower)) ||
+        (prospect.email && prospect.email.toLowerCase().includes(searchLower)) ||
+        (prospect.business_type && prospect.business_type.toLowerCase().includes(searchLower)) ||
+        (prospect.region_city && prospect.region_city.toLowerCase().includes(searchLower)) ||
+        (prospect.region_state && prospect.region_state.toLowerCase().includes(searchLower))
+      );
+    });
+  };
+
+  // Filtrar e agrupar prospectos por status
+  const filteredProspects = prospects ? filterProspects(prospects) : [];
   const prospectsByStatus = {
-    new: prospects.filter(p => p.status === 'new'),
-    interested: prospects.filter(p => p.status === 'interested'),
-    negotiation: prospects.filter(p => p.status === 'negotiation'),
-    lost: prospects.filter(p => p.status === 'lost')
+    new: filteredProspects.filter(p => p.status === 'new'),
+    interested: filteredProspects.filter(p => p.status === 'interested'),
+    negotiation: filteredProspects.filter(p => p.status === 'negotiation'),
+    lost: filteredProspects.filter(p => p.status === 'lost')
   };
 
   // Function to attempt syncing locally saved forms
@@ -639,7 +660,17 @@ const Prospects = () => {
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Prospects</h1>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            {/* Barra de pesquisa */}
+            <div className="relative w-64">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"/>
+              <Input
+                placeholder="Search prospects..."
+                className="pl-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
             {isSyncing && (
               <Button variant="outline" disabled>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -651,7 +682,8 @@ const Prospects = () => {
               setEditMode('create');
               setIsEditDialogOpen(true);
             }}>
-              + Add Prospect
+              <Plus className="h-4 w-4 mr-2" />
+              Add Prospect
             </Button>
           </div>
         </div>
@@ -663,6 +695,10 @@ const Prospects = () => {
         ) : error ? (
           <div className="flex justify-center items-center h-64">
             <p className="text-red-500">Error loading prospects. Please try again.</p>
+          </div>
+        ) : filteredProspects.length === 0 && searchTerm ? (
+          <div className="flex justify-center items-center h-64">
+            <p>No prospects found matching "{searchTerm}"</p>
           </div>
         ) : (
           <DragDropContext onDragEnd={handleDragEnd}>

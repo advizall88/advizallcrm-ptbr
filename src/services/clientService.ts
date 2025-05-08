@@ -4,12 +4,13 @@ import { v4 as uuidv4 } from 'uuid';
 
 export type ClientFormData = {
   id?: string;
-  owner_id?: string;
+  account_manager_id?: string;
   contact_name?: string;
   company_name?: string | null;
   phone?: string;
   email?: string | null;
   full_address?: string | null;
+  zip_code?: string | null;
   website?: string | null;
   social_links?: any | null;
   lead_source?: string | null;
@@ -59,12 +60,13 @@ export type PaymentFormData = {
 
 export type ClientData = {
   id: string;
-  owner_id: string;
+  account_manager_id: string;
   contact_name: string;
   company_name?: string | null;
   phone: string;
   email?: string | null;
   full_address?: string | null;
+  zip_code?: string | null;
   website?: string | null;
   social_links?: string | null;
   lead_source?: string | null;
@@ -131,13 +133,19 @@ export const clientService = {
     try {
       const now = new Date().toISOString();
       
-      // Preparar dados do cliente
+      // Preparar dados do cliente, garantindo que account_manager_id esteja presente
       const clientData = {
         ...client,
         id: client.id || uuidv4(),
+        account_manager_id: client.account_manager_id || client.owner_id || 'unknown', // Faz fallback para owner_id se necessário
         created_at: client.created_at || now,
         updated_at: client.updated_at || now
       };
+      
+      // Remover owner_id se estiver presente para evitar erro
+      if ('owner_id' in clientData) {
+        delete clientData.owner_id;
+      }
       
       // Inserir na tabela de clientes
       const { data, error } = await supabase
@@ -171,12 +179,19 @@ export const clientService = {
           }
         }
         
+        // Garantir que estamos usando account_manager_id no fallback também
         const newClient = {
           ...client,
           id: client.id || uuidv4(),
+          account_manager_id: client.account_manager_id || client.owner_id || 'unknown',
           created_at: client.created_at || new Date().toISOString(),
           updated_at: client.updated_at || new Date().toISOString()
         };
+        
+        // Remover owner_id se estiver presente
+        if ('owner_id' in newClient) {
+          delete newClient.owner_id;
+        }
         
         existingClients.push(newClient);
         localStorage.setItem(storageKey, JSON.stringify(existingClients));
@@ -194,7 +209,7 @@ export const clientService = {
       const { data, error } = await supabase
         .from('clients')
         .select('*')
-        .eq('owner_id', managerId)
+        .eq('account_manager_id', managerId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;

@@ -114,17 +114,49 @@ const EditClient: React.FC<EditClientProps> = ({
                 </SelectContent>
               </Select>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="region_city">City</Label>
+              <Input
+                id="region_city"
+                value={client.region_city || ''}
+                onChange={(e) => onChange('region_city', e.target.value)}
+                placeholder="City"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="region_state">State</Label>
+              <Input
+                id="region_state"
+                value={client.region_state || ''}
+                onChange={(e) => onChange('region_state', e.target.value)}
+                placeholder="State"
+              />
+            </div>
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="full_address">Full Address</Label>
-            <Textarea
-              id="full_address"
-              value={client.full_address || ''}
-              onChange={(e) => onChange('full_address', e.target.value)}
-              placeholder="Full address"
-              rows={2}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="full_address">Address</Label>
+              <Textarea
+                id="full_address"
+                value={client.full_address || ''}
+                onChange={(e) => onChange('full_address', e.target.value)}
+                placeholder="Address"
+                rows={2}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="zip_code">Zip Code</Label>
+              <Input
+                id="zip_code"
+                value={client.zip_code || ''}
+                onChange={(e) => onChange('zip_code', e.target.value)}
+                placeholder="Zip Code"
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -153,9 +185,9 @@ const EditClient: React.FC<EditClientProps> = ({
               <Input
                 id="monthly_fee"
                 type="number"
-                value={client.monthly_fee || ''}
-                onChange={(e) => onChange('monthly_fee', parseFloat(e.target.value) || 0)}
-                placeholder="Monthly fee"
+                value={client.monthly_fee !== undefined && client.monthly_fee !== null ? client.monthly_fee : ''}
+                onChange={(e) => onChange('monthly_fee', e.target.value ? parseFloat(e.target.value) : null)}
+                placeholder="Monthly fee (optional)"
               />
             </div>
             
@@ -164,9 +196,9 @@ const EditClient: React.FC<EditClientProps> = ({
               <Input
                 id="ad_budget"
                 type="number"
-                value={client.ad_budget || ''}
-                onChange={(e) => onChange('ad_budget', parseFloat(e.target.value) || 0)}
-                placeholder="Ad budget"
+                value={client.ad_budget !== undefined && client.ad_budget !== null ? client.ad_budget : ''}
+                onChange={(e) => onChange('ad_budget', e.target.value ? parseFloat(e.target.value) : null)}
+                placeholder="Ad budget (optional)"
               />
             </div>
           </div>

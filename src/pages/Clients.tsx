@@ -121,6 +121,7 @@ const Clients = () => {
     phone: '',
     email: '',
     full_address: '',
+    zip_code: '',
     website: '',
     business_type: '',
     region_city: '',
@@ -128,8 +129,8 @@ const Clients = () => {
     status: 'active',
     lead_source: '',
     plan_name: '',
-    monthly_fee: 0,
-    ad_budget: 0,
+    monthly_fee: null,
+    ad_budget: null,
     notes: '',
   });
   
@@ -407,7 +408,7 @@ const Clients = () => {
       const newClientData = {
         ...data,
         id: uuidv4(),
-        owner_id: user?.id || 'unknown',
+        account_manager_id: user?.id || 'unknown',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -440,6 +441,7 @@ const Clients = () => {
       phone: '',
       email: '',
       full_address: '',
+      zip_code: '',
       website: '',
       business_type: '',
       region_city: '',
@@ -447,8 +449,8 @@ const Clients = () => {
       status: 'active',
       lead_source: '',
       plan_name: '',
-      monthly_fee: 0,
-      ad_budget: 0,
+      monthly_fee: null,
+      ad_budget: null,
       notes: '',
     });
   };
@@ -846,15 +848,27 @@ const Clients = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-4 space-y-2">
-                    <Label htmlFor="full_address">Full Address</Label>
-                    <Input
-                      id="full_address"
-                      value={newClient.full_address || ''}
-                      onChange={(e) => setNewClient({ ...newClient, full_address: e.target.value })}
-                      placeholder="Street Address"
-                      className="focus-visible:ring-primary"
-                    />
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="full_address">Address</Label>
+                      <Input
+                        id="full_address"
+                        value={newClient.full_address || ''}
+                        onChange={(e) => setNewClient({ ...newClient, full_address: e.target.value })}
+                        placeholder="Street Address"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="zip_code">Zip Code</Label>
+                      <Input
+                        id="zip_code"
+                        value={newClient.zip_code || ''}
+                        onChange={(e) => setNewClient({ ...newClient, zip_code: e.target.value })}
+                        placeholder="Zip Code"
+                        className="focus-visible:ring-primary"
+                      />
+                    </div>
                   </div>
                 </div>
                 
@@ -901,9 +915,13 @@ const Clients = () => {
                           type="number"
                           min="0"
                           step="0.01"
-                          value={newClient.monthly_fee || 0}
-                          onChange={(e) => setNewClient({ ...newClient, monthly_fee: Number(e.target.value) })}
+                          value={newClient.monthly_fee !== undefined && newClient.monthly_fee !== null ? newClient.monthly_fee : ''}
+                          onChange={(e) => setNewClient({ 
+                            ...newClient, 
+                            monthly_fee: e.target.value ? parseFloat(e.target.value) : null 
+                          })}
                           className="pl-7 focus-visible:ring-primary"
+                          placeholder="Optional"
                         />
                       </div>
                     </div>
@@ -916,9 +934,13 @@ const Clients = () => {
                           type="number"
                           min="0"
                           step="0.01"
-                          value={newClient.ad_budget || 0}
-                          onChange={(e) => setNewClient({ ...newClient, ad_budget: Number(e.target.value) })}
+                          value={newClient.ad_budget !== undefined && newClient.ad_budget !== null ? newClient.ad_budget : ''}
+                          onChange={(e) => setNewClient({
+                            ...newClient,
+                            ad_budget: e.target.value ? parseFloat(e.target.value) : null
+                          })}
                           className="pl-7 focus-visible:ring-primary"
+                          placeholder="Optional"
                         />
                       </div>
                     </div>

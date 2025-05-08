@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -73,6 +73,18 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
           paid: false,
         },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        description: initialData.description || '',
+        amount: initialData.amount || 0,
+        currency: initialData.currency || 'USD',
+        invoice_date: initialData.invoice_date ? new Date(initialData.invoice_date) : new Date(),
+        paid: initialData.paid || false,
+      });
+    }
+  }, [initialData, form]);
 
   const handleSubmit = async (values: FormValues) => {
     try {

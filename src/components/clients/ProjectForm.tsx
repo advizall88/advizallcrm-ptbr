@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -70,6 +70,17 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
           description: '',
         },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        service: initialData.service,
+        status: initialData.status,
+        description: initialData.description || '',
+        deadline: initialData.deadline ? new Date(initialData.deadline) : undefined,
+      });
+    }
+  }, [initialData, form]);
 
   const handleSubmit = async (values: FormValues) => {
     try {

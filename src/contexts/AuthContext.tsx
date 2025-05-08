@@ -58,105 +58,173 @@ const safeStorage = {
       // Already removed from memory storage
     }
   },
-  isAvailable: (): boolean => {
+  clearAll: () => {
+    // Limpar todos os dados de autenticação
     try {
-      const testKey = '_test_storage_';
-      localStorage.setItem(testKey, 'test');
-      localStorage.removeItem(testKey);
-      return true;
+      localStorage.removeItem('advizall_user');
+      localStorage.removeItem('advizall_session');
+      delete memoryStorage['advizall_user'];
+      delete memoryStorage['advizall_session'];
     } catch (error) {
-      console.warn('localStorage is not available:', error);
-      return false;
+      console.warn('Error clearing storage data:', error);
     }
   }
 };
 
+// Helper para criar um objeto de usuário padrão
+const createDefaultUser = (
+  id: string,
+  name: string,
+  email: string,
+  role: string = 'user'
+): User => ({
+  id,
+  name,
+  email,
+  role,
+  created_at: new Date().toISOString(),
+  avatar_url: '',
+  phone: '',
+  title: '',
+  department: '',
+  bio: '',
+  last_login_at: new Date().toISOString(),
+  last_active_at: new Date().toISOString()
+});
+
 // Para fins de desenvolvimento, o usuário padrão se logar falhar
-const DEV_USER: User = {
-  id: 'dev-user-id',
-  name: 'Dev User',
-  email: 'admin@advizall.com',
-  role: 'admin',
-  created_at: new Date().toISOString()
-};
+const DEV_USER: User = createDefaultUser(
+  'dev-user-id',
+  'Dev User',
+  'admin@advizall.com',
+  'admin'
+);
+
+// Limpar todos os dados de autenticação ao carregar este arquivo
+// Isso forçará um novo login em caso de problemas com autenticação
+safeStorage.clearAll();
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true); // Starts as true to check authentication
-  const [storageAvailable, setStorageAvailable] = useState<boolean | null>(null);
-
-  // Check if storage is available
+  const [loading, setLoading] = useState(true); // Começa como true para verificar autenticação
+  
+  // Verificar sessão ao carregar
   useEffect(() => {
-    setStorageAvailable(safeStorage.isAvailable());
-  }, []);
-
-  // Check for existing session on load
-  useEffect(() => {
+    // Tempo máximo para verificação de autenticação (10 segundos)
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('Verificação de autenticação excedeu o tempo limite (10s) - forçando conclusão');
+        setLoading(false);
+      }
+    }, 10000);
+    
     const checkSession = async () => {
       try {
-        // Tentar obter a sessão do Supabase
-        const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+        console.log('Iniciando verificação de sessão...');
+        
+        // Tenta obter a sessão atual do Supabase
+        const { data } = await supabase.auth.getSession();
+        const supabaseSession = data.session;
         
         if (supabaseSession) {
-          // Se temos uma sessão, pegamos os dados do usuário
+          console.log('Sessão encontrada no Supabase');
           setSession(supabaseSession);
           
-          // Buscar dados completos do usuário do banco
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', supabaseSession.user.id)
-            .single();
-          
-          if (userError) {
-            console.error('Error fetching user data:', userError);
-            // Fallback para o usuário da sessão
-            setUser({
-              id: supabaseSession.user.id,
-              name: supabaseSession.user.email?.split('@')[0] || 'Unknown User',
-              email: supabaseSession.user.email || '',
-              role: 'user', // Default role
-              created_at: new Date().toISOString()
-            });
-          } else {
+          // Busca dados do usuário
+          try {
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', supabaseSession.user.id)
+              .single();
+            
+            if (userError) {
+              throw userError;
+            }
+            
+            // Define o usuário e armazena localmente
             setUser(userData as User);
+            safeStorage.setItem('advizall_user', JSON.stringify(userData));
+            safeStorage.setItem('advizall_session', JSON.stringify(supabaseSession));
+            console.log('Dados do usuário carregados com sucesso');
+          } catch (error) {
+            console.error('Erro ao buscar dados do usuário:', error);
+            
+            // Cria um usuário padrão baseado nos dados da sessão
+            const fallbackUser = createDefaultUser(
+              supabaseSession.user.id,
+              supabaseSession.user.email?.split('@')[0] || 'Unknown User',
+              supabaseSession.user.email || '',
+              'user' // Papel padrão
+            );
+            
+            setUser(fallbackUser);
+            safeStorage.setItem('advizall_user', JSON.stringify(fallbackUser));
+            safeStorage.setItem('advizall_session', JSON.stringify(supabaseSession));
           }
         } else {
-          // Sem sessão no Supabase, verificar o armazenamento
+          // Tenta recuperar de armazenamento local como último recurso
           const storedUser = safeStorage.getItem('advizall_user');
           const storedSession = safeStorage.getItem('advizall_session');
           
           if (storedUser && storedSession) {
+            console.log('Sessão não encontrada no Supabase, usando dados armazenados localmente');
             try {
               setUser(JSON.parse(storedUser));
               setSession(JSON.parse(storedSession));
             } catch (e) {
-              console.warn('Error parsing stored auth data:', e);
-              // Limpar dados inválidos
+              console.warn('Erro ao analisar dados armazenados:', e);
+              setUser(null);
+              setSession(null);
               safeStorage.removeItem('advizall_user');
               safeStorage.removeItem('advizall_session');
             }
+          } else {
+            console.log('Nenhuma sessão encontrada');
+            setUser(null);
+            setSession(null);
           }
         }
       } catch (error) {
-        console.error('Error checking auth session:', error);
+        console.error('Erro ao verificar sessão:', error);
+        setUser(null);
+        setSession(null);
       } finally {
         setLoading(false);
+        clearTimeout(safetyTimeout);
       }
     };
     
     checkSession();
     
-    // Listener para mudanças de autenticação
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('Auth state changed:', event);
-        
-        setSession(session);
-        
-        if (session?.user) {
-          // Buscar dados completos do usuário
+    // Configura um listener para mudanças na autenticação
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, newSession) => {
+      console.log('Estado de autenticação alterado:', event);
+      
+      if (event === 'SIGNED_IN' && newSession) {
+        setSession(newSession);
+        // O usuário será carregado na próxima re-execução do useEffect
+      } 
+      else if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setSession(null);
+        safeStorage.removeItem('advizall_user');
+        safeStorage.removeItem('advizall_session');
+      }
+    });
+    
+    return () => {
+      clearTimeout(safetyTimeout);
+      authListener.subscription.unsubscribe();
+    };
+  }, []); // Sem dependências para evitar loops
+  
+  // Efeito para carregar dados do usuário quando a sessão muda
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (session && !user) {
+        try {
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -164,45 +232,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .single();
           
           if (userError) {
-            console.error('Error fetching user data on auth change:', userError);
-            setUser({
-              id: session.user.id,
-              name: session.user.email?.split('@')[0] || 'Unknown User',
-              email: session.user.email || '',
-              role: 'user',
-              created_at: new Date().toISOString()
-            });
-          } else {
-            setUser(userData as User);
+            throw userError;
           }
           
-          // Persistir no armazenamento para backup
-          const userToStore = userData || {
-            id: session.user.id,
-            name: session.user.email?.split('@')[0] || 'Unknown User',
-            email: session.user.email || '',
-            role: 'user',
-            created_at: new Date().toISOString()
-          };
+          setUser(userData as User);
+          safeStorage.setItem('advizall_user', JSON.stringify(userData));
+        } catch (error) {
+          console.error('Erro ao carregar dados do usuário após mudança de sessão:', error);
           
-          safeStorage.setItem('advizall_user', JSON.stringify(userToStore));
-          safeStorage.setItem('advizall_session', JSON.stringify(session));
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-          safeStorage.removeItem('advizall_user');
-          safeStorage.removeItem('advizall_session');
+          // Criar usuário padrão se não for possível carregar do banco
+          const fallbackUser = createDefaultUser(
+            session.user.id,
+            session.user.email?.split('@')[0] || 'Unknown User',
+            session.user.email || '',
+            'user'
+          );
+          
+          setUser(fallbackUser);
+          safeStorage.setItem('advizall_user', JSON.stringify(fallbackUser));
         }
       }
-    );
-    
-    return () => {
-      authListener.subscription.unsubscribe();
     };
-  }, []);
+    
+    loadUserData();
+  }, [session, user]);
 
   const signIn = async (email: string, password: string, navigate: NavigateFunction) => {
+    console.log('Tentando fazer login com:', email);
     try {
       setLoading(true);
+      
+      // Limpa dados existentes
+      safeStorage.removeItem('advizall_user');
+      safeStorage.removeItem('advizall_session');
       
       // Tenta fazer login no Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -211,17 +273,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        console.error('Supabase login error:', error);
+        console.error('Erro de login Supabase:', error);
         
-        // Fallback para ambiente de desenvolvimento
-        if (process.env.NODE_ENV === 'development' && email === 'admin@advizall.com') {
-          console.log('Using development fallback login');
+        // Apenas para ambiente de desenvolvimento - login alternativo
+        if (import.meta.env.DEV && email === 'admin@advizall.com') {
+          console.log('Usando login alternativo de desenvolvimento');
           const mockSession = {
-            user: { id: DEV_USER.id },
+            user: { id: DEV_USER.id, email: DEV_USER.email },
             access_token: 'dev-token',
             refresh_token: 'dev-refresh-token',
             expires_at: Date.now() + 3600000,
-          } as any;
+          } as unknown as Session;
           
           setUser(DEV_USER);
           setSession(mockSession);
@@ -229,11 +291,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           safeStorage.setItem('advizall_user', JSON.stringify(DEV_USER));
           safeStorage.setItem('advizall_session', JSON.stringify(mockSession));
           
-          setTimeout(() => {
-            navigate('/');
-          }, 500);
-          
           setLoading(false);
+          // Não navegue aqui - deixe o useEffect do Login fazer isso
           return { error: null, success: true };
         }
         
@@ -252,22 +311,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         let userToSet: User;
         
         if (userError) {
-          console.error('Error fetching user data after login:', userError);
+          console.error('Erro ao buscar dados do usuário após login:', userError);
           
           // Se não encontrar o usuário no banco, cria um registro temporário
-          userToSet = {
-            id: data.user.id,
-            name: data.user.email?.split('@')[0] || 'Unknown User',
-            email: data.user.email || '',
-            role: 'user', // Default role
-            created_at: new Date().toISOString()
-          };
+          userToSet = createDefaultUser(
+            data.user.id,
+            data.user.email?.split('@')[0] || 'Unknown User',
+            data.user.email || '',
+            'user'
+          );
           
           // Tenta criar o usuário no banco
           try {
             await supabase.from('users').insert(userToSet);
           } catch (insertError) {
-            console.error('Error creating user record:', insertError);
+            console.error('Erro ao criar registro de usuário:', insertError);
           }
         } else {
           userToSet = userData as User;
@@ -280,19 +338,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         safeStorage.setItem('advizall_user', JSON.stringify(userToSet));
         safeStorage.setItem('advizall_session', JSON.stringify(data.session));
         
-        navigate('/');
+        // Não navegue aqui - deixe o useEffect do Login fazer isso
       }
 
       setLoading(false);
       return { error: null, success: true };
     } catch (error) {
-      console.error('Unexpected error during login:', error);
+      console.error('Erro inesperado durante login:', error);
       setLoading(false);
       return { error: error as Error, success: false };
     }
   };
 
   const signOut = async (navigate: NavigateFunction) => {
+    console.log('Iniciando processo de logout');
     try {
       setLoading(true);
       
@@ -310,8 +369,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       navigate('/login');
       setLoading(false);
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Erro durante logout:', error);
       setLoading(false);
+      
+      // Se houver erro, ainda assim limpe tudo e redirecione
+      setUser(null);
+      setSession(null);
+      safeStorage.removeItem('advizall_user');
+      safeStorage.removeItem('advizall_session');
+      navigate('/login');
     }
   };
 

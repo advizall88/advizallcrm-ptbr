@@ -212,11 +212,6 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
   const handleEditProject = (project: Project) => {
     setSelectedProject(project);
     setOpenProjectForm(true);
-    
-    toast({
-      title: "Edit Project",
-      description: `Editing project: ${project.description}`,
-    });
   };
 
   const handleDeleteProject = (project: Project) => {
@@ -248,11 +243,6 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
   const handleEditPayment = (payment: Payment) => {
     setSelectedPayment(payment);
     setOpenPaymentForm(true);
-    
-    toast({
-      title: "Edit Payment",
-      description: `Editing payment: ${payment.description}`,
-    });
   };
 
   const handleDeletePayment = (payment: Payment) => {
@@ -293,11 +283,6 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
   const handleEditCredential = (credential: Credential) => {
     setSelectedCredential(credential);
     setOpenCredentialForm(true);
-    
-    toast({
-      title: "Edit Credential",
-      description: `Editing credential for ${credential.system}`,
-    });
   };
 
   const handleDeleteCredential = (credential: Credential) => {

@@ -13,48 +13,93 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import Unauthorized from "./pages/Unauthorized";
+import { useEffect } from "react";
 
-const queryClient = new QueryClient();
+// Limpar qualquer sessão existente para evitar problemas de autenticação ao iniciar
+// Isso garante que o usuário sempre faça login novamente depois de reiniciar o aplicativo
+if (typeof window !== 'undefined') {
+  try {
+    console.log("Limpando dados de autenticação antigos ao iniciar o aplicativo...");
+    localStorage.removeItem("advizall_user");
+    localStorage.removeItem("advizall_session");
+  } catch (e) {
+    console.warn("Não foi possível limpar o localStorage ao iniciar:", e);
+  }
+}
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/unauthorized" element={<Unauthorized />} />
-            
-            {/* Protected routes for all authenticated users */}
-            <Route element={<ProtectedRoute requiredRole="user" />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/prospects" element={<Prospects />} />
-              <Route path="/meetings" element={<Meetings />} />
-              <Route path="/settings" element={<Settings />} />
-            </Route>
-            
-            {/* Protected routes for moderators and admins */}
-            <Route element={<ProtectedRoute requiredRole="moderator" />}>
-              <Route path="/clients" element={<Clients />} />
-              <Route path="/clients/:id" element={<Clients />} />
-              {/* Additional moderator-only routes can be added here */}
-            </Route>
-            
-            {/* Protected routes for admins only */}
-            <Route element={<ProtectedRoute requiredRole="admin" />}>
-              {/* Admin-only routes will be added here */}
-            </Route>
-            
-            {/* 404 route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+// Configuração do cliente de consulta para gerenciar o estado global de dados
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Configuração padrão para consultas - se necessário ajustar no futuro
+      staleTime: 5 * 60 * 1000, // 5 minutos
+      retry: 1,
+    },
+  },
+});
+
+/**
+ * Componente principal da aplicação
+ * 
+ * Estrutura:
+ * - Provedores de contexto (Query, Auth, Tooltip) para funcionalidades globais
+ * - Sistema de notificações com dois tipos de toasts
+ * - Roteamento com rotas públicas e protegidas
+ * - Proteção de rotas baseada em funções de usuário
+ */
+const App = () => {
+  // Log de inicialização do aplicativo
+  useEffect(() => {
+    console.log("Aplicativo AdvizallCRM inicializado");
+    return () => {
+      console.log("Aplicativo AdvizallCRM desmontado");
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        {/* Sistemas de notificação toast */}
+        <Toaster />
+        <Sonner />
+        
+        {/* Roteamento com BrowserRouter */}
+        <BrowserRouter>
+          {/* Contexto de autenticação */}
+          <AuthProvider>
+            <Routes>
+              {/* Rotas públicas - acessíveis sem autenticação */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/unauthorized" element={<Unauthorized />} />
+              
+              {/* Rotas protegidas para todos os usuários autenticados */}
+              <Route element={<ProtectedRoute requiredRole="user" />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/prospects" element={<Prospects />} />
+                <Route path="/meetings" element={<Meetings />} />
+                <Route path="/settings" element={<Settings />} />
+              </Route>
+              
+              {/* Rotas protegidas para moderadores e admins */}
+              <Route element={<ProtectedRoute requiredRole="moderator" />}>
+                <Route path="/clients" element={<Clients />} />
+                <Route path="/clients/:id" element={<Clients />} />
+                {/* Rotas adicionais apenas para moderadores podem ser adicionadas aqui */}
+              </Route>
+              
+              {/* Rotas protegidas apenas para admins */}
+              <Route element={<ProtectedRoute requiredRole="admin" />}>
+                {/* Rotas apenas para admin serão adicionadas aqui */}
+              </Route>
+              
+              {/* Rota 404 para páginas não encontradas */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

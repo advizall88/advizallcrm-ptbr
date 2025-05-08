@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -72,6 +72,18 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
           visible_to: 'moderator',
         },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        system: initialData.system,
+        login: initialData.login,
+        password: initialData.password,
+        notes: initialData.notes || '',
+        visible_to: initialData.visible_to,
+      });
+    }
+  }, [initialData, form]);
 
   const handleSubmit = async (values: FormValues) => {
     try {

@@ -25,6 +25,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Esquema de validação para o formulário de login (comentário em português)
 const loginFormSchema = z.object({
   email: z.string().email({ message: "Invalid email." }),
   password: z.string().min(1, { message: "Password is required." }),
@@ -33,33 +34,37 @@ const loginFormSchema = z.object({
 type LoginFormValues = z.infer<typeof loginFormSchema>;
 
 const Login = () => {
+  // Estado para controlar o carregamento e erros (comentário em português)
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  // Hooks para autenticação e navegação (comentário em português)
   const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   
-  // Get the original route that the user tried to access
+  // Obtém a rota original que o usuário tentou acessar (comentário em português)
   const from = location.state?.from?.pathname || "/";
   
-  // If the user is already authenticated, redirect
+  // Se o usuário já estiver autenticado, redirecione (comentário em português)
   useEffect(() => {
     if (user) {
-      console.log("Login: User already authenticated, redirecting to:", from);
+      console.log("Login: Usuário já autenticado, redirecionando para:", from);
       navigate(from, { replace: true });
     }
   }, [user, navigate, from]);
 
-  // Log for debugging
+  // Log para depuração (comentário em português)
   useEffect(() => {
-    console.log("Login: Mounted");
-    console.log("Login: Original route =", from);
+    console.log("Login: Componente montado");
+    console.log("Login: Rota original =", from);
     return () => {
-      console.log("Login: Unmounted");
+      console.log("Login: Componente desmontado");
     };
   }, [from]);
 
+  // Configuração do formulário com validação (comentário em português)
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -68,15 +73,20 @@ const Login = () => {
     },
   });
 
+  // Função de envio do formulário (comentário em português)
   const onSubmit = async (data: LoginFormValues) => {
-    console.log("Login: Attempting login with", data.email);
+    console.log("Login: Tentando login com", data.email);
+    
+    // Limpa erros e define carregando (comentário em português)
     setIsLoading(true);
     setError("");
     
     try {
+      // Chama a função de login do contexto de autenticação (comentário em português)
       const { error, success } = await signIn(data.email, data.password, navigate);
       
       if (error || !success) {
+        // Em caso de erro, exibe mensagem (comentário em português)
         setError(error?.message || "Login failed. Check your credentials.");
         toast({
           title: "Login Error",
@@ -87,14 +97,16 @@ const Login = () => {
         return;
       }
       
+      // Em caso de sucesso, exibe notificação (comentário em português)
       toast({
         title: "Login successful",
         description: "Welcome to Advizall CRM",
       });
       
-      console.log("Login: Login successful, redirection will be done by useEffect");
-      // Redirection is now done by useEffect when user is defined
+      console.log("Login: Login bem-sucedido, redirecionamento será feito pelo useEffect");
+      // O redirecionamento é feito pelo useEffect quando user é definido (comentário em português)
     } catch (error: any) {
+      // Captura erros inesperados (comentário em português)
       setError(error?.message || "An unexpected error occurred");
       toast({
         title: "Error",
@@ -105,6 +117,7 @@ const Login = () => {
     }
   };
 
+  // Renderiza o formulário de login (comentário em português)
   return (
     <div className="flex h-screen items-center justify-center bg-gray-50 p-4">
       <Card className="w-full max-w-md shadow-md">
@@ -118,12 +131,14 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Exibe erros se houver (comentário em português) */}
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
           
+          {/* Informações de login para desenvolvimento (comentário em português) */}
           <Alert className="bg-blue-50 border-blue-100">
             <AlertDescription className="text-blue-800">
               <strong>Development login:</strong><br />
@@ -132,6 +147,7 @@ const Login = () => {
             </AlertDescription>
           </Alert>
           
+          {/* Formulário de login (comentário em português) */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

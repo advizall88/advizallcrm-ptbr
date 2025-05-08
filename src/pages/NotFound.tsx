@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,9 @@ const NotFound = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
       <div className="text-center max-w-md w-full shadow-neumorph p-8 bg-white rounded-lg">
+        <div className="flex justify-center mb-6">
+          <img src="/images/logo.png" alt="Advizall" className="h-16" />
+        </div>
         <h1 className="text-6xl font-bold text-primary mb-2">404</h1>
         <p className="text-2xl font-medium text-gray-700 mb-6">Page not found</p>
         <p className="text-gray-500 mb-8">

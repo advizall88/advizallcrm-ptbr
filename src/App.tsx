@@ -12,20 +12,9 @@ import Meetings from "./pages/Meetings";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Unauthorized from "./pages/Unauthorized";
 import { useEffect } from "react";
-
-// Limpar qualquer sessão existente para evitar problemas de autenticação ao iniciar
-// Isso garante que o usuário sempre faça login novamente depois de reiniciar o aplicativo
-if (typeof window !== 'undefined') {
-  try {
-    console.log("Limpando dados de autenticação antigos ao iniciar o aplicativo...");
-    localStorage.removeItem("advizall_user");
-    localStorage.removeItem("advizall_session");
-  } catch (e) {
-    console.warn("Não foi possível limpar o localStorage ao iniciar:", e);
-  }
-}
 
 // Configuração do cliente de consulta para gerenciar o estado global de dados
 const queryClient = new QueryClient({
@@ -70,6 +59,7 @@ const App = () => {
             <Routes>
               {/* Rotas públicas - acessíveis sem autenticação */}
               <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="/unauthorized" element={<Unauthorized />} />
               
               {/* Rotas protegidas para todos os usuários autenticados */}

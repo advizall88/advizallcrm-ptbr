@@ -9,6 +9,9 @@ const Unauthorized = () => {
 
   return (
     <div className="flex h-screen flex-col items-center justify-center p-4 text-center">
+      <div className="mb-6">
+        <img src="/images/logo.png" alt="Advizall" className="h-16 mb-2" />
+      </div>
       <div className="mb-4 text-6xl">🔒</div>
       <h1 className="mb-2 text-3xl font-bold">Access Denied</h1>
       <p className="mb-6 max-w-md text-gray-500">

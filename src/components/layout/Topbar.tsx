@@ -133,8 +133,16 @@ const Topbar = () => {
                 className="relative h-10 w-10 rounded-full"
                 size="icon"
               >
-                <div className="flex h-full w-full items-center justify-center rounded-full bg-secondary text-white">
-                  {getUserInitials()}
+                <div className="flex h-full w-full items-center justify-center rounded-full bg-secondary text-white overflow-hidden">
+                  {user?.avatar_url ? (
+                    <img 
+                      src={user.avatar_url} 
+                      alt={user?.name || 'User avatar'} 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    getUserInitials()
+                  )}
                 </div>
               </Button>
             </DropdownMenuTrigger>

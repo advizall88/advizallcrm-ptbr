@@ -13,6 +13,7 @@ type AuthContextType = {
   }>;
   signOut: (navigate: NavigateFunction) => Promise<void>;
   isUserRole: (role: 'user' | 'moderator' | 'admin') => boolean;
+  updateUserData: (userData: User) => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -258,6 +259,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return false;
   };
   
+  const updateUserData = (userData: User) => {
+    // Update the user state with the new data
+    setUser(userData);
+  };
+  
   const contextValue: AuthContextType = {
     user,
     session,
@@ -265,6 +271,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut,
     isUserRole,
+    updateUserData,
   };
   
   return (

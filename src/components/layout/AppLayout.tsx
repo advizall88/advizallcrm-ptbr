@@ -1,4 +1,3 @@
-
 import React from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
@@ -9,7 +8,7 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex flex-col flex-1 overflow-hidden">
         <Topbar />

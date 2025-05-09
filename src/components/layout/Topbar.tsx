@@ -68,7 +68,7 @@ const Topbar = () => {
   };
   
   return (
-    <header className="bg-white border-b border-gray-200 h-16">
+    <header className="bg-card dark:bg-gray-800 border-b border-border h-16">
       <div className="flex items-center justify-between h-full px-6">
         <div className="flex items-center">
           {/* Mobile Menu Button - only visible on mobile */}
@@ -89,7 +89,7 @@ const Topbar = () => {
                   <div className="flex items-center py-4">
                     <img src="/images/logo.png" alt="Advizall" className="h-8 mr-2" />
                     <span className="text-lg font-bold">
-                      <span className="text-secondary">Advizall</span> CRM
+                      <span className="text-secondary">Advizall</span> <span className="text-foreground">CRM</span>
                     </span>
                   </div>
                 </SheetTitle>
@@ -110,18 +110,18 @@ const Topbar = () => {
                 </nav>
               </div>
               <div className="absolute bottom-4 left-6 right-6">
-                <div className="flex items-center p-4 border-t border-gray-200">
+                <div className="flex items-center p-4 border-t border-border">
                   <img src="/images/logo.png" alt="Advizall" className="h-6 mr-2" />
                   <div>
-                    <p className="text-xs font-medium text-gray-500">Powered by</p>
-                    <p className="text-sm font-medium text-gray-900">Advizall</p>
+                    <p className="text-xs font-medium text-muted-foreground">Powered by</p>
+                    <p className="text-sm font-medium text-foreground">Advizall</p>
                   </div>
                 </div>
               </div>
             </SheetContent>
           </Sheet>
 
-          <h1 className="text-lg font-semibold text-gray-900 md:hidden">
+          <h1 className="text-lg font-semibold text-foreground md:hidden">
             <span className="text-secondary">Advizall</span> CRM
           </h1>
         </div>

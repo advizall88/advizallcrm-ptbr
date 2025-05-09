@@ -70,6 +70,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import type { User } from "@/lib/supabase";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Define UserRole type directly in this file
 type UserRole = 'user' | 'moderator' | 'admin';
@@ -77,9 +78,9 @@ type UserRole = 'user' | 'moderator' | 'admin';
 const Settings = () => {
   const { toast } = useToast();
   const { user, isUserRole, signOut, updateUserData } = useAuth();
+  const { darkMode, toggleDarkMode } = useTheme();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   const [meetingReminders, setMeetingReminders] = useState(true);
@@ -215,8 +216,7 @@ const Settings = () => {
   
   // Handle theme toggle
   const handleToggleTheme = () => {
-    setDarkMode(!darkMode);
-    // In a real implementation, you would update the theme here
+    toggleDarkMode();
     toast({
       title: `${!darkMode ? "Dark" : "Light"} Mode Activated`,
       description: "Your theme preference has been updated.",

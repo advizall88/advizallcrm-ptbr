@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Prospects from "./pages/Prospects";
@@ -48,49 +49,69 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {/* Sistemas de notificação toast */}
-        <Toaster />
-        <Sonner />
-        
-        {/* Roteamento com BrowserRouter */}
-        <BrowserRouter>
-          {/* Contexto de autenticação */}
-          <AuthProvider>
-            <Routes>
-              {/* Rotas públicas - acessíveis sem autenticação */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/unauthorized" element={<Unauthorized />} />
-              
-              {/* Rotas protegidas para todos os usuários autenticados */}
-              <Route element={<ProtectedRoute requiredRole="user" />}>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/prospects" element={<Prospects />} />
-                <Route path="/meetings" element={<Meetings />} />
-                <Route path="/settings" element={<Settings />} />
-              </Route>
-              
-              {/* Rotas protegidas para moderadores e admins */}
-              <Route element={<ProtectedRoute requiredRole="moderator" />}>
-                <Route path="/clients" element={<Clients />} />
-                <Route path="/clients/:id" element={<Clients />} />
-                {/* Rotas adicionais apenas para moderadores podem ser adicionadas aqui */}
-              </Route>
-              
-              {/* Rotas protegidas apenas para admins */}
-              <Route element={<ProtectedRoute requiredRole="admin" />}>
-                {/* Rotas apenas para admin serão adicionadas aqui */}
-              </Route>
-              
-              {/* Rota 404 para páginas não encontradas */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </QueryClientProvider>
+  );
+};
+
+// Componente separado para poder usar o contexto de tema
+const AppContent = () => {
+  const { darkMode } = useTheme();
+
+  // Efeito para aplicar a classe dark ao elemento html
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  return (
+    <TooltipProvider>
+      {/* Sistemas de notificação toast */}
+      <Toaster />
+      <Sonner />
+      
+      {/* Roteamento com BrowserRouter */}
+      <BrowserRouter>
+        {/* Contexto de autenticação */}
+        <AuthProvider>
+          <Routes>
+            {/* Rotas públicas - acessíveis sem autenticação */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            
+            {/* Rotas protegidas para todos os usuários autenticados */}
+            <Route element={<ProtectedRoute requiredRole="user" />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/prospects" element={<Prospects />} />
+              <Route path="/meetings" element={<Meetings />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
+            
+            {/* Rotas protegidas para moderadores e admins */}
+            <Route element={<ProtectedRoute requiredRole="moderator" />}>
+              <Route path="/clients" element={<Clients />} />
+              <Route path="/clients/:id" element={<Clients />} />
+              {/* Rotas adicionais apenas para moderadores podem ser adicionadas aqui */}
+            </Route>
+            
+            {/* Rotas protegidas apenas para admins */}
+            <Route element={<ProtectedRoute requiredRole="admin" />}>
+              {/* Rotas apenas para admin serão adicionadas aqui */}
+            </Route>
+            
+            {/* Rota 404 para páginas não encontradas */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
+      </BrowserRouter>
+    </TooltipProvider>
   );
 };
 

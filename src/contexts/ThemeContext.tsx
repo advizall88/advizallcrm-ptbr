@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 type ThemeContextType = {
   darkMode: boolean;
   toggleDarkMode: () => void;
+  forceDefaultTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -35,9 +36,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toggleDarkMode = () => {
     setDarkMode(prev => !prev);
   };
+  
+  // Função para forçar o tema light (uso em páginas de autenticação)
+  const forceDefaultTheme = () => {
+    document.documentElement.classList.remove('dark');
+  };
 
   return (
-    <ThemeContext.Provider value={{ darkMode, toggleDarkMode }}>
+    <ThemeContext.Provider value={{ darkMode, toggleDarkMode, forceDefaultTheme }}>
       {children}
     </ThemeContext.Provider>
   );

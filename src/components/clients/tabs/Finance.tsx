@@ -69,30 +69,30 @@ const Finance: React.FC<FinanceProps> = ({
   return (
     <div className="space-y-4 mt-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-green-50">
+        <Card className="bg-green-50 dark:bg-green-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Total Paid</CardTitle>
+            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">Total Paid</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{formatter.format(totalPaid)}</div>
+            <div className="text-2xl font-bold text-green-700 dark:text-green-400">{formatter.format(totalPaid)}</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-amber-50">
+        <Card className="bg-amber-50 dark:bg-amber-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800">Pending Payments</CardTitle>
+            <CardTitle className="text-sm font-medium text-amber-800 dark:text-amber-300">Pending Payments</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-amber-700">{formatter.format(totalPending)}</div>
+            <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{formatter.format(totalPending)}</div>
           </CardContent>
         </Card>
         
-        <Card className="bg-blue-50">
+        <Card className="bg-blue-50 dark:bg-blue-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800">Monthly Fee</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">Monthly Fee</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
               {client.monthly_fee ? formatter.format(client.monthly_fee) : 'N/A'}
             </div>
           </CardContent>

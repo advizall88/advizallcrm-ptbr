@@ -444,7 +444,7 @@ const ProspectFormDialog = ({
                 type="button"
                 variant="ghost"
                 onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-                className="p-0 h-auto font-normal text-primary"
+                className="p-0 h-auto font-normal text-primary dark:text-primary-foreground"
               >
                 {isAdvancedOpen ? "Hide Advanced Options" : "Show Advanced Options"}
               </Button>

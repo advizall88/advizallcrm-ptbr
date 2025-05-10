@@ -21,9 +21,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/lib/supabase";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Esquema de validação para o formulário de registro
 const registerFormSchema = z.object({
@@ -42,8 +44,22 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { forceDefaultTheme } = useTheme();
+  
+  // Forçar tema light para a página de registro
+  useEffect(() => {
+    forceDefaultTheme();
+  }, [forceDefaultTheme]);
+  
+  // Se o usuário já estiver autenticado, redirecione
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   // Configuração do formulário com validação
   const form = useForm<RegisterFormValues>({

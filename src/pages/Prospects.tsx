@@ -31,6 +31,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Loader2, Plus, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useTheme } from '@/contexts/ThemeContext';
 
 // In-memory fallback storage when localStorage is unavailable
 const memoryStorage: Record<string, string> = {};
@@ -96,6 +97,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
   onConvertToClient,
   index
 }) => {
+  const { darkMode } = useTheme();
   const [isAlreadyClient, setIsAlreadyClient] = useState<boolean>(false);
   
   useEffect(() => {
@@ -129,24 +131,24 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
           {...provided.dragHandleProps}
           className={`mb-3 ${snapshot.isDragging ? 'z-10' : ''}`}
         >
-          <Card className={`shadow-neumorph-sm ${snapshot.isDragging ? 'shadow-lg bg-gray-100' : ''}`}>
+          <Card className={`shadow-neumorph-sm ${snapshot.isDragging ? 'shadow-lg dark:shadow-md dark:bg-gray-800 bg-gray-100' : ''}`}>
             <CardHeader className="pb-2">
               <CardTitle className="text-md font-bold">{prospect.contact_name}</CardTitle>
             </CardHeader>
             <CardContent className="pb-2">
-              <div className="text-sm text-gray-500">{prospect.company_name || "N/A"}</div>
+              <div className="text-sm text-muted-foreground">{prospect.company_name || "N/A"}</div>
               <div className="flex items-center mt-1">
                 {Array.from({ length: prospect.score }).map((_, i) => (
-                  <span key={i} className="text-yellow-500">★</span>
+                  <span key={i} className="text-yellow-500 dark:text-yellow-400">★</span>
                 ))}
                 {Array.from({ length: 5 - prospect.score }).map((_, i) => (
-                  <span key={i} className="text-gray-300">★</span>
+                  <span key={i} className="text-gray-300 dark:text-gray-600">★</span>
                 ))}
               </div>
             </CardContent>
             <CardFooter className="pt-0 flex flex-col space-y-2">
               <div className="flex justify-between items-center w-full">
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   Follow-up: {formattedFollowUp}
                 </div>
                 <div className="flex space-x-2">
@@ -175,7 +177,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="text-xs h-7 w-full border-green-500 text-green-500 hover:bg-green-50"
+                      className={`text-xs h-7 w-full border-green-500 text-green-500 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950/30`}
                     >
                       Convert to Client
                     </Button>
@@ -187,14 +189,14 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                         This will convert {prospect.contact_name} from {prospect.company_name || "N/A"} 
                         to an active client. All prospect data will be preserved.
                       </AlertDialogDescription>
-                      <p className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded text-amber-700 text-sm">
+                      <p className="mt-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded text-amber-700 dark:text-amber-400 text-sm">
                         After conversion, you'll be redirected to the new client page where you can add more details.
                       </p>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction 
-                        className="bg-green-500 hover:bg-green-600"
+                        className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
                         onClick={() => onConvertToClient(prospect)}
                       >
                         Convert to Client
@@ -230,11 +232,51 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
   onConvertToClient,
   droppableId
 }) => {
+  const { darkMode } = useTheme();
+  
+  // Função para determinar as cores a serem usadas baseadas na propriedade color
+  const getStatusColor = () => {
+    switch (color) {
+      case 'bg-blue-500':
+        return {
+          bg: 'bg-blue-500',
+          textColor: 'text-white',
+          darkBg: 'dark:bg-blue-600'
+        };
+      case 'bg-green-500':
+        return {
+          bg: 'bg-green-500',
+          textColor: 'text-white',
+          darkBg: 'dark:bg-green-600'
+        };
+      case 'bg-purple-500':
+        return {
+          bg: 'bg-purple-500',
+          textColor: 'text-white',
+          darkBg: 'dark:bg-purple-600'
+        };
+      case 'bg-gray-500':
+        return {
+          bg: 'bg-gray-500',
+          textColor: 'text-white',
+          darkBg: 'dark:bg-gray-600'
+        };
+      default:
+        return {
+          bg: color,
+          textColor: 'text-white',
+          darkBg: `dark:${color.replace('bg-', 'bg-')}`
+        };
+    }
+  };
+  
+  const colorClasses = getStatusColor();
+  
   return (
     <div className="flex flex-col min-w-[250px] md:min-w-[280px]">
-      <div className={`px-4 py-2 rounded-t-lg ${color} text-white font-medium flex justify-between items-center`}>
+      <div className={`px-4 py-2 rounded-t-lg ${colorClasses.bg} ${colorClasses.darkBg} ${colorClasses.textColor} font-medium flex justify-between items-center`}>
         <span>{title}</span>
-        <span className="bg-white text-gray-800 px-2 py-0.5 rounded-full text-xs">
+        <span className="bg-white/20 dark:bg-white/20 text-white px-2 py-0.5 rounded-full text-xs">
           {prospects.length}
         </span>
       </div>
@@ -243,14 +285,14 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`bg-gray-50 p-3 rounded-b-lg flex-1 border border-gray-200 overflow-y-auto max-h-[calc(100vh-240px)] ${
-              snapshot.isDraggingOver ? 'bg-blue-50' : ''
+            className={`bg-gray-50 dark:bg-gray-900/30 p-3 rounded-b-lg flex-1 border border-gray-200 dark:border-gray-700 overflow-y-auto max-h-[calc(100vh-240px)] ${
+              snapshot.isDraggingOver ? 'bg-blue-50 dark:bg-blue-950/30' : ''
             }`}
           >
             {prospects.map((prospect, index) => (
-              <ProspectCard 
-                key={prospect.id} 
-                prospect={prospect} 
+              <ProspectCard
+                key={prospect.id}
+                prospect={prospect}
                 index={index}
                 onEdit={onEdit}
                 onViewDetails={onViewDetails}
@@ -259,7 +301,10 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
             ))}
             {provided.placeholder}
             {prospects.length === 0 && (
-              <div className="text-center text-gray-400 py-8">No prospects</div>
+              <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded p-4 flex flex-col items-center justify-center h-24">
+                <p className="text-sm text-muted-foreground text-center">No prospects</p>
+                <p className="text-xs text-muted-foreground text-center mt-1">Drag prospects here</p>
+              </div>
             )}
           </div>
         )}
@@ -273,20 +318,76 @@ const Prospects = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [detailsOpen, setDetailsOpen] = useState(false);
-  const [selectedProspect, setSelectedProspect] = useState<Prospect | undefined>(undefined);
-  const [convertLoading, setConvertLoading] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editMode, setEditMode] = useState<'create' | 'edit'>('create');
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [currentProspect, setCurrentProspect] = useState<Prospect | null>(null);
+  const [isFormSubmitting, setIsFormSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [formKey, setFormKey] = useState(Date.now());
+  
+  // Função para filtrar prospectos baseado no termo de pesquisa
+  const filterProspects = (prospects: Prospect[]) => {
+    if (!searchQuery.trim()) return prospects;
+    
+    const searchLower = searchQuery.toLowerCase();
+    return prospects.filter(prospect => {
+      return (
+        prospect.contact_name.toLowerCase().includes(searchLower) ||
+        (prospect.company_name && prospect.company_name.toLowerCase().includes(searchLower)) ||
+        (prospect.email && prospect.email.toLowerCase().includes(searchLower)) ||
+        (prospect.business_type && prospect.business_type.toLowerCase().includes(searchLower)) ||
+        (prospect.region_city && prospect.region_city.toLowerCase().includes(searchLower)) ||
+        (prospect.region_state && prospect.region_state.toLowerCase().includes(searchLower))
+      );
+    });
+  };
+  
   // Fetch prospects
-  const { data: prospects = [], isLoading, error } = useQuery({
-    queryKey: ['prospects'],
-    queryFn: () => prospectService.getProspects(),
+  const { data: prospects = [], isLoading: isLoadingProspects, error: prospectsError, isError: isProspectsError } = useQuery<Prospect[]>({
+    queryKey: ["prospects"],
+    queryFn: prospectService.getProspects
   });
-
+  
+  // React to loading state and errors with useEffect
+  useEffect(() => {
+    if (!isLoadingProspects) {
+      setIsLoading(false);
+    }
+    
+    if (isProspectsError && prospectsError) {
+      console.error("Error fetching prospects:", prospectsError);
+      toast({
+        title: "Error",
+        description: "Failed to load prospects. Please try again.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
+  }, [isLoadingProspects, isProspectsError, prospectsError, toast]);
+  
+  // Fetch converted prospect IDs
+  const { data: convertedProspectIds = [] } = useQuery<string[]>({
+    queryKey: ["convertedProspects"],
+    queryFn: async () => {
+      try {
+        const storedIds = safeStorage.getItem("convertedProspects");
+        return storedIds ? JSON.parse(storedIds) : [];
+      } catch (error) {
+        console.error("Error loading converted prospects:", error);
+        return [];
+      }
+    }
+  });
+  
+  // Group prospects by status
+  const prospectsByStatus = {
+    new: filterProspects(prospects.filter((p) => p.status === "new")),
+    interested: filterProspects(prospects.filter((p) => p.status === "interested")),
+    negotiation: filterProspects(prospects.filter((p) => p.status === "negotiation")),
+    lost: filterProspects(prospects.filter((p) => p.status === "lost")),
+  };
+  
   // Create prospect mutation
   const createProspectMutation = useMutation({
     mutationFn: (data: ProspectFormData) => prospectService.createProspect(data),
@@ -296,7 +397,7 @@ const Prospects = () => {
         title: "Success",
         description: "Prospect created successfully",
       });
-      setIsEditDialogOpen(false);
+      setIsFormOpen(false);
     },
     onError: (error) => {
       toast({
@@ -318,7 +419,7 @@ const Prospects = () => {
         title: "Success",
         description: "Prospect updated successfully",
       });
-      setIsEditDialogOpen(false);
+      setIsFormOpen(false);
     },
     onError: (error) => {
       toast({
@@ -406,6 +507,10 @@ const Prospects = () => {
 
   const handleCreateProspect = async (data: ProspectFormData) => {
     try {
+      if (!data) {
+        console.error("Invalid prospect data");
+        return;
+      }
       await createProspectMutation.mutateAsync(data);
     } catch (error) {
       console.error("Error creating prospect:", error);
@@ -413,11 +518,11 @@ const Prospects = () => {
   };
 
   const handleUpdateProspect = async (data: ProspectFormData) => {
-    if (!selectedProspect?.id) return;
+    if (!currentProspect?.id) return;
     
     try {
       await updateProspectMutation.mutateAsync({
-        id: selectedProspect.id,
+        id: currentProspect.id,
         data,
       });
     } catch (error) {
@@ -431,19 +536,18 @@ const Prospects = () => {
   };
 
   const handleEditProspect = (prospect: Prospect) => {
-    setSelectedProspect(prospect);
-    setEditMode('edit');
-    setIsEditDialogOpen(true);
+    setCurrentProspect(prospect);
+    setIsFormOpen(true);
   };
 
   const handleViewDetails = (prospect: Prospect) => {
-    setSelectedProspect(prospect);
-    setDetailsOpen(true);
+    setCurrentProspect(prospect);
+    setIsDetailsOpen(true);
   };
 
   const handleConvertToClient = async (prospect: Prospect) => {
     try {
-      setConvertLoading(true);
+      setIsFormSubmitting(true);
       
       toast({
         title: "Converting prospect",
@@ -487,7 +591,7 @@ const Prospects = () => {
         variant: "destructive",
       });
     } finally {
-      setConvertLoading(false);
+      setIsFormSubmitting(false);
     }
   };
 
@@ -504,18 +608,34 @@ const Prospects = () => {
   };
 
   const handleFormSubmit = async (data: ProspectFormData) => {
-    if (editMode === 'edit' && selectedProspect) {
-      await handleUpdateProspect(data);
-    } else {
-      await handleCreateProspect(data);
+    setIsFormSubmitting(true);
+    try {
+      if (currentProspect) {
+        await handleUpdateProspect(data);
+      } else {
+        // Garantir que o owner_id está definido para o usuário atual
+        const prospectData = {
+          ...data,
+          owner_id: user?.id || ''
+        };
+        await handleCreateProspect(prospectData);
+      }
+    } catch (error) {
+      console.error("Error submitting prospect form:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save prospect. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsFormSubmitting(false);
     }
   };
 
   const handleFormClose = () => {
-    setIsEditDialogOpen(false);
+    setIsFormOpen(false);
     setTimeout(() => {
-      setSelectedProspect(undefined);
-      setEditMode('create');
+      setCurrentProspect(null);
     }, 100);
   };
 
@@ -542,222 +662,101 @@ const Prospects = () => {
     });
   };
 
-  // Filtrar prospectos baseado no termo de pesquisa
-  // Esta função filtra os prospectos antes de agrupá-los por status
-  const filterProspects = (prospects: Prospect[]) => {
-    if (!searchTerm.trim()) return prospects;
-    
-    const searchLower = searchTerm.toLowerCase();
-    return prospects.filter(prospect => {
-      return (
-        prospect.contact_name.toLowerCase().includes(searchLower) ||
-        (prospect.company_name && prospect.company_name.toLowerCase().includes(searchLower)) ||
-        (prospect.email && prospect.email.toLowerCase().includes(searchLower)) ||
-        (prospect.business_type && prospect.business_type.toLowerCase().includes(searchLower)) ||
-        (prospect.region_city && prospect.region_city.toLowerCase().includes(searchLower)) ||
-        (prospect.region_state && prospect.region_state.toLowerCase().includes(searchLower))
-      );
-    });
+  // Função para lidar com a abertura do formulário para criar um novo prospect
+  const handleAddProspect = () => {
+    setCurrentProspect(null);
+    setFormKey(Date.now()); // Forçar atualização do formulário
+    setIsFormOpen(true);
   };
-
-  // Filtrar e agrupar prospectos por status
-  const filteredProspects = prospects ? filterProspects(prospects) : [];
-  const prospectsByStatus = {
-    new: filteredProspects.filter(p => p.status === 'new'),
-    interested: filteredProspects.filter(p => p.status === 'interested'),
-    negotiation: filteredProspects.filter(p => p.status === 'negotiation'),
-    lost: filteredProspects.filter(p => p.status === 'lost')
-  };
-
-  // Function to attempt syncing locally saved forms
-  const syncLocalForms = async () => {
-    try {
-      const pendingFormsString = safeStorage.getItem('pendingProspectForms');
-      if (!pendingFormsString) return;
-      
-      const pendingForms = JSON.parse(pendingFormsString);
-      if (!Array.isArray(pendingForms) || pendingForms.length === 0) return;
-      
-      setIsSyncing(true);
-      toast({
-        title: "Syncing data",
-        description: `Attempting to sync ${pendingForms.length} pending prospect forms...`,
-      });
-      
-      // Process each pending form
-      const results = await Promise.allSettled(
-        pendingForms.map(async (item) => {
-          try {
-            if (item.data.id) {
-              // If it's an update
-              await prospectService.updateProspect(item.data.id, item.data);
-            } else {
-              // If it's a new prospect
-              await prospectService.createProspect(item.data);
-            }
-            return item.id; // Return the ID for successful items
-          } catch (error) {
-            console.error(`Failed to sync form ${item.id}:`, error);
-            throw error;
-          }
-        })
-      );
-      
-      // Filter out successful forms
-      const successfulIds = results
-        .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
-        .map(result => result.value);
-      
-      // Remove successfully synced forms from storage
-      if (successfulIds.length > 0) {
-        const remainingForms = pendingForms.filter(
-          (form) => !successfulIds.includes(form.id)
-        );
-        
-        if (remainingForms.length > 0) {
-          safeStorage.setItem('pendingProspectForms', JSON.stringify(remainingForms));
-        } else {
-          safeStorage.removeItem('pendingProspectForms');
-        }
-        
-        // Refresh the data
-        queryClient.invalidateQueries({ queryKey: ['prospects'] });
-        
-        toast({
-          title: "Sync complete",
-          description: `Successfully synced ${successfulIds.length} of ${pendingForms.length} pending forms.`,
-        });
-      }
-      
-      if (successfulIds.length < pendingForms.length) {
-        toast({
-          title: "Sync incomplete",
-          description: `${pendingForms.length - successfulIds.length} forms could not be synced and will be retried later.`,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error syncing local forms:", error);
-      toast({
-        title: "Sync failed",
-        description: "Failed to sync some locally saved data. We'll try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-  
-  // Try to sync local forms when the component mounts
-  useEffect(() => {
-    if (!isLoading && !error) {
-      syncLocalForms();
-    }
-  }, [isLoading]);
 
   return (
     <AppLayout>
-      <div className="container py-6">
+      <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Prospects</h1>
-          <div className="flex gap-2 items-center">
-            {/* Barra de pesquisa */}
-            <div className="relative w-64">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"/>
-              <Input
-                placeholder="Search prospects..."
-                className="pl-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            {isSyncing && (
-              <Button variant="outline" disabled>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Syncing...
-              </Button>
-            )}
-            <Button onClick={() => {
-              setSelectedProspect(undefined);
-              setEditMode('create');
-              setIsEditDialogOpen(true);
-            }}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Prospect
-            </Button>
+          <h1 className="text-3xl font-bold">Prospects</h1>
+          <Button size="sm" onClick={handleAddProspect}>
+            <Plus className="mr-2 h-4 w-4" /> Add Prospect
+          </Button>
+        </div>
+        
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search prospects..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
         </div>
-
+        
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <p>Loading prospects...</p>
-          </div>
-        ) : error ? (
-          <div className="flex justify-center items-center h-64">
-            <p className="text-red-500">Error loading prospects. Please try again.</p>
-          </div>
-        ) : filteredProspects.length === 0 && searchTerm ? (
-          <div className="flex justify-center items-center h-64">
-            <p>No prospects found matching "{searchTerm}"</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Loading prospects...</span>
           </div>
         ) : (
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <div className="flex space-x-4 overflow-x-auto pb-4">
-              <KanbanColumn
-                title="New"
-                prospects={prospectsByStatus.new}
-                color="bg-blue-500"
-                onEdit={handleEditProspect}
-                onViewDetails={handleViewDetails}
-                onConvertToClient={handleConvertToClient}
-                droppableId="new"
-              />
-              <KanbanColumn
-                title="Interested"
-                prospects={prospectsByStatus.interested}
-                color="bg-green-500"
-                onEdit={handleEditProspect}
-                onViewDetails={handleViewDetails}
-                onConvertToClient={handleConvertToClient}
-                droppableId="interested"
-              />
-              <KanbanColumn
-                title="Negotiation"
-                prospects={prospectsByStatus.negotiation}
-                color="bg-purple-500"
-                onEdit={handleEditProspect}
-                onViewDetails={handleViewDetails}
-                onConvertToClient={handleConvertToClient}
-                droppableId="negotiation"
-              />
-              <KanbanColumn
-                title="Lost"
-                prospects={prospectsByStatus.lost}
-                color="bg-gray-500"
-                onEdit={handleEditProspect}
-                onViewDetails={handleViewDetails}
-                onConvertToClient={handleConvertToClient}
-                droppableId="lost"
-              />
-            </div>
-          </DragDropContext>
+          <div className="overflow-x-auto">
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <div className="flex space-x-4 min-w-max pb-4">
+                <KanbanColumn
+                  title="New"
+                  prospects={prospectsByStatus.new}
+                  color="bg-blue-500"
+                  onEdit={handleEditProspect}
+                  onViewDetails={handleViewDetails}
+                  onConvertToClient={handleConvertToClient}
+                  droppableId="new"
+                />
+                <KanbanColumn
+                  title="Interested"
+                  prospects={prospectsByStatus.interested}
+                  color="bg-green-500"
+                  onEdit={handleEditProspect}
+                  onViewDetails={handleViewDetails}
+                  onConvertToClient={handleConvertToClient}
+                  droppableId="interested"
+                />
+                <KanbanColumn
+                  title="Negotiation"
+                  prospects={prospectsByStatus.negotiation}
+                  color="bg-amber-500"
+                  onEdit={handleEditProspect}
+                  onViewDetails={handleViewDetails}
+                  onConvertToClient={handleConvertToClient}
+                  droppableId="negotiation"
+                />
+                <KanbanColumn
+                  title="Lost"
+                  prospects={prospectsByStatus.lost}
+                  color="bg-red-500"
+                  onEdit={handleEditProspect}
+                  onViewDetails={handleViewDetails}
+                  onConvertToClient={handleConvertToClient}
+                  droppableId="lost"
+                />
+              </div>
+            </DragDropContext>
+          </div>
         )}
-
+        
         {/* Form dialog for creating/editing prospects */}
         <ProspectFormDialog
-          open={isEditDialogOpen}
+          key={formKey} // Forçar recriação do componente quando formKey muda
+          open={isFormOpen}
           onOpenChange={handleFormClose}
           onSubmit={handleFormSubmit}
-          initialData={selectedProspect}
-          mode={editMode}
+          initialData={currentProspect}
+          mode={currentProspect ? 'edit' : 'create'}
         />
 
         {/* Details dialog */}
-        {selectedProspect && (
+        {currentProspect && (
           <ProspectDetailsDialog
-            open={detailsOpen}
-            onOpenChange={setDetailsOpen}
-            prospect={selectedProspect}
+            open={isDetailsOpen}
+            onOpenChange={setIsDetailsOpen}
+            prospect={currentProspect}
             onEdit={handleEditProspect}
             onConvertSuccess={handleConvertSuccess}
           />

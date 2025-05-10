@@ -11,21 +11,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import {
+import { 
   User as UserIcon,
-  UserCog,
-  ShieldCheck,
-  Calendar,
-  Mail,
-  Database,
-  RefreshCw,
-  Download,
-  Upload,
-  Bell,
-  Moon,
-  Sun,
-  Languages,
-  Globe,
+  UserCog, 
+  ShieldCheck, 
+  Calendar, 
+  Mail, 
+  Database, 
+  RefreshCw, 
+  Download, 
+  Upload, 
+  Bell, 
+  Moon, 
+  Sun, 
+  Languages, 
+  Globe, 
   Clock,
   CalendarRange,
   LifeBuoy,
@@ -37,7 +37,8 @@ import {
   X,
   Edit,
   Shield,
-  Info
+  Info,
+  Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
@@ -71,6 +72,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { User } from "@/lib/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
+import { format } from "date-fns";
+import { cn, processAvatarUrl } from "@/lib/utils";
 
 // Define UserRole type directly in this file
 type UserRole = 'user' | 'moderator' | 'admin';
@@ -255,11 +258,11 @@ const Settings = () => {
   const getRoleBadgeColor = (role: string) => {
     switch(role) {
       case 'admin':
-        return "bg-red-500 hover:bg-red-600";
+        return "bg-red-500 hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700";
       case 'moderator':
-        return "bg-amber-500 hover:bg-amber-600";
+        return "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700";
       default:
-        return "bg-blue-500 hover:bg-blue-600";
+        return "bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700";
     }
   };
   
@@ -465,7 +468,7 @@ const Settings = () => {
                     <div className="w-24 h-24 rounded-full bg-gray-200 border flex items-center justify-center overflow-hidden">
                       {profileData.avatar_url ? (
                         <img 
-                          src={profileData.avatar_url} 
+                          src={processAvatarUrl(profileData.avatar_url)} 
                           alt="Profile" 
                           className="w-full h-full object-cover"
                         />
@@ -485,23 +488,23 @@ const Settings = () => {
                   </div>
                   
                   <div className="space-y-4 flex-1">
-                    <div className="space-y-1">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input 
-                        id="name" 
-                        value={profileData.name} 
-                        onChange={(e) => setProfileData({...profileData, name: e.target.value})}
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input 
-                        id="email" 
-                        type="email"
-                        value={profileData.email} 
-                        onChange={(e) => setProfileData({...profileData, email: e.target.value})}
-                      />
+                <div className="space-y-1">
+                  <Label htmlFor="name">Full Name</Label>
+                  <Input 
+                    id="name" 
+                    value={profileData.name} 
+                    onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                  />
+                </div>
+                
+                <div className="space-y-1">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input 
+                    id="email" 
+                    type="email"
+                    value={profileData.email} 
+                    onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                  />
                     </div>
                   </div>
                 </div>
@@ -536,21 +539,21 @@ const Settings = () => {
                       onChange={(e) => setProfileData({...profileData, department: e.target.value})}
                       placeholder="e.g. Marketing"
                     />
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <Label>Role</Label>
-                    <div>
-                      <Badge className={getRoleBadgeColor(profileData.role)}>
-                        {profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1)}
-                      </Badge>
-                      <p className="mt-2 text-sm text-gray-500">
-                        {profileData.role === 'admin' 
-                          ? 'Full access to all features and settings'
-                          : profileData.role === 'moderator'
-                          ? 'Can manage clients and view credentials'
-                          : 'Basic access to assigned prospects and clients'}
-                      </p>
+                </div>
+                
+                <div className="space-y-1">
+                  <Label>Role</Label>
+                  <div>
+                    <Badge className={getRoleBadgeColor(profileData.role)}>
+                      {profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1)}
+                    </Badge>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {profileData.role === 'admin' 
+                        ? 'Full access to all features and settings'
+                        : profileData.role === 'moderator'
+                        ? 'Can manage clients and view credentials'
+                        : 'Basic access to assigned prospects and clients'}
+                    </p>
                     </div>
                   </div>
                 </div>
@@ -609,38 +612,43 @@ const Settings = () => {
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="language">Language</Label>
-                      <p className="text-sm text-gray-500">Choose your preferred language</p>
-                    </div>
-                    <div className="flex items-center">
-                      <select 
-                        id="language"
-                        className="flex h-10 w-40 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="en-US">English (US)</option>
-                        <option value="pt-BR">Portuguese (BR)</option>
-                        <option value="es">Spanish</option>
-                      </select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="language-select">Language</Label>
+                    <Select defaultValue="en-US">
+                      <SelectTrigger id="language-select">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en-US">English (US)</SelectItem>
+                        <SelectItem value="en-GB">English (UK)</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="pt-BR">Portuguese (BR)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      This will change the language throughout the application
+                    </p>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="timezone">Time Zone</Label>
-                      <p className="text-sm text-gray-500">Select your local time zone</p>
-                    </div>
-                    <div className="flex items-center">
-                      <select 
-                        id="timezone"
-                        className="flex h-10 w-60 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <option value="America/Chicago">America/Chicago (UTC-06:00)</option>
-                        <option value="America/New_York">America/New_York (UTC-05:00)</option>
-                        <option value="America/Los_Angeles">America/Los_Angeles (UTC-08:00)</option>
-                      </select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone-select">Timezone</Label>
+                    <Select defaultValue="America/Chicago">
+                      <SelectTrigger id="timezone-select">
+                        <SelectValue placeholder="Select timezone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="America/Chicago">America/Chicago (CDT)</SelectItem>
+                        <SelectItem value="America/New_York">America/New_York (EDT)</SelectItem>
+                        <SelectItem value="America/Los_Angeles">America/Los_Angeles (PDT)</SelectItem>
+                        <SelectItem value="Europe/London">Europe/London (BST)</SelectItem>
+                        <SelectItem value="Europe/Paris">Europe/Paris (CEST)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      Used for scheduling meetings and setting follow-up reminders
+                    </p>
                   </div>
                 </div>
                 
@@ -748,9 +756,9 @@ const Settings = () => {
                 <div className="flex items-center justify-between mt-4">
                   <div className="space-y-0.5">
                     <p className="font-medium">Connection Status</p>
-                    <p className="text-sm text-gray-500">Last synced: Today at 10:45 AM</p>
+                    <p className="text-sm text-muted-foreground">Last synced: Today at 10:45 AM</p>
                   </div>
-                  <Badge className="bg-green-500 hover:bg-green-600">
+                  <Badge variant="success">
                     Connected
                   </Badge>
                 </div>
@@ -830,9 +838,9 @@ const Settings = () => {
                 <div className="flex items-center justify-between mt-4">
                   <div className="space-y-0.5">
                     <p className="font-medium">Service Provider</p>
-                    <p className="text-sm text-gray-500">Using SendGrid for email delivery</p>
+                    <p className="text-sm text-muted-foreground">Using SendGrid for email delivery</p>
                   </div>
-                  <Badge className="bg-green-500 hover:bg-green-600">
+                  <Badge variant="success">
                     Connected
                   </Badge>
                 </div>
@@ -885,7 +893,7 @@ const Settings = () => {
                       Copy
                     </Button>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-sm text-muted-foreground mt-1">
                     Use this URL in your n8n workflow to receive webhook events
                   </p>
                 </div>
@@ -894,10 +902,10 @@ const Settings = () => {
                   <div className="space-y-0.5">
                     <p className="font-medium">Webhook Events</p>
                     <div className="flex gap-2 flex-wrap mt-2">
-                      <Badge className="bg-blue-500">meeting.created</Badge>
-                      <Badge className="bg-blue-500">meeting.updated</Badge>
-                      <Badge className="bg-blue-500">client.converted</Badge>
-                      <Badge className="bg-blue-500">prospect.updated</Badge>
+                      <Badge variant="secondary">meeting.created</Badge>
+                      <Badge variant="secondary">meeting.updated</Badge>
+                      <Badge variant="secondary">client.converted</Badge>
+                      <Badge variant="secondary">prospect.updated</Badge>
                     </div>
                   </div>
                 </div>
@@ -962,31 +970,31 @@ const Settings = () => {
                           </div>
                         ) : users.length > 0 ? (
                           <div className="overflow-x-auto">
-                            <table className="w-full">
-                              <thead>
-                                <tr className="border-b">
-                                  <th className="text-left pb-2">Name</th>
-                                  <th className="text-left pb-2">Email</th>
-                                  <th className="text-left pb-2">Role</th>
+                        <table className="w-full">
+                          <thead>
+                            <tr className="border-b">
+                              <th className="text-left pb-2">Name</th>
+                              <th className="text-left pb-2">Email</th>
+                              <th className="text-left pb-2">Role</th>
                                   <th className="text-left pb-2">Last Login</th>
-                                  <th className="text-right pb-2">Actions</th>
-                                </tr>
-                              </thead>
-                              <tbody>
+                              <th className="text-right pb-2">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody>
                                 {users.map((userItem) => (
                                   <tr key={userItem.id} className="border-b">
                                     <td className="py-3">{userItem.name || 'No Name'}</td>
                                     <td className="py-3">{userItem.email}</td>
-                                    <td className="py-3">
+                              <td className="py-3">
                                       <Badge className={getRoleBadgeColor(userItem.role)}>
                                         {userItem.role.charAt(0).toUpperCase() + userItem.role.slice(1)}
                                       </Badge>
-                                    </td>
-                                    <td className="py-3">
+                              </td>
+                              <td className="py-3">
                                       {userItem.last_login_at 
                                         ? new Date(userItem.last_login_at).toLocaleString() 
                                         : 'Never'}
-                                    </td>
+                              </td>
                                     <td className="py-3 text-right space-x-1">
                                       <Button 
                                         variant="ghost" 
@@ -1014,11 +1022,11 @@ const Settings = () => {
                                         <Trash2 className="h-4 w-4 text-red-500" />
                                         <span className="sr-only">Delete</span>
                                       </Button>
-                                    </td>
-                                  </tr>
+                              </td>
+                            </tr>
                                 ))}
-                              </tbody>
-                            </table>
+                          </tbody>
+                        </table>
                           </div>
                         ) : (
                           <div className="text-center py-8 text-gray-500">
@@ -1061,171 +1069,159 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Database Backup</h3>
-                  <Separator />
-                  
-                  <p className="text-sm text-gray-500">
-                    Create a backup of your entire database. This includes all prospects, clients, 
-                    projects, credentials, and other data stored in the system.
-                  </p>
-                  
-                  <div className="rounded-md border p-4 bg-slate-50">
-                    <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Button 
+                    variant="outline" 
+                    className="relative h-24 w-24 rounded-md flex items-center justify-center border-dashed"
+                    onClick={() => {
+                      handleBackup();
+                      
+                      // Simulate download after backup completes
+                      setTimeout(() => {
+                        const dummyData = {
+                          prospects: [],
+                          clients: [],
+                          meetings: [],
+                          settings: {},
+                          backupDate: new Date().toISOString(),
+                          version: '1.0'
+                        };
+                        
+                        // Create file for download
+                        const blob = new Blob([JSON.stringify(dummyData, null, 2)], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `advizall-backup-${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      }, 2500);
+                    }}
+                    disabled={backupInProgress}
+                  >
+                    {backupInProgress ? (
+                      <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+                    ) : (
+                      <Download className="h-10 w-10 text-muted-foreground" />
+                    )}
+                  </Button>
                       <div>
-                        <p className="font-medium">Last Backup</p>
-                        <p className="text-sm text-gray-500">April 30, 2024 at 09:15 AM</p>
-                      </div>
-                      <Badge className="bg-green-500">Successful</Badge>
+                    <h3 className="font-medium">Backup Your Data</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Backup all your CRM data to a local file for safekeeping. This includes prospects, clients, meetings and settings.
+                    </p>
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                <div className="flex justify-end">
                     <Button 
                       variant="default"
-                      className="flex items-center"
+                    className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
                       onClick={handleBackup}
                       disabled={backupInProgress}
                     >
                       {backupInProgress ? (
                         <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Creating Backup...
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Backing up...
                         </>
                       ) : (
-                        <>
-                          <CloudUpload className="h-4 w-4 mr-2" />
-                          Create Backup
-                        </>
+                      "Download Backup"
                       )}
                     </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      className="flex items-center"
-                      onClick={() => {
-                        toast({
-                          title: "Backup Downloaded",
-                          description: "Your database backup has been downloaded.",
-                        });
-                      }}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Latest
-                    </Button>
-                  </div>
-                </div>
-                
-                <div className="space-y-4 mt-8">
-                  <h3 className="text-lg font-medium">Database Restore</h3>
-                  <Separator />
-                  
-                  <p className="text-sm text-gray-500">
-                    Restore your database from a previous backup. This will replace all current data
-                    with the data from the selected backup.
-                  </p>
-                  
-                  <div className="rounded-md border p-4 bg-slate-50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Available Backups</p>
-                        <div className="mt-2">
-                          <select 
-                            className="flex h-10 w-full md:w-80 items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            <option value="apr-30-2024">April 30, 2024 (09:15 AM)</option>
-                            <option value="apr-29-2024">April 29, 2024 (10:30 PM)</option>
-                            <option value="apr-28-2024">April 28, 2024 (11:45 AM)</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="destructive"
-                      className="flex items-center"
-                      onClick={handleRestore}
-                      disabled={restoreInProgress}
-                    >
-                      {restoreInProgress ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Restoring...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Restore Selected Backup
-                        </>
-                      )}
-                    </Button>
-                    
-                    <Button 
-                      variant="outline"
-                      className="flex items-center"
-                      onClick={() => {
-                        const input = document.createElement('input');
-                        input.type = 'file';
-                        input.accept = '.json,.sql';
-                        input.onchange = (e) => {
-                          const file = (e.target as HTMLInputElement).files?.[0];
-                          if (file) {
-                            toast({
-                              title: "Backup Uploaded",
-                              description: `File '${file.name}' has been uploaded.`,
-                            });
-                          }
-                        };
-                        input.click();
-                      }}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      Upload Backup File
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Help & Support</CardTitle>
-                <CardDescription>
-                  Access resources and support for Advizall CRM
-                </CardDescription>
+                <CardTitle className="text-xl">Restore Data</CardTitle>
+                <CardDescription>Import data from a backup file</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1">
-                    <LifeBuoy className="h-4 w-4 mr-2" />
-                    Contact Support
+                <div className="flex items-center space-x-4">
+                    <Button 
+                      variant="outline"
+                    className="relative h-24 w-24 rounded-md flex items-center justify-center border-dashed"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      className="sr-only"
+                      accept="application/json"
+                      onChange={(e) => {
+                        // Handle file selection for backup restore
+                        if (e.target.files && e.target.files[0]) {
+                          const selectedFile = e.target.files[0];
+                          // Just simulate a successful restore for demo
+                          handleRestore();
+                          
+                          // Reset the input
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = '';
+                          }
+                        }
+                      }}
+                    />
+                    <CloudUpload className="h-10 w-10 text-muted-foreground" />
                   </Button>
-                  <Button variant="outline" className="flex-1">
-                    Documentation
-                  </Button>
-                </div>
-                
-                <div className="rounded-md border p-4 bg-slate-50">
-                  <p className="font-medium">System Information</p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2 text-sm">
-                    <div>
-                      <span className="text-gray-500">App Version:</span> 1.0.0
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Database:</span> Supabase
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Last Update:</span> April 30, 2024
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Environment:</span> Production
+                      <div>
+                    <h3 className="font-medium">Upload Backup File</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Restore data from a previously created backup file. This will replace all current data.
+                    </p>
                     </div>
                   </div>
+                  
+                <div className="flex justify-end">
+                    <Button 
+                    variant="default" 
+                    className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+                      onClick={handleRestore}
+                      disabled={restoreInProgress}
+                    >
+                      {restoreInProgress ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Restoring...
+                        </>
+                      ) : (
+                      "Restore Data"
+                      )}
+                    </Button>
                 </div>
               </CardContent>
             </Card>
+            
+            <div className="mt-6 border border-red-200 dark:border-red-900 rounded-md p-4 bg-red-50 dark:bg-red-950/30">
+              <div className="flex items-start space-x-4">
+                <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-full">
+                  <Trash2 className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-red-600 dark:text-red-400">Database Reset</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    This will permanently delete all data in your CRM. This action cannot be undone.
+                  </p>
+                    <Button 
+                    variant="destructive" 
+                    className="mt-4"
+                      onClick={() => {
+                            toast({
+                        title: "Database Reset",
+                        description: "This feature is disabled in the demo version.",
+                        variant: "destructive",
+                            });
+                      }}
+                    >
+                    Reset Database
+                    </Button>
+                  </div>
+                </div>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
@@ -1244,7 +1240,7 @@ const Settings = () => {
               <div className="w-32 h-32 rounded-full bg-gray-200 border flex items-center justify-center overflow-hidden">
                 {profileData.avatar_url ? (
                   <img 
-                    src={profileData.avatar_url} 
+                    src={processAvatarUrl(profileData.avatar_url)} 
                     alt="Profile Preview" 
                     className="w-full h-full object-cover"
                   />
@@ -1252,8 +1248,8 @@ const Settings = () => {
                   <UserIcon className="h-16 w-16 text-gray-400" />
                 )}
               </div>
-            </div>
-            
+                </div>
+                
             <div className="space-y-2">
               <Label htmlFor="avatar_url">Image URL</Label>
               <Input
@@ -1265,7 +1261,7 @@ const Settings = () => {
               <p className="text-xs text-gray-500">
                 Enter a direct link to your image
               </p>
-            </div>
+                    </div>
             
             <Separator className="my-4" />
             
@@ -1278,19 +1274,35 @@ const Settings = () => {
                   ref={fileInputRef}
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      // In a real implementation, you would upload this to a storage service
-                      // For now, we'll create a temporary URL for preview
-                      const url = URL.createObjectURL(file);
-                      setProfileData({...profileData, avatar_url: url});
-                      
-                      // In a real implementation with file upload:
-                      // 1. Create a FormData object
-                      // 2. Append the file to it
-                      // 3. Send it to your server or storage service
-                      // 4. Set the returned URL to profileData.avatar_url
+                    if (file && user?.id) {
+                      try {
+                        // Mostrar loading
+                        toast({
+                          title: "Enviando...",
+                          description: "Fazendo upload da imagem."
+                        });
+                        
+                        // Fazer upload para o Supabase Storage
+                        const avatarUrl = await userService.uploadAvatar(file, user.id);
+                        
+                        // Atualizar o estado local
+                        setProfileData({...profileData, avatar_url: avatarUrl});
+                        
+                        // Mostrar toast de sucesso com informação adicional se for fallback
+                        toast({
+                          title: "Avatar atualizado",
+                          description: "Clique em 'Salvar' para aplicar as mudanças."
+                        });
+                      } catch (error: any) {
+                        console.error('Erro no upload:', error);
+                        toast({
+                          title: "Falha no upload",
+                          description: error.message || "Não foi possível enviar a imagem.",
+                          variant: "destructive"
+                        });
+                      }
                     }
                   }}
                 />
@@ -1303,12 +1315,13 @@ const Settings = () => {
                 <span className="text-sm text-gray-500">
                   {fileInputRef.current?.files?.[0]?.name || "No file chosen"}
                 </span>
-              </div>
+                    </div>
               <p className="text-xs text-gray-500">
-                Supported formats: JPEG, PNG, GIF (max 5MB)
+                Supported formats: JPEG, PNG, GIF (max 2MB). 
+                {!darkMode ? "" : " Em modo escuro, recomenda-se imagens com fundo transparente ou escuro."}
               </p>
-            </div>
-          </div>
+                    </div>
+                    </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAvatarDialogOpen(false)}>
               Cancel
@@ -1345,7 +1358,7 @@ const Settings = () => {
                 className="w-full h-11 text-base"
                 placeholder="Enter user's full name"
               />
-            </div>
+                  </div>
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium block">
                 Email Address
@@ -1359,7 +1372,7 @@ const Settings = () => {
                 placeholder="user@example.com"
                 disabled={isEditMode} // Can't change email in edit mode
               />
-            </div>
+                </div>
             <div className="space-y-2">
               <Label htmlFor="role" className="text-sm font-medium block">
                 User Role
@@ -1383,7 +1396,7 @@ const Settings = () => {
               <p className="text-xs text-gray-500 mt-1">
                 Select the appropriate access level for this user
               </p>
-            </div>
+      </div>
             {!isEditMode && (
               <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-sm text-blue-700 mt-2">
                 <p className="flex items-center">

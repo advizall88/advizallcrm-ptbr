@@ -188,5 +188,37 @@ export const userService = {
   
   async changeRole(id: string, role: User['role']): Promise<User> {
     return this.updateUser(id, { role });
-  }
+  },
+
+  /**
+   * Converte a imagem para base64 para uso como avatar
+   * @param file Arquivo de imagem para avatar
+   * @param userId ID do usuário (não usado, mantido para compatibilidade)
+   * @returns URL de dados base64 da imagem
+   */
+  async uploadAvatar(file: File, userId: string): Promise<string> {
+    // Validar tamanho (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      throw new Error('O tamanho máximo permitido é 2MB');
+    }
+    
+    // Validar formato
+    if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
+      throw new Error('Formato não suportado. Use apenas JPEG, PNG ou GIF');
+    }
+    
+    // Converter para base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Falha ao converter imagem'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsDataURL(file);
+    });
+  },
 }; 

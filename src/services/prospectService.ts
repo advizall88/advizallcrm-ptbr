@@ -160,6 +160,24 @@ export const prospectService = {
   async createProspect(prospect: ProspectFormData): Promise<Prospect> {
     const now = new Date().toISOString();
     
+    // Verificar se temos um owner_id, se não, tente recuperar do localStorage
+    if (!prospect.owner_id) {
+      try {
+        const userString = localStorage.getItem('auth_user');
+        if (userString) {
+          const user = JSON.parse(userString);
+          prospect.owner_id = user.id;
+        }
+      } catch (error) {
+        console.warn('Error accessing localStorage for user ID:', error);
+      }
+      
+      // Se ainda não temos um owner_id, lance um erro específico
+      if (!prospect.owner_id) {
+        throw new Error('Missing owner_id for prospect. User authentication may be required.');
+      }
+    }
+    
     // Preparar os dados com valores padrão para campos opcionais
     const prospectData = {
       owner_id: prospect.owner_id,

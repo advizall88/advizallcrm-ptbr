@@ -170,3 +170,43 @@ Advizall is a Chicago-based marketing agency serving U.S. clients with services 
 3. Meeting scheduling with Cal.com integration for clients and prospects
 4. Role-based credential access and management
 5. Database backup and restoration 
+
+## Dark Mode Implementation
+
+### Theme Toggle & System Preference Detection
+- Implemented theme toggle in header with sun/moon icons
+- Added system preference detection that respects OS-level dark mode settings
+- Theme preference stored in localStorage for persistence between sessions
+- ThemeProvider context makes theme state available throughout the application
+
+### Authentication Pages in Light Mode
+- Login, Register, Reset Password, and Unauthorized pages enforce light theme
+- Using `forceDefaultTheme()` function to ensure consistent appearance
+- This helps maintain brand identity and readability on public-facing pages
+
+### Dark Mode-Compatible Components
+- Updated UI components for proper dark mode support:
+  - **Text Visibility**: Added `dark:text-primary-foreground` to buttons with `text-primary` class
+  - **Kanban Board**: Fixed color classes in status columns (changed from "blue" to "bg-blue-500")
+  - **Card Backgrounds**: Added `dark:bg-slate-800` to card headers and proper text colors
+  - **Finance Cards**: Updated with `dark:bg-green-900/30`, `dark:text-green-300` for better contrast
+  - **Input Fields**: Ensured proper contrast between text and background in dark mode
+  - **Borders & Shadows**: Adjusted for better visibility in dark environments
+
+### Dynamic Color Constants
+- Implemented color utility functions to return appropriate colors based on theme
+- Used CSS variables for theme-specific colors with fallbacks
+- Created common pattern for dark mode adaptation with `bg-{color}-50 dark:bg-{color}-900/30` 
+
+### Color Semantics
+- Maintained consistent color semantics across light and dark themes:
+  - Success/Positive: green tones
+  - Warning/Pending: amber tones
+  - Info/Processing: blue tones
+  - Error/Negative: red tones
+
+### Accessibility Considerations
+- Ensured sufficient contrast ratios in both themes (WCAG AA compliance)
+- Added hover states that work in both light and dark modes
+- Maintained readability of text on colored backgrounds
+- Preserved interactive state indicators across themes 

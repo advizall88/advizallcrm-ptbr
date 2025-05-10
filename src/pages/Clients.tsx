@@ -43,13 +43,13 @@ const ClientCard = ({
 }) => {
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-slate-50 pb-4">
+      <CardHeader className="bg-slate-50 dark:bg-slate-800 pb-4">
         <div className="flex justify-between">
           <div>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center dark:text-white">
               {client.contact_name}
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="dark:text-slate-300">
               {client.company_name || 'Individual Client'}
             </CardDescription>
           </div>

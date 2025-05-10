@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // Esquema de validação para o formulário de login
 const loginFormSchema = z.object({
@@ -43,9 +44,15 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { forceDefaultTheme } = useTheme();
   
   // Obtém a rota original que o usuário tentou acessar
   const from = location.state?.from?.pathname || "/";
+  
+  // Forçar tema light para a página de login
+  useEffect(() => {
+    forceDefaultTheme();
+  }, [forceDefaultTheme]);
   
   // Se o usuário já estiver autenticado, redirecione
   useEffect(() => {

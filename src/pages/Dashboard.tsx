@@ -13,9 +13,11 @@ import { clientService } from '@/services/clientService';
 import { meetingService } from '@/services/meetingService';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/layout/AppLayout';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { darkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [metrics, setMetrics] = useState({
     totalProspects: 0,
@@ -156,6 +158,43 @@ const Dashboard = () => {
     fetchData();
   }, []);
   
+  // Define chart theme based on dark mode
+  const chartTheme = {
+    axis: {
+      ticks: {
+        text: {
+          fill: darkMode ? '#CBD5E1' : '#64748B'
+        }
+      },
+      legend: {
+        text: {
+          fill: darkMode ? '#E2E8F0' : '#334155'
+        }
+      }
+    },
+    grid: {
+      line: {
+        stroke: darkMode ? '#334155' : '#E2E8F0'
+      }
+    },
+    legends: {
+      text: {
+        fill: darkMode ? '#CBD5E1' : '#64748B'
+      }
+    },
+    labels: {
+      text: {
+        fill: darkMode ? '#F8FAFC' : '#0F172A'
+      }
+    },
+    tooltip: {
+      container: {
+        background: darkMode ? '#1E293B' : '#FFFFFF',
+        color: darkMode ? '#F8FAFC' : '#0F172A',
+      }
+    }
+  };
+  
   const recentProspects = prospects.slice(0, 5);
   const recentClients = clients.slice(0, 5);
   const upcomingMeetings = meetings.slice(0, 5);
@@ -183,8 +222,8 @@ const Dashboard = () => {
                     +{metrics.newProspectsThisMonth} this month
                   </p>
                 </div>
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <UsersIcon className="h-8 w-8 text-primary" />
+                <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-full">
+                  <UsersIcon className="h-8 w-8 text-primary dark:text-primary-foreground" />
                 </div>
               </div>
             </CardContent>
@@ -200,8 +239,8 @@ const Dashboard = () => {
                     +{metrics.newClientsThisMonth} this month
                   </p>
                 </div>
-                <div className="bg-green-500/10 p-2 rounded-full">
-                  <UsersIcon className="h-8 w-8 text-green-500" />
+                <div className="bg-green-500/10 dark:bg-green-500/20 p-2 rounded-full">
+                  <UsersIcon className="h-8 w-8 text-green-500 dark:text-green-400" />
                 </div>
               </div>
             </CardContent>
@@ -217,8 +256,8 @@ const Dashboard = () => {
                     Next 7 days
                   </p>
                 </div>
-                <div className="bg-blue-500/10 p-2 rounded-full">
-                  <CalendarIcon className="h-8 w-8 text-blue-500" />
+                <div className="bg-blue-500/10 dark:bg-blue-500/20 p-2 rounded-full">
+                  <CalendarIcon className="h-8 w-8 text-blue-500 dark:text-blue-400" />
                 </div>
               </div>
             </CardContent>
@@ -234,8 +273,8 @@ const Dashboard = () => {
                     {metrics.totalProjects} active projects
                   </p>
                 </div>
-                <div className="bg-amber-500/10 p-2 rounded-full">
-                  <DollarSignIcon className="h-8 w-8 text-amber-500" />
+                <div className="bg-amber-500/10 dark:bg-amber-500/20 p-2 rounded-full">
+                  <DollarSignIcon className="h-8 w-8 text-amber-500 dark:text-amber-400" />
                 </div>
               </div>
             </CardContent>
@@ -268,8 +307,9 @@ const Dashboard = () => {
                       margin={{ top: 10, right: 20, bottom: 50, left: 40 }}
                       padding={0.3}
                       valueScale={{ type: 'linear' }}
-                      colors={{ scheme: 'nivo' }}
+                      colors={darkMode ? { scheme: 'pastel1' } : { scheme: 'nivo' }}
                       borderRadius={4}
+                      theme={chartTheme}
                       axisBottom={{
                         tickSize: 5,
                         tickPadding: 5,
@@ -288,6 +328,7 @@ const Dashboard = () => {
                       }}
                       labelSkipWidth={12}
                       labelSkipHeight={12}
+                      labelTextColor={darkMode ? { from: 'color', modifiers: [['darker', 3]] } : { from: 'color', modifiers: [['darker', 1.6]] }}
                       role="application"
                       ariaLabel="Prospects by Stage"
                     />
@@ -310,6 +351,7 @@ const Dashboard = () => {
                       curve="monotoneX"
                       axisTop={null}
                       axisRight={null}
+                      theme={chartTheme}
                       axisBottom={{
                         tickSize: 5,
                         tickPadding: 5,
@@ -326,7 +368,7 @@ const Dashboard = () => {
                         legendOffset: -40,
                         legendPosition: 'middle'
                       }}
-                      colors={{ scheme: 'category10' }}
+                      colors={darkMode ? ['#60A5FA'] : { scheme: 'category10' }}
                       pointSize={10}
                       pointColor={{ theme: 'background' }}
                       pointBorderWidth={2}
@@ -361,12 +403,13 @@ const Dashboard = () => {
                       borderWidth={1}
                       borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
                       arcLinkLabelsSkipAngle={10}
-                      arcLinkLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
+                      arcLinkLabelsTextColor={darkMode ? "#E2E8F0" : { from: 'color', modifiers: [['darker', 2]] }}
                       arcLinkLabelsThickness={2}
                       arcLinkLabelsColor={{ from: 'color' }}
                       arcLabelsSkipAngle={10}
-                      arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
-                      colors={{ scheme: 'category10' }}
+                      arcLabelsTextColor={darkMode ? { from: 'color', modifiers: [['darker', 3]] } : { from: 'color', modifiers: [['darker', 2]] }}
+                      colors={darkMode ? { scheme: 'pastel1' } : { scheme: 'category10' }}
+                      theme={chartTheme}
                       legends={[
                         {
                           anchor: 'bottom',
@@ -377,7 +420,7 @@ const Dashboard = () => {
                           itemsSpacing: 0,
                           itemWidth: 80,
                           itemHeight: 18,
-                          itemTextColor: '#999',
+                          itemTextColor: darkMode ? '#CBD5E1' : '#999',
                           itemDirection: 'left-to-right',
                           itemOpacity: 1,
                           symbolSize: 18,
@@ -410,8 +453,9 @@ const Dashboard = () => {
                       padding={0.3}
                       layout="horizontal"
                       valueScale={{ type: 'linear' }}
-                      colors={{ scheme: 'paired' }}
+                      colors={darkMode ? { scheme: 'pastel1' } : { scheme: 'paired' }}
                       borderRadius={4}
+                      theme={chartTheme}
                       axisTop={null}
                       axisRight={null}
                       axisBottom={{
@@ -432,7 +476,7 @@ const Dashboard = () => {
                       }}
                       labelSkipWidth={12}
                       labelSkipHeight={12}
-                      labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                      labelTextColor={darkMode ? { from: 'color', modifiers: [['darker', 3]] } : { from: 'color', modifiers: [['darker', 1.6]] }}
                       role="application"
                     />
                   </div>
@@ -458,6 +502,7 @@ const Dashboard = () => {
                       curve="monotoneX"
                       axisTop={null}
                       axisRight={null}
+                      theme={chartTheme}
                       axisBottom={{
                         tickSize: 5,
                         tickPadding: 5,
@@ -476,7 +521,7 @@ const Dashboard = () => {
                         format: value => `$${value.toLocaleString()}`
                       }}
                       enableGridX={false}
-                      colors={{ scheme: 'category10' }}
+                      colors={darkMode ? ['#10B981'] : { scheme: 'category10' }}
                       lineWidth={3}
                       pointSize={10}
                       pointColor={{ theme: 'background' }}
@@ -500,12 +545,12 @@ const Dashboard = () => {
                           itemOpacity: 0.75,
                           symbolSize: 12,
                           symbolShape: 'circle',
-                          symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                          symbolBorderColor: darkMode ? 'rgba(255, 255, 255, .3)' : 'rgba(0, 0, 0, .5)',
                           effects: [
                             {
                               on: 'hover',
                               style: {
-                                itemBackground: 'rgba(0, 0, 0, .03)',
+                                itemBackground: darkMode ? 'rgba(255, 255, 255, .1)' : 'rgba(0, 0, 0, .03)',
                                 itemOpacity: 1
                               }
                             }
@@ -585,8 +630,8 @@ const Dashboard = () => {
               <div className="space-y-4">
                 {upcomingMeetings.map(meeting => (
                   <div key={meeting.id} className="flex items-center space-x-4">
-                    <div className="bg-primary/10 p-2 rounded-full">
-                      <CalendarIcon className="h-5 w-5 text-primary" />
+                    <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-full">
+                      <CalendarIcon className="h-5 w-5 text-primary dark:text-primary-foreground" />
                     </div>
                     <div className="flex-1 space-y-1">
                       <p className="text-sm font-medium leading-none">{meeting.title}</p>

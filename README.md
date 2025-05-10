@@ -108,3 +108,39 @@ To deploy this application:
 ## License
 
 This project is proprietary and confidential. Unauthorized copying, transferring, or reproduction of the contents of this project, via any medium, is strictly prohibited.
+
+## Sistema de Avatares (Supabase Storage)
+
+### Como funciona
+
+1. **Upload de Imagens**
+   - Os avatares são enviados diretamente para o Supabase Storage
+   - Um bucket chamado `avatars` deve ser criado previamente no dashboard do Supabase
+   - Arquivos são nomeados usando o formato `userId_timestamp.extensão`
+
+2. **Processo de Upload**
+   - Validação: Apenas imagens JPEG, PNG e GIF são permitidas (máx. 2MB)
+   - Upload: Feito diretamente do front-end para o Supabase Storage
+   - Armazenamento: A URL pública é salva no perfil do usuário
+
+3. **Configuração do Bucket no Supabase**
+   - No dashboard do Supabase, crie um bucket chamado `avatars`
+   - Configure-o como público para permitir acesso direto às imagens
+   - Defina as políticas RLS para permitir que usuários autenticados façam upload
+
+4. **Processamento**
+   - A função `processAvatarUrl()` garante que todas as URLs de avatar sejam exibidas corretamente
+   - Suporta URLs do Supabase Storage, URLs externas e caminhos relativos
+   - Lida com casos especiais como blobs temporários
+
+5. **Vantagens**
+   - Sem problemas de perdas de referência como acontece com blobs
+   - URLs permanentes e acessíveis por CDN
+   - Integração direta com o sistema de autenticação
+   - Políticas de acesso controladas
+
+### Implementação
+
+- O upload é gerenciado pelo serviço `userService.uploadAvatar()`
+- A exibição é feita usando a função auxiliar `processAvatarUrl()`
+- URLs são armazenadas na coluna `avatar_url` da tabela `users` (tipo text)

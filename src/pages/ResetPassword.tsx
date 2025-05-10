@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lock } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -17,6 +18,12 @@ const ResetPassword = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+  const { forceDefaultTheme } = useTheme();
+
+  // Forçar tema light para a página de redefinição de senha
+  useEffect(() => {
+    forceDefaultTheme();
+  }, [forceDefaultTheme]);
 
   // Extract the token from the URL when the component mounts
   useEffect(() => {

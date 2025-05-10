@@ -8,9 +8,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Menu } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useNavigate } from "react-router-dom";
 import {
   Sheet,
@@ -19,6 +20,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { cn, processAvatarUrl } from "@/lib/utils";
 
 // Navigation items shared with Sidebar
 const navigationItems = [
@@ -136,7 +139,7 @@ const Topbar = () => {
                 <div className="flex h-full w-full items-center justify-center rounded-full bg-secondary text-white overflow-hidden">
                   {user?.avatar_url ? (
                     <img 
-                      src={user.avatar_url} 
+                      src={processAvatarUrl(user.avatar_url)} 
                       alt={user?.name || 'User avatar'} 
                       className="h-full w-full object-cover"
                     />

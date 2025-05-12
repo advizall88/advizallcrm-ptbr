@@ -28,8 +28,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 
 // Esquema de validação para o formulário de login
 const loginFormSchema = z.object({
-  email: z.string().email({ message: "Invalid email." }),
-  password: z.string().min(1, { message: "Password is required." }),
+  email: z.string().email({ message: "E-mail inválido." }),
+  password: z.string().min(1, { message: "Senha é obrigatória." }),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -94,10 +94,10 @@ const Login = () => {
       
       if (error || !success) {
         // Em caso de erro, exibe mensagem
-        setError(error?.message || "Login failed. Check your credentials.");
+        setError(error?.message || "Falha no login. Verifique suas credenciais.");
         toast({
-          title: "Login Error",
-          description: error?.message || "Invalid credentials",
+          title: "Erro de Login",
+          description: error?.message || "Credenciais inválidas",
           variant: "destructive",
         });
         setIsLoading(false);
@@ -106,18 +106,18 @@ const Login = () => {
       
       // Em caso de sucesso, exibe notificação
       toast({
-        title: "Login successful",
-        description: "Welcome to Advizall CRM",
+        title: "Login bem-sucedido",
+        description: "Bem-vindo ao Advizall CRM",
       });
       
       console.log("Login: Login bem-sucedido, redirecionamento será feito pelo useEffect");
       // O redirecionamento é feito pelo useEffect quando user é definido
     } catch (error: any) {
       // Captura erros inesperados
-      setError(error?.message || "An unexpected error occurred");
+      setError(error?.message || "Ocorreu um erro inesperado");
       toast({
-        title: "Error",
-        description: error?.message || "Error during login",
+        title: "Erro",
+        description: error?.message || "Erro durante o login",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -133,7 +133,7 @@ const Login = () => {
           </div>
           <CardTitle className="text-2xl text-center font-semibold">Advizall CRM</CardTitle>
           <CardDescription className="text-center text-gray-500">
-            Login to access the system
+            Faça login para acessar o sistema
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -152,10 +152,10 @@ const Login = () => {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Email</FormLabel>
+                    <FormLabel className="text-gray-700">E-mail</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="your@email.com" 
+                        placeholder="seu@email.com" 
                         autoComplete="email"
                         className="focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 border-gray-200"
                         {...field} 
@@ -170,7 +170,7 @@ const Login = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-gray-700">Password</FormLabel>
+                    <FormLabel className="text-gray-700">Senha</FormLabel>
                     <FormControl>
                       <Input 
                         type="password" 
@@ -189,23 +189,23 @@ const Login = () => {
                 className="w-full bg-blue-600 hover:bg-blue-700 transition-all shadow-md hover:shadow-lg" 
                 disabled={isLoading}
               >
-                {isLoading ? "Signing in..." : "Sign in"}
+                {isLoading ? "Entrando..." : "Entrar"}
               </Button>
             </form>
           </Form>
           
           <div className="text-center mt-4">
             <p className="text-sm text-gray-500">
-              Don't have an account?{" "}
+              Não tem uma conta?{" "}
               <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors">
-                Register
+                Cadastre-se
               </Link>
             </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-center border-t border-gray-100 pt-4">
           <p className="text-sm text-gray-500">
-            Developed by <span className="font-medium text-gray-700">Advizall</span>
+            Desenvolvido por <span className="font-medium text-gray-700">Advizall</span>
           </p>
         </CardFooter>
       </Card>

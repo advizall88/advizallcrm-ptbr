@@ -43,18 +43,18 @@ const ResetPassword = () => {
         }).then(({ data, error }) => {
           if (error) {
             console.error("Error setting session:", error);
-            setError("There was a problem validating your reset link. Please request a new one.");
+            setError("Houve um problema ao validar seu link de redefinição. Por favor, solicite um novo.");
           } else if (data.session) {
             console.log("Session established successfully");
             setToken(accessToken);
           }
         });
       } else {
-        setError("Invalid or expired password reset link. Please request a new one.");
+        setError("Link de redefinição de senha inválido ou expirado. Por favor, solicite um novo.");
       }
     } catch (err) {
       console.error("Error parsing hash:", err);
-      setError("There was a problem with your reset link. Please request a new one.");
+      setError("Houve um problema com seu link de redefinição. Por favor, solicite um novo.");
     }
   }, [location]);
 
@@ -63,17 +63,17 @@ const ResetPassword = () => {
     e.preventDefault();
     
     if (!token) {
-      setError("No valid reset token found. Please request a new password reset link.");
+      setError("Nenhum token de redefinição válido encontrado. Por favor, solicite um novo link de redefinição de senha.");
       return;
     }
     
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("As senhas não coincidem");
       return;
     }
     
     if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+      setError("A senha deve ter pelo menos 6 caracteres");
       return;
     }
     
@@ -90,8 +90,8 @@ const ResetPassword = () => {
       if (updateError) throw updateError;
       
       toast({
-        title: "Password Updated",
-        description: "Your password has been reset successfully. You can now log in with your new password.",
+        title: "Senha Atualizada",
+        description: "Sua senha foi redefinida com sucesso. Agora você pode fazer login com sua nova senha.",
       });
       
       // Sign out to clear the temporary session
@@ -103,7 +103,7 @@ const ResetPassword = () => {
       }, 1500);
       
     } catch (error: any) {
-      setError(error.message || "Failed to reset password");
+      setError(error.message || "Falha ao redefinir a senha");
       console.error("Error resetting password:", error);
     } finally {
       setLoading(false);
@@ -119,33 +119,33 @@ const ResetPassword = () => {
               <Lock className="h-6 w-6 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-center">Reset Your Password</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Redefinir Sua Senha</CardTitle>
           <CardDescription className="text-center">
-            Enter your new password below
+            Digite sua nova senha abaixo
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password">Nova Senha</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your new password"
+                placeholder="Digite sua nova senha"
                 required
                 disabled={!token || loading}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your new password"
+                placeholder="Confirme sua nova senha"
                 required
                 disabled={!token || loading}
               />
@@ -162,7 +162,7 @@ const ResetPassword = () => {
               className="w-full"
               disabled={!token || loading}
             >
-              {loading ? "Resetting Password..." : "Reset Password"}
+              {loading ? "Redefinindo Senha..." : "Redefinir Senha"}
             </Button>
           </form>
         </CardContent>
@@ -172,7 +172,7 @@ const ResetPassword = () => {
             onClick={() => navigate("/login")}
             className="text-sm"
           >
-            Back to Login
+            Voltar para Login
           </Button>
         </CardFooter>
       </Card>

@@ -12,7 +12,7 @@ export const meetingService = {
     const { data, error } = await supabase
       .from('meetings')
       .select('*')
-      .order('starts_at', { ascending: true });
+      .order('meeting_date', { ascending: true });
     
     if (error) {
       console.error('Error fetching meetings:', error);
@@ -28,8 +28,8 @@ export const meetingService = {
     const { data, error } = await supabase
       .from('meetings')
       .select('*')
-      .gte('starts_at', now)
-      .order('starts_at', { ascending: true });
+      .gte('meeting_date', now)
+      .order('meeting_date', { ascending: true });
     
     if (error) {
       console.error('Error fetching upcoming meetings:', error);
@@ -44,7 +44,7 @@ export const meetingService = {
       .from('meetings')
       .select('*')
       .eq('client_id', clientId)
-      .order('starts_at', { ascending: true });
+      .order('meeting_date', { ascending: true });
     
     if (error) {
       console.error(`Error fetching meetings for client ${clientId}:`, error);
@@ -59,7 +59,7 @@ export const meetingService = {
       .from('meetings')
       .select('*')
       .eq('prospect_id', prospectId)
-      .order('starts_at', { ascending: true });
+      .order('meeting_date', { ascending: true });
     
     if (error) {
       console.error(`Error fetching meetings for prospect ${prospectId}:`, error);

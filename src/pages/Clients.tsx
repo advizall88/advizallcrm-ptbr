@@ -133,6 +133,8 @@ const Clients = () => {
     ad_budget: null,
     notes: '',
   });
+  const [monthlyFeeInput, setMonthlyFeeInput] = useState('');
+  const [adBudgetInput, setAdBudgetInput] = useState('');
   
   // Check if user has admin or moderator privileges
   const isAdmin = isUserRole('admin');
@@ -619,6 +621,20 @@ const Clients = () => {
     setAddClientDialogOpen(true);
   };
   
+  // Sincronizar os valores iniciais ao abrir o dialog
+  useEffect(() => {
+    setMonthlyFeeInput(
+      newClient.monthly_fee !== null && newClient.monthly_fee !== undefined
+        ? newClient.monthly_fee.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        : ''
+    );
+    setAdBudgetInput(
+      newClient.ad_budget !== null && newClient.ad_budget !== undefined
+        ? newClient.ad_budget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+        : ''
+    );
+  }, [addClientDialogOpen]);
+  
   return (
     <AppLayout>
       <div className="container py-6">
@@ -909,17 +925,46 @@ const Clients = () => {
                     <div className="space-y-2">
                       <Label htmlFor="monthly_fee">Mensalidade (R$)</Label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">R$</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"></span>
                         <Input
                           id="monthly_fee"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={newClient.monthly_fee !== undefined && newClient.monthly_fee !== null ? newClient.monthly_fee : ''}
-                          onChange={(e) => setNewClient({ 
-                            ...newClient, 
-                            monthly_fee: e.target.value ? parseFloat(e.target.value) : null 
-                          })}
+                          type="text"
+                          inputMode="decimal"
+                          value={monthlyFeeInput}
+                          onChange={e => {
+                            let value = e.target.value.replace(/[^\d,\.]/g, '');
+                            // Limita a 2 casas decimais
+                            if (value.includes(',')) {
+                              const [int, dec] = value.split(',');
+                              value = int + ',' + (dec ? dec.slice(0,2) : '');
+                            }
+                            // Limita o valor máximo
+                            let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                            if (isNaN(numeric)) numeric = null;
+                            if (numeric !== null && numeric > 500000) numeric = 500000;
+                            setMonthlyFeeInput(value);
+                            setNewClient({
+                              ...newClient,
+                              monthly_fee: numeric
+                            });
+                          }}
+                          onBlur={e => {
+                            let value = e.target.value;
+                            let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                            if (!isNaN(numeric) && numeric !== null) {
+                              setMonthlyFeeInput(numeric.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+                            } else {
+                              setMonthlyFeeInput('');
+                            }
+                          }}
+                          onFocus={e => {
+                            if (newClient.monthly_fee !== null && newClient.monthly_fee !== undefined) {
+                              setMonthlyFeeInput(newClient.monthly_fee.toString().replace('.', ','));
+                            } else {
+                              setMonthlyFeeInput('');
+                            }
+                          }}
+                          maxLength={12}
                           className="pl-7 focus-visible:ring-primary"
                           placeholder="Opcional"
                         />
@@ -928,17 +973,44 @@ const Clients = () => {
                     <div className="space-y-2">
                       <Label htmlFor="ad_budget">Orçamento de Anúncios (R$)</Label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">R$</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"></span>
                         <Input
                           id="ad_budget"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={newClient.ad_budget !== undefined && newClient.ad_budget !== null ? newClient.ad_budget : ''}
-                          onChange={(e) => setNewClient({
-                            ...newClient,
-                            ad_budget: e.target.value ? parseFloat(e.target.value) : null
-                          })}
+                          type="text"
+                          inputMode="decimal"
+                          value={adBudgetInput}
+                          onChange={e => {
+                            let value = e.target.value.replace(/[^\d,\.]/g, '');
+                            if (value.includes(',')) {
+                              const [int, dec] = value.split(',');
+                              value = int + ',' + (dec ? dec.slice(0,2) : '');
+                            }
+                            let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                            if (isNaN(numeric)) numeric = null;
+                            if (numeric !== null && numeric > 500000) numeric = 500000;
+                            setAdBudgetInput(value);
+                            setNewClient({
+                              ...newClient,
+                              ad_budget: numeric
+                            });
+                          }}
+                          onBlur={e => {
+                            let value = e.target.value;
+                            let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                            if (!isNaN(numeric) && numeric !== null) {
+                              setAdBudgetInput(numeric.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+                            } else {
+                              setAdBudgetInput('');
+                            }
+                          }}
+                          onFocus={e => {
+                            if (newClient.ad_budget !== null && newClient.ad_budget !== undefined) {
+                              setAdBudgetInput(newClient.ad_budget.toString().replace('.', ','));
+                            } else {
+                              setAdBudgetInput('');
+                            }
+                          }}
+                          maxLength={12}
                           className="pl-7 focus-visible:ring-primary"
                           placeholder="Opcional"
                         />

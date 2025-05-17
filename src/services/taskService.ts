@@ -36,8 +36,12 @@ export const taskService = {
   // Criar uma nova tarefa
   async createTask(data: TaskFormData): Promise<Task> {
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) throw new Error('Usuário não autenticado');
       const newTask = {
         ...data,
+        created_by: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };

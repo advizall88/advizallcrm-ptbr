@@ -61,9 +61,9 @@ const Finance: React.FC<FinanceProps> = ({
     .filter(p => !p.paid)
     .reduce((sum, p) => sum + p.amount, 0);
 
-  const formatter = new Intl.NumberFormat('en-US', {
+  const formatter = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'USD'
+    currency: 'BRL'
   });
 
   return (
@@ -145,7 +145,7 @@ const Finance: React.FC<FinanceProps> = ({
                     <TableCell>
                       <div className="flex items-center text-sm">
                         <CalendarIcon className="h-3 w-3 mr-1 text-muted-foreground" />
-                        {formatDate(payment.invoice_date)}
+                        {formatDate(payment.payment_date)}
                       </div>
                     </TableCell>
                     <TableCell>

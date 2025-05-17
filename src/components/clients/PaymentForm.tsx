@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -31,9 +31,10 @@ import { PaymentFormData } from '@/services/clientService';
 const formSchema = z.object({
   description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
   amount: z.coerce.number().min(1, 'Valor deve ser maior que 0'),
-  currency: z.string().default('USD'),
+  currency: z.string().default('BRL'),
   invoice_date: z.date(),
   paid: z.boolean().default(false),
+  due_date: z.date().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -61,30 +62,45 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       ? {
           description: initialData.description || '',
           amount: initialData.amount || 0,
-          currency: initialData.currency || 'USD',
+          currency: initialData.currency || 'BRL',
           invoice_date: initialData.invoice_date ? new Date(initialData.invoice_date) : new Date(),
           paid: initialData.paid || false,
+          due_date: initialData.due_date ? new Date(initialData.due_date) : undefined,
         }
       : {
           description: '',
           amount: 0,
-          currency: 'USD',
+          currency: 'BRL',
           invoice_date: new Date(),
           paid: false,
+          due_date: undefined,
         },
   });
+
+  const [amountInput, setAmountInput] = useState('');
 
   useEffect(() => {
     if (initialData) {
       form.reset({
         description: initialData.description || '',
         amount: initialData.amount || 0,
-        currency: initialData.currency || 'USD',
+        currency: initialData.currency || 'BRL',
         invoice_date: initialData.invoice_date ? new Date(initialData.invoice_date) : new Date(),
         paid: initialData.paid || false,
+        due_date: initialData.due_date ? new Date(initialData.due_date) : undefined,
       });
     }
   }, [initialData, form]);
+
+  useEffect(() => {
+    if (open) {
+      if (form.getValues('amount') !== undefined && form.getValues('amount') !== null && form.getValues('amount') !== 0) {
+        setAmountInput(form.getValues('amount').toString().replace('.', ','));
+      } else {
+        setAmountInput('');
+      }
+    }
+  }, [open]);
 
   const handleSubmit = async (values: FormValues) => {
     try {
@@ -96,6 +112,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
         invoice_date: values.invoice_date.toISOString(),
         paid: values.paid,
         paid_at: values.paid ? new Date().toISOString() : null,
+        due_date: values.due_date ? values.due_date.toISOString() : null,
       };
 
       await onSubmit(formattedData);
@@ -139,11 +156,40 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   <FormItem>
                     <FormLabel>Valor</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="0.00" 
-                        {...field} 
-                        onChange={(e) => field.onChange(parseFloat(e.target.value || '0'))}
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={amountInput}
+                        onChange={e => {
+                          let value = e.target.value.replace(/[^\d,\.]/g, '');
+                          if (value.includes(',')) {
+                            const [int, dec] = value.split(',');
+                            value = int + ',' + (dec ? dec.slice(0,2) : '');
+                          }
+                          let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                          if (isNaN(numeric)) numeric = null;
+                          if (numeric !== null && numeric > 500000) numeric = 500000;
+                          setAmountInput(value);
+                          field.onChange(numeric);
+                        }}
+                        onBlur={e => {
+                          let value = e.target.value;
+                          let numeric = parseFloat(value.replace(/\./g, '').replace(',', '.'));
+                          if (!isNaN(numeric) && numeric !== null) {
+                            setAmountInput(numeric.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }));
+                          } else {
+                            setAmountInput('');
+                          }
+                        }}
+                        onFocus={e => {
+                          if (form.getValues('amount') !== null && form.getValues('amount') !== undefined && form.getValues('amount') !== 0) {
+                            setAmountInput(form.getValues('amount').toString().replace('.', ','));
+                          } else {
+                            setAmountInput('');
+                          }
+                        }}
+                        maxLength={12}
+                        placeholder="0,00"
                       />
                     </FormControl>
                     <FormMessage />
@@ -158,7 +204,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   <FormItem>
                     <FormLabel>Moeda</FormLabel>
                     <FormControl>
-                      <Input placeholder="USD" {...field} />
+                      <Input placeholder="BRL" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -171,7 +217,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               name="invoice_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Data da Fatura</FormLabel>
+                  <FormLabel>Data do Pagamento</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -224,6 +270,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                       Marque isso se o pagamento já foi recebido
                     </p>
                   </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="due_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Data de Vencimento</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      placeholder="Selecione a data de vencimento"
+                      value={field.value ? format(field.value, 'yyyy-MM-dd') : ''}
+                      onChange={e => {
+                        const value = e.target.value;
+                        field.onChange(value ? new Date(value) : undefined);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

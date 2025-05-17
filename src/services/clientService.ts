@@ -39,8 +39,8 @@ export type CredentialFormData = {
 };
 
 export type ProjectFormData = {
-  id?: string;
-  client_id?: string;
+  name: string;
+  client_id: string;
   service: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops';
   status: 'todo' | 'doing' | 'done';
   description: string;
@@ -56,6 +56,7 @@ export type PaymentFormData = {
   invoice_date: string;
   paid: boolean;
   paid_at?: string | null;
+  due_date?: string | null;
 };
 
 export type ClientData = {
@@ -567,6 +568,7 @@ export const clientService = {
         invoice_date: data.invoice_date,
         paid: data.paid,
         paid_at: data.paid ? data.paid_at || now : null,
+        due_date: data.due_date || null,
         created_at: now,
         updated_at: now
       };
@@ -601,6 +603,10 @@ export const clientService = {
       // Se o pagamento for marcado como não pago, remover a data de pagamento
       if (updates.paid === false) {
         updateData.paid_at = null;
+      }
+      
+      if (updates.due_date === undefined) {
+        updateData.due_date = null;
       }
       
       const { data, error } = await supabase

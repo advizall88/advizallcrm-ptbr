@@ -30,6 +30,7 @@ import { Project } from '@/lib/supabase';
 import { ProjectFormData } from '@/services/clientService';
 
 const formSchema = z.object({
+  name: z.string().min(2, 'Nome do projeto é obrigatório'),
   service: z.enum(['website', 'paid_ads', 'organic', 'branding', 'ops']),
   status: z.enum(['todo', 'doing', 'done']),
   description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
@@ -59,12 +60,14 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
+          name: initialData.name || '',
           service: initialData.service,
           status: initialData.status,
           description: initialData.description || '',
           deadline: initialData.deadline ? new Date(initialData.deadline) : undefined,
         }
       : {
+          name: '',
           service: 'website',
           status: 'todo',
           description: '',
@@ -74,6 +77,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   useEffect(() => {
     if (initialData) {
       form.reset({
+        name: initialData.name || '',
         service: initialData.service,
         status: initialData.status,
         description: initialData.description || '',
@@ -85,6 +89,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
   const handleSubmit = async (values: FormValues) => {
     try {
       const formattedData: ProjectFormData = {
+        name: values.name,
         client_id: clientId,
         service: values.service,
         status: values.status,
@@ -111,6 +116,20 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome do Projeto</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite o nome do projeto" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="service"

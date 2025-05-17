@@ -282,6 +282,7 @@ export interface Database {
           invoice_date: string
           paid: boolean
           paid_at?: string
+          due_date?: string
           created_at: string
           updated_at: string
         }
@@ -294,6 +295,7 @@ export interface Database {
           invoice_date: string
           paid?: boolean
           paid_at?: string
+          due_date?: string
           created_at?: string
           updated_at?: string
         }
@@ -306,6 +308,7 @@ export interface Database {
           invoice_date?: string
           paid?: boolean
           paid_at?: string
+          due_date?: string
           created_at?: string
           updated_at?: string
         }

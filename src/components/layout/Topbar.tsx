@@ -25,11 +25,11 @@ import { cn, processAvatarUrl } from "@/lib/utils";
 
 // Navigation items shared with Sidebar
 const navigationItems = [
-  { name: "Dashboard", href: "/", icon: "📊" },
-  { name: "Prospects", href: "/prospects", icon: "🔍" },
-  { name: "Clients", href: "/clients", icon: "👥" },
-  { name: "Meetings", href: "/meetings", icon: "📅" },
-  { name: "Settings", href: "/settings", icon: "⚙️" },
+  { name: "Painel", href: "/", icon: "📊" },
+  { name: "Prospectos", href: "/prospects", icon: "🔍" },
+  { name: "Clientes", href: "/clients", icon: "👥" },
+  { name: "Reuniões", href: "/meetings", icon: "📅" },
+  { name: "Configurações", href: "/settings", icon: "⚙️" },
 ];
 
 const Topbar = () => {
@@ -116,7 +116,7 @@ const Topbar = () => {
                 <div className="flex items-center p-4 border-t border-border">
                   <img src="/images/logo.png" alt="Advizall" className="h-6 mr-2" />
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground">Powered by</p>
+                    <p className="text-xs font-medium text-muted-foreground">Desenvolvido por</p>
                     <p className="text-sm font-medium text-foreground">Advizall</p>
                   </div>
                 </div>
@@ -150,11 +150,11 @@ const Topbar = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{user?.name || 'My Account'}</DropdownMenuLabel>
+              <DropdownMenuLabel>{user?.name || 'Minha Conta'}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleProfileClick}>Profile</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleProfileClick}>Perfil</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogoutClick}>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogoutClick}>Sair</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

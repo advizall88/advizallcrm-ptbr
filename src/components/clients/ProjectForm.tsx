@@ -32,7 +32,7 @@ import { ProjectFormData } from '@/services/clientService';
 const formSchema = z.object({
   service: z.enum(['website', 'paid_ads', 'organic', 'branding', 'ops']),
   status: z.enum(['todo', 'doing', 'done']),
-  description: z.string().min(5, 'Description must be at least 5 characters'),
+  description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
   deadline: z.date().optional(),
 });
 
@@ -105,7 +105,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? 'Add New Project' : 'Edit Project'}
+            {mode === 'create' ? 'Adicionar Novo Projeto' : 'Editar Projeto'}
           </DialogTitle>
         </DialogHeader>
 
@@ -116,19 +116,19 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               name="service"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Service Type</FormLabel>
+                  <FormLabel>Tipo de Serviço</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select service type" />
+                        <SelectValue placeholder="Selecione o tipo de serviço" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="website">Website Development</SelectItem>
-                      <SelectItem value="paid_ads">Paid Advertising</SelectItem>
-                      <SelectItem value="organic">Organic Marketing</SelectItem>
+                      <SelectItem value="website">Desenvolvimento de Website</SelectItem>
+                      <SelectItem value="paid_ads">Publicidade Paga</SelectItem>
+                      <SelectItem value="organic">Marketing Orgânico</SelectItem>
                       <SelectItem value="branding">Branding</SelectItem>
-                      <SelectItem value="ops">Business Operations</SelectItem>
+                      <SelectItem value="ops">Operações de Negócios</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -145,13 +145,13 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="todo">To Do</SelectItem>
-                      <SelectItem value="doing">In Progress</SelectItem>
-                      <SelectItem value="done">Completed</SelectItem>
+                      <SelectItem value="todo">Para Fazer</SelectItem>
+                      <SelectItem value="doing">Em Progresso</SelectItem>
+                      <SelectItem value="done">Concluído</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -164,10 +164,10 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Descrição</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Describe the project..."
+                      placeholder="Descreva o projeto..."
                       className="resize-none"
                       {...field}
                     />
@@ -182,7 +182,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
               name="deadline"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Deadline (Optional)</FormLabel>
+                  <FormLabel>Prazo (Opcional)</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -196,7 +196,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Selecione uma data</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -221,7 +221,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({
 
             <DialogFooter>
               <Button type="submit">
-                {mode === 'create' ? 'Create Project' : 'Update Project'}
+                {mode === 'create' ? 'Criar Projeto' : 'Atualizar Projeto'}
               </Button>
             </DialogFooter>
           </form>

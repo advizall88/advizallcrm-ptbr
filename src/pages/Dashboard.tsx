@@ -203,10 +203,10 @@ const Dashboard = () => {
     <AppLayout>
       <div className="p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Painel</h1>
           <div className="flex gap-2">
-            <Button variant="outline">Export Report</Button>
-            <Button>Refresh Data</Button>
+            <Button variant="outline">Exportar Relatório</Button>
+            <Button>Atualizar Dados</Button>
           </div>
         </div>
         
@@ -216,10 +216,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between space-x-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Total Prospects</p>
+                  <p className="text-sm font-medium text-muted-foreground">Total de Prospectos</p>
                   <p className="text-3xl font-bold">{metrics.totalProspects}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    +{metrics.newProspectsThisMonth} this month
+                    +{metrics.newProspectsThisMonth} este mês
                   </p>
                 </div>
                 <div className="bg-primary/10 dark:bg-primary/20 p-2 rounded-full">
@@ -233,10 +233,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between space-x-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Active Clients</p>
+                  <p className="text-sm font-medium text-muted-foreground">Clientes Ativos</p>
                   <p className="text-3xl font-bold">{metrics.totalClients}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    +{metrics.newClientsThisMonth} this month
+                    +{metrics.newClientsThisMonth} este mês
                   </p>
                 </div>
                 <div className="bg-green-500/10 dark:bg-green-500/20 p-2 rounded-full">
@@ -250,10 +250,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between space-x-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Upcoming Meetings</p>
+                  <p className="text-sm font-medium text-muted-foreground">Próximas Reuniões</p>
                   <p className="text-3xl font-bold">{metrics.upcomingMeetings}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Next 7 days
+                    Próximos 7 dias
                   </p>
                 </div>
                 <div className="bg-blue-500/10 dark:bg-blue-500/20 p-2 rounded-full">
@@ -267,10 +267,10 @@ const Dashboard = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between space-x-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Monthly Revenue</p>
-                  <p className="text-3xl font-bold">${metrics.totalRevenue.toLocaleString()}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Receita Mensal</p>
+                  <p className="text-3xl font-bold">R${metrics.totalRevenue.toLocaleString('pt-BR')}</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {metrics.totalProjects} active projects
+                    {metrics.totalProjects} projetos ativos
                   </p>
                 </div>
                 <div className="bg-amber-500/10 dark:bg-amber-500/20 p-2 rounded-full">
@@ -285,9 +285,9 @@ const Dashboard = () => {
         <Tabs defaultValue="overview">
           <div className="flex justify-between items-center">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="sales">Sales Pipeline</TabsTrigger>
-              <TabsTrigger value="revenue">Revenue</TabsTrigger>
+              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+              <TabsTrigger value="sales">Pipeline de Vendas</TabsTrigger>
+              <TabsTrigger value="revenue">Receita</TabsTrigger>
             </TabsList>
           </div>
           
@@ -295,8 +295,8 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Prospects by Stage</CardTitle>
-                  <CardDescription>Distribution of prospects across pipeline stages</CardDescription>
+                  <CardTitle>Prospectos por Etapa</CardTitle>
+                  <CardDescription>Distribuição dos prospectos nas etapas do funil</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
@@ -314,7 +314,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: -45,
-                        legend: 'Stage',
+                        legend: 'Etapa',
                         legendPosition: 'middle',
                         legendOffset: 40
                       }}
@@ -322,7 +322,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        legend: 'Count',
+                        legend: 'Quantidade',
                         legendPosition: 'middle',
                         legendOffset: -35
                       }}
@@ -338,8 +338,8 @@ const Dashboard = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Conversion Rate</CardTitle>
-                  <CardDescription>Prospect to client conversion over time</CardDescription>
+                  <CardTitle>Taxa de Conversão</CardTitle>
+                  <CardDescription>Conversão de prospecto para cliente ao longo do tempo</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
@@ -356,7 +356,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: -45,
-                        legend: 'Month',
+                        legend: 'Mês',
                         legendOffset: 40,
                         legendPosition: 'middle'
                       }}
@@ -364,7 +364,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        legend: 'Rate (%)',
+                        legend: 'Taxa (%)',
                         legendOffset: -40,
                         legendPosition: 'middle'
                       }}
@@ -388,8 +388,8 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Sales Pipeline</CardTitle>
-                  <CardDescription>Current distribution of deal values by stage</CardDescription>
+                  <CardTitle>Pipeline de Vendas</CardTitle>
+                  <CardDescription>Distribuição atual dos valores por etapa</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
@@ -434,8 +434,8 @@ const Dashboard = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Win Rate by Business Type</CardTitle>
-                  <CardDescription>Conversion success rate by client business type</CardDescription>
+                  <CardTitle>Taxa de Sucesso por Tipo de Negócio</CardTitle>
+                  <CardDescription>Taxa de conversão por tipo de negócio do cliente</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
@@ -462,7 +462,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        legend: 'Win Rate (%)',
+                        legend: 'Taxa de Sucesso (%)',
                         legendPosition: 'middle',
                         legendOffset: 35
                       }}
@@ -470,7 +470,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        legend: 'Business Type',
+                        legend: 'Tipo de Negócio',
                         legendPosition: 'middle',
                         legendOffset: -50
                       }}
@@ -489,8 +489,8 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 gap-4">
               <Card>
                 <CardHeader>
-                  <CardTitle>Monthly Revenue</CardTitle>
-                  <CardDescription>Revenue growth over the past 12 months</CardDescription>
+                  <CardTitle>Receita Mensal</CardTitle>
+                  <CardDescription>Crescimento da receita nos últimos 12 meses</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
@@ -507,7 +507,7 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: -45,
-                        legend: 'Month',
+                        legend: 'Mês',
                         legendOffset: 40,
                         legendPosition: 'middle'
                       }}
@@ -515,10 +515,10 @@ const Dashboard = () => {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        legend: 'Revenue ($)',
+                        legend: 'Receita (R$)',
                         legendOffset: -50,
                         legendPosition: 'middle',
-                        format: value => `$${value.toLocaleString()}`
+                        format: value => `R$${value.toLocaleString()}`
                       }}
                       enableGridX={false}
                       colors={darkMode ? ['#10B981'] : { scheme: 'category10' }}
@@ -569,8 +569,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Prospects</CardTitle>
-              <CardDescription>Latest prospect additions</CardDescription>
+              <CardTitle>Prospectos Recentes</CardTitle>
+              <CardDescription>Últimos prospectos adicionados</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -587,7 +587,7 @@ const Dashboard = () => {
                   </div>
                 ))}
                 {recentProspects.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No recent prospects</p>
+                  <p className="text-sm text-muted-foreground">Nenhum prospecto recente</p>
                 )}
               </div>
             </CardContent>
@@ -595,8 +595,8 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader>
-              <CardTitle>Recent Clients</CardTitle>
-              <CardDescription>Latest client conversions</CardDescription>
+              <CardTitle>Clientes Recentes</CardTitle>
+              <CardDescription>Últimas conversões de clientes</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -615,7 +615,7 @@ const Dashboard = () => {
                   </div>
                 ))}
                 {recentClients.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No recent clients</p>
+                  <p className="text-sm text-muted-foreground">Nenhum cliente recente</p>
                 )}
               </div>
             </CardContent>
@@ -623,8 +623,8 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader>
-              <CardTitle>Upcoming Meetings</CardTitle>
-              <CardDescription>Your scheduled meetings</CardDescription>
+              <CardTitle>Próximas Reuniões</CardTitle>
+              <CardDescription>Suas reuniões agendadas</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -646,13 +646,13 @@ const Dashboard = () => {
                     </div>
                     {meeting.meet_link && (
                       <Button variant="outline" size="sm" className="h-8">
-                        Join
+                        Entrar
                       </Button>
                     )}
                   </div>
                 ))}
                 {upcomingMeetings.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No upcoming meetings</p>
+                  <p className="text-sm text-muted-foreground">Nenhuma reunião agendada</p>
                 )}
               </div>
             </CardContent>

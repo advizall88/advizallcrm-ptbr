@@ -29,8 +29,8 @@ import { Payment } from '@/lib/supabase';
 import { PaymentFormData } from '@/services/clientService';
 
 const formSchema = z.object({
-  description: z.string().min(5, 'Description must be at least 5 characters'),
-  amount: z.coerce.number().min(1, 'Amount must be greater than 0'),
+  description: z.string().min(5, 'Descrição deve ter pelo menos 5 caracteres'),
+  amount: z.coerce.number().min(1, 'Valor deve ser maior que 0'),
   currency: z.string().default('USD'),
   invoice_date: z.date(),
   paid: z.boolean().default(false),
@@ -111,7 +111,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? 'Add New Payment' : 'Edit Payment'}
+            {mode === 'create' ? 'Adicionar Nova Pagamento' : 'Editar Pagamento'}
           </DialogTitle>
         </DialogHeader>
 
@@ -122,9 +122,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>Descrição</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Monthly Fee - July 2023" {...field} />
+                    <Input placeholder="e.g. Taxa Mensal - Julho 2023" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,7 +137,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 name="amount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount</FormLabel>
+                    <FormLabel>Valor</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -156,7 +156,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                 name="currency"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Currency</FormLabel>
+                    <FormLabel>Moeda</FormLabel>
                     <FormControl>
                       <Input placeholder="USD" {...field} />
                     </FormControl>
@@ -171,7 +171,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               name="invoice_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Invoice Date</FormLabel>
+                  <FormLabel>Data da Fatura</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -185,7 +185,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                           {field.value ? (
                             format(field.value, "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Selecione uma data</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -218,10 +218,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      Payment Received
+                      Pagamento Recebido
                     </FormLabel>
                     <p className="text-sm text-muted-foreground">
-                      Check this if payment has already been received
+                      Marque isso se o pagamento já foi recebido
                     </p>
                   </div>
                 </FormItem>
@@ -230,7 +230,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
 
             <DialogFooter>
               <Button type="submit">
-                {mode === 'create' ? 'Create Payment' : 'Update Payment'}
+                {mode === 'create' ? 'Adicionar Pagamento' : 'Atualizar Pagamento'}
               </Button>
             </DialogFooter>
           </form>

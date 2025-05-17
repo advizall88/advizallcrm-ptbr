@@ -19,30 +19,30 @@ const NotFound = () => {
           <img src="/images/logo.png" alt="Advizall" className="h-16" />
         </div>
         <h1 className="text-6xl font-bold text-primary mb-2">404</h1>
-        <p className="text-2xl font-medium text-gray-700 mb-6">Page not found</p>
+        <p className="text-2xl font-medium text-gray-700 mb-6">Página não encontrada</p>
         <p className="text-gray-500 mb-8">
-          The page you're looking for doesn't exist or you may not have permission to view it.
+          A página que você procura não existe ou você não tem permissão para visualizá-la.
         </p>
         <div className="flex flex-col space-y-2">
           <Link to="/">
             <Button variant="default" className="w-full">
-              Return to Dashboard
+              Voltar para o Painel
             </Button>
           </Link>
           <Link to="/prospects">
             <Button variant="outline" className="w-full">
-              View Prospects
+              Ver Prospectos
             </Button>
           </Link>
           <Link to="/clients">
             <Button variant="outline" className="w-full">
-              View Clients
+              Ver Clientes
             </Button>
           </Link>
         </div>
       </div>
       <div className="mt-8 text-sm text-gray-400">
-        Advizall CRM • Need help? Contact support@advizall.com
+        Advizall CRM • Precisa de ajuda? Contate support@advizall.com
       </div>
     </div>
   );

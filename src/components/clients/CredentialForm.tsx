@@ -27,8 +27,8 @@ import { CredentialFormData } from '@/services/clientService';
 
 const formSchema = z.object({
   system: z.enum(['hosting', 'domain', 'facebook', 'instagram', 'other']),
-  login: z.string().min(3, 'Login must be at least 3 characters'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  login: z.string().min(3, 'Login deve ter pelo menos 3 caracteres'),
+  password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   notes: z.string().optional(),
   visible_to: z.enum(['moderator', 'admin']),
 });
@@ -109,7 +109,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === 'create' ? 'Add New Credential' : 'Edit Credential'}
+            {mode === 'create' ? 'Adicionar Nova Credencial' : 'Editar Credencial'}
           </DialogTitle>
         </DialogHeader>
 
@@ -120,11 +120,11 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
               name="system"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>System Type</FormLabel>
+                  <FormLabel>Tipo de Sistema</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select system type" />
+                        <SelectValue placeholder="Selecione o tipo de sistema" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -132,7 +132,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
                       <SelectItem value="domain">Domain</SelectItem>
                       <SelectItem value="facebook">Facebook</SelectItem>
                       <SelectItem value="instagram">Instagram</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="other">Outro</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -159,7 +159,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Senha</FormLabel>
                   <div className="flex">
                     <FormControl>
                       <div className="flex w-full items-center">
@@ -191,10 +191,10 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>Notas (Opcional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Additional information about this credential..."
+                      placeholder="Informações adicionais sobre esta credencial..."
                       className="resize-none"
                       {...field}
                       value={field.value || ''}
@@ -210,15 +210,15 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
               name="visible_to"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Visibility</FormLabel>
+                  <FormLabel>Visibilidade</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select visibility level" />
+                        <SelectValue placeholder="Selecione o nível de visibilidade" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="moderator">Moderator & Admin</SelectItem>
+                      <SelectItem value="moderator">Moderador & Admin</SelectItem>
                       <SelectItem value="admin">Admin Only</SelectItem>
                     </SelectContent>
                   </Select>
@@ -229,7 +229,7 @@ const CredentialForm: React.FC<CredentialFormProps> = ({
 
             <DialogFooter>
               <Button type="submit">
-                {mode === 'create' ? 'Create Credential' : 'Update Credential'}
+                {mode === 'create' ? 'Criar Credencial' : 'Atualizar Credencial'}
               </Button>
             </DialogFooter>
           </form>

@@ -32,21 +32,21 @@ export default function Notes({ client, onUpdateNotes }: NotesProps) {
   return (
     <div className="space-y-4 mt-4">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-medium">Client Notes</h3>
+        <h3 className="text-lg font-medium">Notas do Cliente</h3>
         {!editingNotes ? (
           <Button onClick={() => setEditingNotes(true)}>
             <Edit className="h-4 w-4 mr-2" />
-            Edit Notes
+            Editar Notas
           </Button>
         ) : (
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleCancelEdit}>
               <X className="h-4 w-4 mr-2" />
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={handleSaveNotes}>
               <Save className="h-4 w-4 mr-2" />
-              Save Notes
+              Salvar Notas
             </Button>
           </div>
         )}
@@ -56,7 +56,7 @@ export default function Notes({ client, onUpdateNotes }: NotesProps) {
         <CardHeader>
           <CardTitle className="text-md flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            Client Notes
+            Notas do Cliente
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -67,7 +67,7 @@ export default function Notes({ client, onUpdateNotes }: NotesProps) {
               ) : (
                 <div className="text-muted-foreground italic flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  No notes available. Click Edit Notes to add some.
+                  Nenhuma nota disponível. Clique em Editar Notas para adicionar algumas.
                 </div>
               )}
             </div>
@@ -75,7 +75,7 @@ export default function Notes({ client, onUpdateNotes }: NotesProps) {
             <Textarea
               value={notesValue}
               onChange={(e) => setNotesValue(e.target.value)}
-              placeholder="Enter notes about this client..."
+              placeholder="Digite notas sobre este cliente..."
               className="min-h-[200px]"
             />
           )}

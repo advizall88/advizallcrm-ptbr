@@ -82,31 +82,31 @@ const Projects: React.FC<ProjectsProps> = ({
         <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Client Projects</CardTitle>
+              <CardTitle>Projetos do Cliente</CardTitle>
               <CardDescription>
-                Manage all projects for {client?.company_name || client?.contact_name}
+                Gerencie todos os projetos para {client?.company_name || client?.contact_name}
               </CardDescription>
             </div>
             <Button onClick={onAdd} className="ml-auto">
               <Plus className="h-4 w-4 mr-2" />
-              Add Project
+              Adicionar Projeto
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
-              No projects have been added yet.
+              Nenhum projeto foi adicionado ainda.
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Description</TableHead>
+                  <TableHead>Serviço</TableHead>
+                  <TableHead>Descrição</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Deadline</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>Prazo</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,7 +128,7 @@ const Projects: React.FC<ProjectsProps> = ({
                           {formatDate(project.deadline)}
                         </div>
                       ) : (
-                        <span className="text-muted-foreground text-sm">No deadline</span>
+                        <span className="text-muted-foreground text-sm">Sem prazo</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">

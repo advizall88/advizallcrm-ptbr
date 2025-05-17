@@ -96,8 +96,8 @@ const ProspectDetailsDialog = ({
       setIsConverting(true);
       
       toast({
-        title: "Starting conversion",
-        description: "Converting prospect to client...",
+        title: "Iniciando conversão",
+        description: "Convertendo prospecto em cliente...",
       });
       
       console.log(`Attempting to convert prospect ${prospect.id} to client...`);
@@ -113,8 +113,8 @@ const ProspectDetailsDialog = ({
         await queryClient.invalidateQueries({ queryKey: ['clients'] });
         
         toast({
-          title: "Conversion completed",
-          description: "Prospect successfully converted to client!",
+          title: "Conversão concluída",
+          description: "Prospecto convertido em cliente com sucesso!",
         });
         
         // Close dialog
@@ -128,8 +128,8 @@ const ProspectDetailsDialog = ({
         console.log(`Prospect ${prospect.id} was already converted to client.`);
         
         toast({
-          title: "Information",
-          description: "This prospect has already been converted to a client.",
+          title: "Informação",
+          description: "Este prospecto já foi convertido em cliente.",
         });
         
         // Close dialog and redirect
@@ -141,16 +141,16 @@ const ProspectDetailsDialog = ({
         console.error(`Failed to convert prospect ${prospect.id} to client:`, result.message);
         
         toast({
-          title: "Error",
-          description: result.message || "Unable to convert prospect to client",
+          title: "Erro",
+          description: result.message || "Não foi possível converter o prospecto em cliente",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('Error converting prospect to client:', error);
       toast({
-        title: "Conversion Error",
-        description: "Failed to convert prospect to client. Please try again.",
+        title: "Erro de Conversão",
+        description: "Falha ao converter o prospecto em cliente. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -174,18 +174,18 @@ const ProspectDetailsDialog = ({
           <div className="space-y-6">
             {/* Company Info */}
             <div>
-              <h3 className="text-md font-medium mb-2">Company Information</h3>
+              <h3 className="text-md font-medium mb-2">Informações da Empresa</h3>
               <Card>
                 <CardContent className="p-4 space-y-2">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex items-center space-x-2">
                       <BadgeIcon className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">Company:</span>
+                      <span className="text-sm text-gray-500">Empresa:</span>
                       <span className="font-medium">{prospect.company_name || "N/A"}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <TagIcon className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-500">Business Type:</span>
+                      <span className="text-sm text-gray-500">Tipo de Negócio:</span>
                       <span className="font-medium">{prospect.business_type || "N/A"}</span>
                     </div>
                   </div>
@@ -195,24 +195,24 @@ const ProspectDetailsDialog = ({
             
             {/* Contact Info */}
             <div>
-              <h3 className="text-md font-medium mb-2">Contact Information</h3>
+              <h3 className="text-md font-medium mb-2">Informações de Contato</h3>
               <Card>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center space-x-2">
                     <PhoneIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Phone:</span>
+                    <span className="text-sm text-gray-500">Telefone:</span>
                     <span className="font-medium">{prospect.phone}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <MailIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Email:</span>
+                    <span className="text-sm text-gray-500">E-mail:</span>
                     <span className="font-medium">{prospect.email || "N/A"}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <MapPinIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Location:</span>
+                    <span className="text-sm text-gray-500">Localização:</span>
                     <span className="font-medium">
                       {prospect.region_city && prospect.region_state 
                         ? `${prospect.region_city}, ${prospect.region_state}` 
@@ -222,7 +222,7 @@ const ProspectDetailsDialog = ({
                   
                   <div className="flex items-center space-x-2">
                     <ClockIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Timezone:</span>
+                    <span className="text-sm text-gray-500">Fuso Horário:</span>
                     <span className="font-medium">{prospect.timezone || "N/A"}</span>
                   </div>
                 </CardContent>
@@ -231,29 +231,29 @@ const ProspectDetailsDialog = ({
             
             {/* Lead Details */}
             <div>
-              <h3 className="text-md font-medium mb-2">Lead Details</h3>
+              <h3 className="text-md font-medium mb-2">Detalhes do Lead</h3>
               <Card>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-center space-x-2">
                     <InfoIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Source:</span>
+                    <span className="text-sm text-gray-500">Origem:</span>
                     <span className="font-medium">{prospect.lead_source || "N/A"}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-gray-500">Priority Score:</span>
+                    <span className="text-sm text-gray-500">Pontuação de Prioridade:</span>
                     <span className="font-medium">{scoreToStars(prospect.score)}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <CalendarIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">First Contact:</span>
+                    <span className="text-sm text-gray-500">Primeiro Contato:</span>
                     <span className="font-medium">{formattedFirstContact}</span>
                   </div>
                   
                   <div className="flex items-center space-x-2">
                     <CalendarIcon className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-500">Next Follow-up:</span>
+                    <span className="text-sm text-gray-500">Próximo Follow-up:</span>
                     <span className="font-medium">{formattedFollowUp}</span>
                   </div>
                 </CardContent>
@@ -262,19 +262,19 @@ const ProspectDetailsDialog = ({
             
             {/* Notes & Summary */}
             <div>
-              <h3 className="text-md font-medium mb-2">Notes & Summary</h3>
+              <h3 className="text-md font-medium mb-2">Notas & Resumo</h3>
               <Card>
                 <CardContent className="p-4 space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Call Summary</h4>
-                    <p className="text-sm">{prospect.call_summary || "No call summary recorded."}</p>
+                    <h4 className="text-sm font-medium mb-1">Resumo da Ligação</h4>
+                    <p className="text-sm">{prospect.call_summary || "Nenhum resumo de ligação registrado."}</p>
                   </div>
                   
                   <Separator />
                   
                   <div>
-                    <h4 className="text-sm font-medium mb-1">Notes</h4>
-                    <p className="text-sm">{prospect.notes || "No additional notes."}</p>
+                    <h4 className="text-sm font-medium mb-1">Notas</h4>
+                    <p className="text-sm">{prospect.notes || "Nenhuma nota adicional."}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -282,11 +282,11 @@ const ProspectDetailsDialog = ({
             
             {/* System Info */}
             <div>
-              <h3 className="text-md font-medium mb-2">System Information</h3>
+              <h3 className="text-md font-medium mb-2">Informações do Sistema</h3>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-xs text-gray-500">
-                    Created: {formattedCreatedAt}
+                    Criado em: {formattedCreatedAt}
                   </div>
                 </CardContent>
               </Card>
@@ -298,7 +298,7 @@ const ProspectDetailsDialog = ({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Close
+              Fechar
             </Button>
             
             <Button
@@ -306,7 +306,7 @@ const ProspectDetailsDialog = ({
               onClick={() => setCalendarOpen(true)}
             >
               <Calendar className="h-4 w-4 mr-2" />
-              Schedule Meeting
+              Agendar Reunião
             </Button>
             
             <Button
@@ -316,7 +316,7 @@ const ProspectDetailsDialog = ({
                 onOpenChange(false);
               }}
             >
-              Edit Prospect
+              Editar Prospecto
             </Button>
             
             {showConvertButton && (
@@ -326,11 +326,11 @@ const ProspectDetailsDialog = ({
                 disabled={isConverting}
               >
                 {isConverting ? (
-                  <>Converting...</>
+                  <>Convertendo...</>
                 ) : (
                   <>
                     <UserPlus className="h-4 w-4 mr-2" />
-                    Convert to Client
+                    Converter em Cliente
                   </>
                 )}
               </Button>

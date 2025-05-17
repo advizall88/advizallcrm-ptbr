@@ -40,30 +40,30 @@ const EditClient: React.FC<EditClientProps> = ({
     <div className="space-y-4 mt-4">
       <Card>
         <CardHeader>
-          <CardTitle>Edit Client Information</CardTitle>
+          <CardTitle>Editar Informações do Cliente</CardTitle>
           <CardDescription>
-            Update client details and contact information
+            Atualize as informações do cliente e as informações de contato
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="contact_name">Contact Name</Label>
+              <Label htmlFor="contact_name">Nome do Contato</Label>
               <Input
                 id="contact_name"
                 value={client.contact_name || ''}
                 onChange={(e) => onChange('contact_name', e.target.value)}
-                placeholder="Contact name"
+                placeholder="Nome do contato"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="company_name">Company Name</Label>
+              <Label htmlFor="company_name">Nome da Empresa</Label>
               <Input
                 id="company_name"
                 value={client.company_name || ''}
                 onChange={(e) => onChange('company_name', e.target.value)}
-                placeholder="Company name (optional)"
+                placeholder="Nome da empresa (opcional)"
               />
             </div>
             
@@ -74,27 +74,27 @@ const EditClient: React.FC<EditClientProps> = ({
                 type="email"
                 value={client.email || ''}
                 onChange={(e) => onChange('email', e.target.value)}
-                placeholder="Email address"
+                placeholder="Endereço de email"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
+              <Label htmlFor="phone">Telefone</Label>
               <Input
                 id="phone"
                 value={client.phone || ''}
                 onChange={(e) => onChange('phone', e.target.value)}
-                placeholder="Phone number"
+                placeholder="Número de telefone"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="business_type">Business Type</Label>
+              <Label htmlFor="business_type">Tipo de Negócio</Label>
               <Input
                 id="business_type"
                 value={client.business_type || ''}
                 onChange={(e) => onChange('business_type', e.target.value)}
-                placeholder="Type of business"
+                placeholder="Tipo de negócio"
               />
             </div>
             
@@ -105,56 +105,56 @@ const EditClient: React.FC<EditClientProps> = ({
                 onValueChange={(value) => onChange('status', value)}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="delinquent">Delinquent</SelectItem>
+                  <SelectItem value="active">Ativo</SelectItem>
+                  <SelectItem value="inactive">Inativo</SelectItem>
+                  <SelectItem value="delinquent">Inadimplente</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="region_city">City</Label>
+              <Label htmlFor="region_city">Cidade</Label>
               <Input
                 id="region_city"
                 value={client.region_city || ''}
                 onChange={(e) => onChange('region_city', e.target.value)}
-                placeholder="City"
+                placeholder="Cidade"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="region_state">State</Label>
+              <Label htmlFor="region_state">Estado</Label>
               <Input
                 id="region_state"
                 value={client.region_state || ''}
                 onChange={(e) => onChange('region_state', e.target.value)}
-                placeholder="State"
+                placeholder="Estado"
               />
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="full_address">Address</Label>
+              <Label htmlFor="full_address">Endereço</Label>
               <Textarea
                 id="full_address"
                 value={client.full_address || ''}
                 onChange={(e) => onChange('full_address', e.target.value)}
-                placeholder="Address"
+                placeholder="Endereço"
                 rows={2}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="zip_code">Zip Code</Label>
+              <Label htmlFor="zip_code">Código Postal</Label>
               <Input
                 id="zip_code"
                 value={client.zip_code || ''}
                 onChange={(e) => onChange('zip_code', e.target.value)}
-                placeholder="Zip Code"
+                placeholder="Código Postal"
               />
             </div>
           </div>
@@ -165,51 +165,51 @@ const EditClient: React.FC<EditClientProps> = ({
               id="website"
               value={client.website || ''}
               onChange={(e) => onChange('website', e.target.value)}
-              placeholder="Website URL"
+              placeholder="URL do Website"
             />
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="plan_name">Plan Name</Label>
+              <Label htmlFor="plan_name">Nome do Plano</Label>
               <Input
                 id="plan_name"
                 value={client.plan_name || ''}
                 onChange={(e) => onChange('plan_name', e.target.value)}
-                placeholder="Service plan"
+                placeholder="Plano de Serviço"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="monthly_fee">Monthly Fee</Label>
+              <Label htmlFor="monthly_fee">Taxa Mensal</Label>
               <Input
                 id="monthly_fee"
                 type="number"
                 value={client.monthly_fee !== undefined && client.monthly_fee !== null ? client.monthly_fee : ''}
                 onChange={(e) => onChange('monthly_fee', e.target.value ? parseFloat(e.target.value) : null)}
-                placeholder="Monthly fee (optional)"
+                placeholder="Taxa mensal (opcional)"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="ad_budget">Ad Budget</Label>
+              <Label htmlFor="ad_budget">Orçamento de Anúncio</Label>
               <Input
                 id="ad_budget"
                 type="number"
                 value={client.ad_budget !== undefined && client.ad_budget !== null ? client.ad_budget : ''}
                 onChange={(e) => onChange('ad_budget', e.target.value ? parseFloat(e.target.value) : null)}
-                placeholder="Ad budget (optional)"
+                placeholder="Orçamento de anúncio (opcional)"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">Notas</Label>
             <Textarea
               id="notes"
               value={client.notes || ''}
               onChange={(e) => onChange('notes', e.target.value)}
-              placeholder="Add notes about this client"
+              placeholder="Adicione notas sobre este cliente"
               rows={3}
             />
           </div>
@@ -217,11 +217,11 @@ const EditClient: React.FC<EditClientProps> = ({
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={onCancel}>
             <X className="h-4 w-4 mr-2" />
-            Cancel
+            Cancelar
           </Button>
           <Button onClick={onSave}>
             <Save className="h-4 w-4 mr-2" />
-            Save Changes
+            Salvar Alterações
           </Button>
         </CardFooter>
       </Card>

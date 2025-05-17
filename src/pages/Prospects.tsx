@@ -149,7 +149,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
             <CardFooter className="pt-0 flex flex-col space-y-2">
               <div className="flex justify-between items-center w-full">
                 <div className="text-xs text-muted-foreground">
-                  Follow-up: {formattedFollowUp}
+                  Follow-up: {formattedFollowUp === 'None' ? 'Nenhum' : formattedFollowUp}
                 </div>
                 <div className="flex space-x-2">
                   <Button 
@@ -158,7 +158,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                     className="text-xs h-7"
                     onClick={() => onEdit(prospect)}
                   >
-                    Edit
+                    Editar
                   </Button>
                   <Button 
                     size="sm" 
@@ -166,7 +166,7 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                     className="text-xs h-7"
                     onClick={() => onViewDetails(prospect)}
                   >
-                    View
+                    Visualizar
                   </Button>
                 </div>
               </div>
@@ -179,27 +179,27 @@ const ProspectCard: React.FC<ProspectCardProps> = ({
                       variant="outline" 
                       className={`text-xs h-7 w-full border-green-500 text-green-500 hover:bg-green-50 dark:border-green-400 dark:text-green-400 dark:hover:bg-green-950/30`}
                     >
-                      Convert to Client
+                      Converter em Cliente
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Convert to Client</AlertDialogTitle>
+                      <AlertDialogTitle>Converter em Cliente</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will convert {prospect.contact_name} from {prospect.company_name || "N/A"} 
-                        to an active client. All prospect data will be preserved.
+                        Isso irá converter {prospect.contact_name} de {prospect.company_name || "N/A"} 
+                        para um cliente ativo. Todos os dados do prospecto serão preservados.
                       </AlertDialogDescription>
                       <p className="mt-2 p-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded text-amber-700 dark:text-amber-400 text-sm">
-                        After conversion, you'll be redirected to the new client page where you can add more details.
+                        Após a conversão, você será redirecionado para a página do novo cliente onde poderá adicionar mais detalhes.
                       </p>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
                       <AlertDialogAction 
                         className="bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
                         onClick={() => onConvertToClient(prospect)}
                       >
-                        Convert to Client
+                        Converter em Cliente
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -302,8 +302,8 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({
             {provided.placeholder}
             {prospects.length === 0 && (
               <div className="bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-700 rounded p-4 flex flex-col items-center justify-center h-24">
-                <p className="text-sm text-muted-foreground text-center">No prospects</p>
-                <p className="text-xs text-muted-foreground text-center mt-1">Drag prospects here</p>
+                <p className="text-sm text-muted-foreground text-center">Nenhum prospecto</p>
+                <p className="text-xs text-muted-foreground text-center mt-1">Arraste prospectos aqui</p>
               </div>
             )}
           </div>
@@ -358,8 +358,8 @@ const Prospects = () => {
     if (isProspectsError && prospectsError) {
       console.error("Error fetching prospects:", prospectsError);
       toast({
-        title: "Error",
-        description: "Failed to load prospects. Please try again.",
+        title: "Erro",
+        description: "Falha ao carregar prospectos. Por favor, tente novamente.",
         variant: "destructive",
       });
       setIsLoading(false);
@@ -394,15 +394,15 @@ const Prospects = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prospects'] });
       toast({
-        title: "Success",
-        description: "Prospect created successfully",
+        title: "Sucesso",
+        description: "Prospecto criado com sucesso",
       });
       setIsFormOpen(false);
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create prospect",
+        title: "Erro",
+        description: "Falha ao criar prospecto",
         variant: "destructive",
       });
       console.error(error);
@@ -416,15 +416,15 @@ const Prospects = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prospects'] });
       toast({
-        title: "Success",
-        description: "Prospect updated successfully",
+        title: "Sucesso",
+        description: "Prospecto atualizado com sucesso",
       });
       setIsFormOpen(false);
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update prospect",
+        title: "Erro",
+        description: "Falha ao atualizar prospecto",
         variant: "destructive",
       });
       console.error(error);
@@ -458,8 +458,8 @@ const Prospects = () => {
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update prospect order",
+        title: "Erro",
+        description: "Falha ao atualizar ordem dos prospectos",
         variant: "destructive",
       });
       console.error(error);
@@ -475,30 +475,30 @@ const Prospects = () => {
         queryClient.invalidateQueries({ queryKey: ['clients'] });
         
         toast({
-          title: "Success",
-          description: "Prospect successfully converted to client",
+          title: "Sucesso",
+          description: "Prospecto convertido em cliente com sucesso",
         });
         
         navigate(`/clients/${data.client_id}`);
       } else if (data.already_exists && data.client_id) {
         toast({
-          title: "Information",
-          description: "This prospect has already been converted to a client.",
+          title: "Informação",
+          description: "Este prospecto já foi convertido em cliente.",
         });
         
         navigate(`/clients/${data.client_id}`);
       } else {
         toast({
-          title: "Warning",
-          description: data.message || "Unable to convert this prospect to a client",
+          title: "Atenção",
+          description: data.message || "Não foi possível converter este prospecto em cliente",
           variant: "destructive",
         });
       }
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to convert prospect to client",
+        title: "Erro",
+        description: "Falha ao converter prospecto em cliente",
         variant: "destructive",
       });
       console.error(error);
@@ -509,6 +509,11 @@ const Prospects = () => {
     try {
       if (!data) {
         console.error("Invalid prospect data");
+        toast({
+          title: "Erro",
+          description: "Dados do prospecto inválidos",
+          variant: "destructive",
+        });
         return;
       }
       await createProspectMutation.mutateAsync(data);
@@ -528,8 +533,8 @@ const Prospects = () => {
     } catch (error) {
       console.error("Error updating prospect:", error);
       toast({
-        title: "Error",
-        description: "Failed to update prospect",
+        title: "Erro",
+        description: "Falha ao atualizar prospecto",
         variant: "destructive",
       });
     }
@@ -550,8 +555,8 @@ const Prospects = () => {
       setIsFormSubmitting(true);
       
       toast({
-        title: "Converting prospect",
-        description: "Please wait while we convert this prospect to a client...",
+        title: "Convertendo prospecto",
+        description: "Por favor, aguarde enquanto convertemos este prospecto em cliente...",
       });
       
       console.log(`Converting prospect to client: ${prospect.id} - ${prospect.contact_name}`);
@@ -564,30 +569,30 @@ const Prospects = () => {
         await queryClient.invalidateQueries({ queryKey: ['clients'] });
         
         toast({
-          title: "Success",
-          description: "Prospect successfully converted to client",
+          title: "Sucesso",
+          description: "Prospecto convertido em cliente com sucesso",
         });
         
         navigate(`/clients/${result.client_id}`);
       } else if (result.already_exists && result.client_id) {
         toast({
-          title: "Information",
-          description: "This prospect has already been converted to a client.",
+          title: "Informação",
+          description: "Este prospecto já foi convertido em cliente.",
         });
         
         navigate(`/clients/${result.client_id}`);
       } else {
         toast({
-          title: "Warning",
-          description: result.message || "Unable to convert this prospect to a client",
+          title: "Atenção",
+          description: result.message || "Não foi possível converter este prospecto em cliente",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error converting prospect:", error);
       toast({
-        title: "Error",
-        description: "Failed to convert prospect to client. Please try again.",
+        title: "Erro",
+        description: "Falha ao converter prospecto em cliente. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -599,8 +604,8 @@ const Prospects = () => {
   const handleConvertSuccess = (prospectId: string) => {
     // Redirect to clients page or specific client page
     toast({
-      title: "Client created",
-      description: "Prospect successfully converted. Redirecting to Clients...",
+      title: "Cliente criado",
+      description: "Prospecto convertido com sucesso. Redirecionando para Clientes...",
     });
     
     // Navigate immediately to the client page
@@ -623,8 +628,8 @@ const Prospects = () => {
     } catch (error) {
       console.error("Error submitting prospect form:", error);
       toast({
-        title: "Error",
-        description: "Failed to save prospect. Please try again.",
+        title: "Erro",
+        description: "Falha ao salvar prospecto. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -673,9 +678,9 @@ const Prospects = () => {
     <AppLayout>
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Prospects</h1>
+          <h1 className="text-3xl font-bold">Prospectos</h1>
           <Button size="sm" onClick={handleAddProspect}>
-            <Plus className="mr-2 h-4 w-4" /> Add Prospect
+            <Plus className="mr-2 h-4 w-4" /> Adicionar Prospecto
           </Button>
         </div>
         
@@ -683,7 +688,7 @@ const Prospects = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search prospects..."
+              placeholder="Buscar prospectos..."
               className="pl-10"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -694,14 +699,14 @@ const Prospects = () => {
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Loading prospects...</span>
+            <span className="ml-2">Carregando prospectos...</span>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <DragDropContext onDragEnd={handleDragEnd}>
               <div className="flex space-x-4 min-w-max pb-4">
                 <KanbanColumn
-                  title="New"
+                  title="Novo"
                   prospects={prospectsByStatus.new}
                   color="bg-blue-500"
                   onEdit={handleEditProspect}
@@ -710,7 +715,7 @@ const Prospects = () => {
                   droppableId="new"
                 />
                 <KanbanColumn
-                  title="Interested"
+                  title="Interessado"
                   prospects={prospectsByStatus.interested}
                   color="bg-green-500"
                   onEdit={handleEditProspect}
@@ -719,7 +724,7 @@ const Prospects = () => {
                   droppableId="interested"
                 />
                 <KanbanColumn
-                  title="Negotiation"
+                  title="Negociação"
                   prospects={prospectsByStatus.negotiation}
                   color="bg-amber-500"
                   onEdit={handleEditProspect}
@@ -728,7 +733,7 @@ const Prospects = () => {
                   droppableId="negotiation"
                 />
                 <KanbanColumn
-                  title="Lost"
+                  title="Perdido"
                   prospects={prospectsByStatus.lost}
                   color="bg-red-500"
                   onEdit={handleEditProspect}

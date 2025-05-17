@@ -48,8 +48,8 @@ const Finance: React.FC<FinanceProps> = ({
 }) => {
   const getStatusBadge = (paid: boolean) => {
     return paid
-      ? <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Paid</Badge>
-      : <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200">Pending</Badge>;
+      ? <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Pago</Badge>
+      : <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200">Pendente</Badge>;
   };
 
   // Calculate total paid and pending amounts
@@ -71,7 +71,7 @@ const Finance: React.FC<FinanceProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-green-50 dark:bg-green-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">Total Paid</CardTitle>
+            <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">Total Pago</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-700 dark:text-green-400">{formatter.format(totalPaid)}</div>
@@ -80,7 +80,7 @@ const Finance: React.FC<FinanceProps> = ({
         
         <Card className="bg-amber-50 dark:bg-amber-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-amber-800 dark:text-amber-300">Pending Payments</CardTitle>
+            <CardTitle className="text-sm font-medium text-amber-800 dark:text-amber-300">Pagamentos Pendentes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{formatter.format(totalPending)}</div>
@@ -89,7 +89,7 @@ const Finance: React.FC<FinanceProps> = ({
         
         <Card className="bg-blue-50 dark:bg-blue-900/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">Monthly Fee</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">Taxa Mensal</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">
@@ -103,31 +103,31 @@ const Finance: React.FC<FinanceProps> = ({
         <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Payment History</CardTitle>
+              <CardTitle>Histórico de Pagamentos</CardTitle>
               <CardDescription>
-                Payment records for {client.company_name || client.contact_name}
+                Registros de pagamentos para {client.company_name || client.contact_name}
               </CardDescription>
             </div>
             <Button onClick={onAdd} className="ml-auto">
               <Plus className="h-4 w-4 mr-2" />
-              Add Payment
+              Adicionar Pagamento
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           {payments.length === 0 ? (
             <div className="text-center py-6 text-muted-foreground">
-              No payments have been recorded yet.
+              Nenhum pagamento foi registrado ainda.
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Data</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -157,7 +157,7 @@ const Finance: React.FC<FinanceProps> = ({
                           variant="ghost"
                           size="sm"
                           onClick={() => onToggleStatus(payment)}
-                          title={payment.paid ? "Mark as Unpaid" : "Mark as Paid"}
+                          title={payment.paid ? "Marcar como Não Pago" : "Marcar como Pago"}
                         >
                           {payment.paid ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                         </Button>

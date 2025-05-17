@@ -224,8 +224,8 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
     if (window.confirm(`Are you sure you want to delete project: ${project.description}?`)) {
       onDeleteProject(project.id);
       toast({
-        title: "Success",
-        description: `Project deleted successfully`,
+        title: "Sucesso",
+        description: `Projeto excluído com sucesso`,
       });
     }
   };
@@ -255,8 +255,8 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
     if (window.confirm(`Are you sure you want to delete payment: ${payment.description}?`)) {
       onDeletePayment(payment.id);
       toast({
-        title: "Success",
-        description: `Payment deleted successfully`,
+        title: "Sucesso",
+        description: `Pagamento excluído com sucesso`,
       });
     }
   };
@@ -275,8 +275,8 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
     const updatedPayment = { ...payment, paid: !payment.paid };
     onUpdatePayment(payment.id, { paid: !payment.paid });
     toast({
-      title: payment.paid ? "Payment Marked as Unpaid" : "Payment Marked as Paid",
-      description: `Payment for ${payment.description} has been updated.`,
+      title: payment.paid ? "Pagamento marcado como não pago" : "Pagamento marcado como pago",
+      description: `Pagamento para ${payment.description} foi atualizado.`,
     });
   };
 
@@ -295,8 +295,8 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
     if (window.confirm(`Are you sure you want to delete credential for ${credential.system}?`)) {
       onDeleteCredential(credential.id);
       toast({
-        title: "Success",
-        description: `Credential deleted successfully`,
+        title: "Sucesso",
+        description: `Credencial excluída com sucesso`,
       });
     }
   };
@@ -325,8 +325,8 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
       onUpdateClient(updatedClient);
       setEditableClient(updatedClient);
       toast({
-        title: "Success",
-        description: "Notes updated successfully",
+        title: "Sucesso",
+        description: "Anotações atualizadas com sucesso",
       });
     }
   };
@@ -340,20 +340,20 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
             {client.company_name || client.contact_name}
           </DialogTitle>
           <DialogDescription>
-            Complete client details
+            Detalhes completos do cliente
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
             <TabsList className="grid grid-cols-6">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="finance">Finance</TabsTrigger>
-              <TabsTrigger value="credentials">Credentials</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
+              <TabsTrigger value="overview">Visão Geral</TabsTrigger>
+              <TabsTrigger value="projects">Projetos</TabsTrigger>
+              <TabsTrigger value="finance">Financeiro</TabsTrigger>
+              <TabsTrigger value="credentials">Credenciais</TabsTrigger>
+              <TabsTrigger value="notes">Anotações</TabsTrigger>
               <TabsTrigger value="editClient" className="hidden">
-                Edit Client
+                Editar Cliente
               </TabsTrigger>
             </TabsList>
 
@@ -438,7 +438,7 @@ const ClientDetailsDialog: React.FC<ClientDetailsDialogProps> = ({
 
         <DialogFooter className="gap-2 mt-4">
           <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Close
+            Fechar
           </Button>
         </DialogFooter>
       </DialogContent>

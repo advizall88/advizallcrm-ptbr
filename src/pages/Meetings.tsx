@@ -703,13 +703,13 @@ const Meetings = () => {
     <AppLayout>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Meetings</h1>
+          <h1 className="text-2xl font-bold">Reuniões</h1>
           <div className="flex gap-2 items-center">
             {/* Barra de pesquisa */}
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"/>
               <Input
-                placeholder="Search meetings..."
+                placeholder="Buscar reuniões..."
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -719,12 +719,12 @@ const Meetings = () => {
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Schedule Meeting
+                  Agendar Reunião
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                  <DialogTitle>Schedule a Meeting</DialogTitle>
+                  <DialogTitle>Agendar uma Reunião</DialogTitle>
                 </DialogHeader>
                 <CalendarIframe onClose={() => setIsCalendarOpen(false)} />
               </DialogContent>
@@ -735,33 +735,33 @@ const Meetings = () => {
         <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="upcoming">
-              Upcoming ({upcomingMeetings.length})
+              Próximas ({upcomingMeetings.length})
             </TabsTrigger>
             <TabsTrigger value="past">
-              Past ({pastMeetings.length})
+              Passadas ({pastMeetings.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upcoming" className="mt-6">
             {isLoading ? (
-              <div className="my-8 text-center">Loading meetings...</div>
+              <div className="my-8 text-center">Carregando reuniões...</div>
             ) : error ? (
               <div className="my-8 text-center text-red-500">
-                Error loading meetings. Please try again.
+                Erro ao carregar reuniões. Por favor, tente novamente.
               </div>
             ) : upcomingMeetings.length === 0 && searchTerm ? (
               <EmptyState
-                title="No meetings found"
-                description={`No upcoming meetings matching "${searchTerm}"`}
+                title="Nenhuma reunião encontrada"
+                description={`Nenhuma reunião futura corresponde a "${searchTerm}"`}
               />
             ) : upcomingMeetings.length === 0 ? (
               <EmptyState
-                title="No upcoming meetings"
-                description="Schedule a meeting to get started"
+                title="Nenhuma reunião futura"
+                description="Agende uma reunião para começar"
                 action={
                   <Button onClick={() => setIsCalendarOpen(true)}>
                     <Calendar className="h-4 w-4 mr-2" />
-                    Schedule Meeting
+                    Agendar Reunião
                   </Button>
                 }
               />
@@ -776,20 +776,20 @@ const Meetings = () => {
 
           <TabsContent value="past" className="mt-6">
             {isLoading ? (
-              <div className="my-8 text-center">Loading meetings...</div>
+              <div className="my-8 text-center">Carregando reuniões...</div>
             ) : error ? (
               <div className="my-8 text-center text-red-500">
-                Error loading meetings. Please try again.
+                Erro ao carregar reuniões. Por favor, tente novamente.
               </div>
             ) : pastMeetings.length === 0 && searchTerm ? (
               <EmptyState
-                title="No meetings found"
-                description={`No past meetings matching "${searchTerm}"`}
+                title="Nenhuma reunião encontrada"
+                description={`Nenhuma reunião passada corresponde a "${searchTerm}"`}
               />
             ) : pastMeetings.length === 0 ? (
               <EmptyState
-                title="No past meetings"
-                description="Past meetings will appear here"
+                title="Nenhuma reunião passada"
+                description="Reuniões passadas aparecerão aqui"
               />
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

@@ -1,0 +1,4 @@
+Eu havia feito todo esse projeto em ingles e acabei clonando todo ele, para fazer a versão em portugues. Essa que estamos trabalhando agora, seria a versão em portugues.
+Você já fez a tradução das páginas login, a página de cadastro de login e a págine de alterar o password.
+Agora nós vamos para a tradução do projeto. Lembrando que em momento algum você tem autorização para alterar o CSS, ou qualquer código, ou estrutura do site. Nós também não estamos criando uma versão em português e manteremos duas línguas. Essa alteração é oficial, os textos e botões serão alterados para português, substituindo os textos em inglês.
+Repetindo, não vamos alterar nada da estrutura, estilo, ou CSS. Nenhum código precisa mais ser implementado no sistema, se você não encontrou algum código que pensa ser importante, é porque esse código está de maneira que você não reconheceu, mas está presente.

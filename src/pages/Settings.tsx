@@ -413,14 +413,14 @@ const Settings = () => {
     <AppLayout>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Settings</h1>
+          <h1 className="text-2xl font-bold">Configurações</h1>
           
           <div className="flex gap-2">
             <Button 
               variant="outline" 
               onClick={() => navigate(-1)}
             >
-              Cancel
+              Cancelar
             </Button>
           </div>
         </div>
@@ -429,15 +429,15 @@ const Settings = () => {
           <TabsList className="grid w-full grid-cols-1 md:grid-cols-4 lg:grid-cols-5 h-auto">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <UserIcon className="h-4 w-4" />
-              <span>Profile</span>
+              <span>Perfil</span>
             </TabsTrigger>
             <TabsTrigger value="app" className="flex items-center gap-2">
               <Monitor className="h-4 w-4" />
-              <span>App Settings</span>
+              <span>Configurações do App</span>
             </TabsTrigger>
             <TabsTrigger value="integrations" className="flex items-center gap-2">
               <CalendarRange className="h-4 w-4" />
-              <span>Integrations</span>
+              <span>Integrações</span>
             </TabsTrigger>
             <TabsTrigger 
               value="users" 
@@ -445,11 +445,11 @@ const Settings = () => {
               disabled={!isUserRole('admin')}
             >
               <UserCog className="h-4 w-4" />
-              <span>Users & Permissions</span>
+              <span>Usuários & Permissões</span>
             </TabsTrigger>
             <TabsTrigger value="database" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
-              <span>Backup & Restore</span>
+              <span>Backup & Restauração</span>
             </TabsTrigger>
           </TabsList>
           
@@ -459,7 +459,7 @@ const Settings = () => {
               <CardHeader>
                 <CardTitle className="text-xl">User Profile</CardTitle>
                 <CardDescription>
-                  Manage your account information and preferences
+                  Gerencie suas informações e preferências de conta
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -483,13 +483,13 @@ const Settings = () => {
                       onClick={() => setAvatarDialogOpen(true)}
                     >
                       <CloudUpload className="h-3 w-3 mr-1" />
-                      Change Avatar
+                      Alterar Avatar
                     </Button>
                   </div>
                   
                   <div className="space-y-4 flex-1">
                 <div className="space-y-1">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Nome Completo</Label>
                   <Input 
                     id="name" 
                     value={profileData.name} 
@@ -498,7 +498,7 @@ const Settings = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">E-mail</Label>
                   <Input 
                     id="email" 
                     type="email"
@@ -511,33 +511,33 @@ const Settings = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                   <div className="space-y-1">
-                    <Label htmlFor="phone">Phone Number</Label>
+                    <Label htmlFor="phone">Telefone</Label>
                     <Input 
                       id="phone" 
                       type="tel"
                       value={profileData.phone} 
                       onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
-                      placeholder="Enter your phone number"
+                      placeholder="Digite seu telefone"
                     />
                   </div>
                   
                   <div className="space-y-1">
-                    <Label htmlFor="title">Job Title</Label>
+                    <Label htmlFor="title">Cargo</Label>
                     <Input 
                       id="title" 
                       value={profileData.title} 
                       onChange={(e) => setProfileData({...profileData, title: e.target.value})}
-                      placeholder="e.g. Marketing Manager"
+                      placeholder="ex: Gerente de Marketing"
                     />
                   </div>
                   
                   <div className="space-y-1">
-                    <Label htmlFor="department">Department</Label>
+                    <Label htmlFor="department">Departamento</Label>
                     <Input 
                       id="department" 
                       value={profileData.department} 
                       onChange={(e) => setProfileData({...profileData, department: e.target.value})}
-                      placeholder="e.g. Marketing"
+                      placeholder="ex: Marketing"
                     />
                 </div>
                 
@@ -559,10 +559,10 @@ const Settings = () => {
                 </div>
                 
                 <div className="space-y-1 pt-2">
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio">Biografia</Label>
                   <Textarea 
                     id="bio" 
-                    placeholder="Tell us about yourself"
+                    placeholder="Conte um pouco sobre você"
                     value={profileData.bio} 
                     onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
                   />
@@ -570,13 +570,13 @@ const Settings = () => {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button variant="outline" onClick={() => signOut(navigate)}>
-                  Sign Out
+                  Sair
                 </Button>
                 <Button 
                   onClick={handleUpdateProfile} 
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? 'Salvando...' : 'Salvar Alterações'}
                 </Button>
               </CardFooter>
             </Card>
@@ -588,18 +588,18 @@ const Settings = () => {
               <CardHeader>
                 <CardTitle className="text-xl">App Settings</CardTitle>
                 <CardDescription>
-                  Configure application preferences and notification settings
+                  Configure as preferências do aplicativo e notificações
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Appearance</h3>
+                  <h3 className="text-lg font-medium">Aparência</h3>
                   <Separator />
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="theme">Dark Mode</Label>
-                      <p className="text-sm text-gray-500">Use dark theme for the application</p>
+                      <Label htmlFor="theme">Modo Escuro</Label>
+                      <p className="text-sm text-gray-500">Usar tema escuro no aplicativo</p>
                     </div>
                     <div className="flex items-center">
                       <Sun className="h-5 w-5 mr-2 text-gray-500" />
@@ -613,53 +613,53 @@ const Settings = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="language-select">Language</Label>
+                    <Label htmlFor="language-select">Idioma</Label>
                     <Select defaultValue="en-US">
                       <SelectTrigger id="language-select">
-                        <SelectValue placeholder="Select language" />
+                        <SelectValue placeholder="Selecione o idioma" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="en-US">English (US)</SelectItem>
-                        <SelectItem value="en-GB">English (UK)</SelectItem>
-                        <SelectItem value="es">Spanish</SelectItem>
-                        <SelectItem value="fr">French</SelectItem>
-                        <SelectItem value="de">German</SelectItem>
-                        <SelectItem value="pt-BR">Portuguese (BR)</SelectItem>
+                        <SelectItem value="en-US">Inglês (EUA)</SelectItem>
+                        <SelectItem value="en-GB">Inglês (UK)</SelectItem>
+                        <SelectItem value="es">Espanhol</SelectItem>
+                        <SelectItem value="fr">Francês</SelectItem>
+                        <SelectItem value="de">Alemão</SelectItem>
+                        <SelectItem value="pt-BR">Português (BR)</SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-sm text-muted-foreground">
-                      This will change the language throughout the application
+                      Isso irá alterar o idioma em todo o aplicativo
                     </p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="timezone-select">Timezone</Label>
+                    <Label htmlFor="timezone-select">Fuso Horário</Label>
                     <Select defaultValue="America/Chicago">
                       <SelectTrigger id="timezone-select">
-                        <SelectValue placeholder="Select timezone" />
+                        <SelectValue placeholder="Selecione o fuso horário" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="America/Chicago">America/Chicago (CDT)</SelectItem>
                         <SelectItem value="America/New_York">America/New_York (EDT)</SelectItem>
                         <SelectItem value="America/Los_Angeles">America/Los_Angeles (PDT)</SelectItem>
-                        <SelectItem value="Europe/London">Europe/London (BST)</SelectItem>
-                        <SelectItem value="Europe/Paris">Europe/Paris (CEST)</SelectItem>
+                        <SelectItem value="Europe/London">Europa/Londres (BST)</SelectItem>
+                        <SelectItem value="Europe/Paris">Europa/Paris (CEST)</SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-sm text-muted-foreground">
-                      Used for scheduling meetings and setting follow-up reminders
+                      Usado para agendar reuniões e definir lembretes
                     </p>
                   </div>
                 </div>
                 
                 <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Notifications</h3>
+                  <h3 className="text-lg font-medium">Notificações</h3>
                   <Separator />
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications">Email Notifications</Label>
-                      <p className="text-sm text-gray-500">Receive updates via email</p>
+                      <Label htmlFor="email-notifications">Notificações por E-mail</Label>
+                      <p className="text-sm text-gray-500">Receber atualizações por e-mail</p>
                     </div>
                     <Switch 
                       id="email-notifications"
@@ -670,8 +670,8 @@ const Settings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="push-notifications">Browser Notifications</Label>
-                      <p className="text-sm text-gray-500">Receive browser push notifications</p>
+                      <Label htmlFor="push-notifications">Notificações no Navegador</Label>
+                      <p className="text-sm text-gray-500">Receber notificações push no navegador</p>
                     </div>
                     <Switch 
                       id="push-notifications"
@@ -682,8 +682,8 @@ const Settings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="meeting-reminders">Meeting Reminders</Label>
-                      <p className="text-sm text-gray-500">Get reminded about upcoming meetings</p>
+                      <Label htmlFor="meeting-reminders">Lembretes de Reunião</Label>
+                      <p className="text-sm text-gray-500">Receber lembretes de reuniões futuras</p>
                     </div>
                     <Switch 
                       id="meeting-reminders"
@@ -696,11 +696,11 @@ const Settings = () => {
               <CardFooter>
                 <Button onClick={() => {
                   toast({
-                    title: "Settings Saved",
-                    description: "Your app settings have been updated successfully.",
+                    title: "Preferências Salvas",
+                    description: "As configurações do aplicativo foram atualizadas com sucesso.",
                   });
                 }}>
-                  Save Preferences
+                  Salvar Preferências
                 </Button>
               </CardFooter>
             </Card>

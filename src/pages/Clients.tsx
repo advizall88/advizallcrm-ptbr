@@ -50,7 +50,7 @@ const ClientCard = ({
               {client.contact_name}
             </CardTitle>
             <CardDescription className="dark:text-slate-300">
-              {client.company_name || 'Individual Client'}
+              {client.company_name || 'Cliente Individual'}
             </CardDescription>
           </div>
           <div>
@@ -77,7 +77,7 @@ const ClientCard = ({
           {client.plan_name && (
             <div className="flex items-center text-sm">
               <CreditCard className="h-4 w-4 mr-2 text-muted-foreground" />
-              Plan: {client.plan_name}
+              Plano: {client.plan_name}
             </div>
           )}
         </div>
@@ -88,7 +88,7 @@ const ClientCard = ({
             className="flex-1"
             onClick={() => onViewDetails(client)}
           >
-            View Details
+            Ver Detalhes
           </Button>
           <Button 
             variant="outline" 
@@ -97,7 +97,7 @@ const ClientCard = ({
             onClick={() => onScheduleMeeting(client)}
           >
             <Calendar className="h-4 w-4 mr-2" />
-            Schedule Meeting
+            Agendar Reunião
           </Button>
         </div>
       </CardContent>
@@ -154,8 +154,8 @@ const Clients = () => {
       } else {
         // Client not found - show a toast and redirect to clients page
         toast({
-          title: "Client Not Found",
-          description: `No client found with ID: ${clientIdFromUrl}`,
+          title: "Cliente Não Encontrado",
+          description: `Nenhum cliente encontrado com o ID: ${clientIdFromUrl}`,
           variant: "destructive"
         });
         navigate('/clients');
@@ -201,8 +201,8 @@ const Clients = () => {
       clientService.updateClient(id, data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Client updated successfully",
+        title: "Sucesso",
+        description: "Cliente atualizado com sucesso",
       });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       if (selectedClient) {
@@ -211,8 +211,8 @@ const Clients = () => {
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update client",
+        title: "Erro",
+        description: "Falha ao atualizar cliente",
         variant: "destructive",
       });
       console.error(error);
@@ -224,15 +224,15 @@ const Clients = () => {
     mutationFn: (data: ProjectFormData) => clientService.createProject(data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Project created successfully",
+        title: "Sucesso",
+        description: "Projeto criado com sucesso",
       });
       refetchProjects();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create project",
+        title: "Erro",
+        description: "Falha ao criar projeto",
         variant: "destructive",
       });
       console.error(error);
@@ -244,15 +244,15 @@ const Clients = () => {
     mutationFn: (data: PaymentFormData) => clientService.createPayment(data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Payment recorded successfully",
+        title: "Sucesso",
+        description: "Pagamento registrado com sucesso",
       });
       refetchPayments();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to record payment",
+        title: "Erro",
+        description: "Falha ao registrar pagamento",
         variant: "destructive",
       });
       console.error(error);
@@ -264,15 +264,15 @@ const Clients = () => {
     mutationFn: (data: CredentialFormData) => clientService.createCredential(data),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Credential added successfully",
+        title: "Sucesso",
+        description: "Credencial adicionada com sucesso",
       });
       refetchCredentials();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to add credential",
+        title: "Erro",
+        description: "Falha ao adicionar credencial",
         variant: "destructive",
       });
       console.error(error);
@@ -285,15 +285,15 @@ const Clients = () => {
       clientService.updateProject(data.id, data.project),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Project updated successfully",
+        title: "Sucesso",
+        description: "Projeto atualizado com sucesso",
       });
       refetchProjects();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update project",
+        title: "Erro",
+        description: "Falha ao atualizar projeto",
         variant: "destructive",
       });
       console.error(error);
@@ -305,15 +305,15 @@ const Clients = () => {
     mutationFn: (id: string) => clientService.deleteProject(id),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Project deleted successfully",
+        title: "Sucesso",
+        description: "Projeto excluído com sucesso",
       });
       refetchProjects();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete project",
+        title: "Erro",
+        description: "Falha ao excluir projeto",
         variant: "destructive",
       });
       console.error(error);
@@ -326,15 +326,15 @@ const Clients = () => {
       clientService.updatePayment(data.id, data.payment),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Payment updated successfully",
+        title: "Sucesso",
+        description: "Pagamento atualizado com sucesso",
       });
       refetchPayments();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update payment",
+        title: "Erro",
+        description: "Falha ao atualizar pagamento",
         variant: "destructive",
       });
       console.error(error);
@@ -346,15 +346,15 @@ const Clients = () => {
     mutationFn: (id: string) => clientService.deletePayment(id),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Payment deleted successfully",
+        title: "Sucesso",
+        description: "Pagamento excluído com sucesso",
       });
       refetchPayments();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete payment",
+        title: "Erro",
+        description: "Falha ao excluir pagamento",
         variant: "destructive",
       });
       console.error(error);
@@ -367,15 +367,15 @@ const Clients = () => {
       clientService.updateCredential(data.id, data.credential),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Credential updated successfully",
+        title: "Sucesso",
+        description: "Credencial atualizada com sucesso",
       });
       refetchCredentials();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to update credential",
+        title: "Erro",
+        description: "Falha ao atualizar credencial",
         variant: "destructive",
       });
       console.error(error);
@@ -387,15 +387,15 @@ const Clients = () => {
     mutationFn: (id: string) => clientService.deleteCredential(id),
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Credential deleted successfully",
+        title: "Sucesso",
+        description: "Credencial excluída com sucesso",
       });
       refetchCredentials();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to delete credential",
+        title: "Erro",
+        description: "Falha ao excluir credencial",
         variant: "destructive",
       });
       console.error(error);
@@ -416,8 +416,8 @@ const Clients = () => {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Client created successfully",
+        title: "Sucesso",
+        description: "Cliente criado com sucesso",
       });
       queryClient.invalidateQueries({ queryKey: ['clients'] });
       setAddClientDialogOpen(false);
@@ -425,8 +425,8 @@ const Clients = () => {
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to create client",
+        title: "Erro",
+        description: "Falha ao criar cliente",
         variant: "destructive",
       });
       console.error(error);
@@ -461,8 +461,8 @@ const Clients = () => {
       // Validate required fields
       if (!newClient.contact_name || !newClient.phone) {
         toast({
-          title: "Validation Error",
-          description: "Contact name and phone are required",
+          title: "Erro de Validação",
+          description: "Nome do contato e telefone são obrigatórios",
           variant: "destructive",
         });
         return;
@@ -623,12 +623,12 @@ const Clients = () => {
     <AppLayout>
       <div className="container py-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Clients</h1>
+          <h1 className="text-2xl font-bold">Clientes</h1>
           <div className="flex gap-2 items-center">
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500"/>
               <Input
-                placeholder="Search clients..."
+                placeholder="Buscar clientes..."
                 className="pl-9"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -636,25 +636,25 @@ const Clients = () => {
               </div>
             <Button onClick={handleOpenAddClientDialog}>
               <Plus className="h-4 w-4 mr-2" />
-              Add Client
+              Adicionar Cliente
               </Button>
             </div>
         </div>
         
         <Tabs defaultValue="all" className="mb-6">
           <TabsList>
-            <TabsTrigger value="all">All Clients</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="inactive">Inactive</TabsTrigger>
+            <TabsTrigger value="all">Todos os Clientes</TabsTrigger>
+            <TabsTrigger value="active">Ativos</TabsTrigger>
+            <TabsTrigger value="inactive">Inativos</TabsTrigger>
           </TabsList>
           
           <TabsContent value="all" className="mt-4">
             {isLoadingClients ? (
-              <div className="text-center py-8">Loading clients...</div>
+              <div className="text-center py-8">Carregando clientes...</div>
             ) : clientsError ? (
-              <div className="text-center py-8 text-red-500">Error loading clients. Please try again.</div>
+              <div className="text-center py-8 text-red-500">Erro ao carregar clientes. Por favor, tente novamente.</div>
             ) : filteredClients.length === 0 ? (
-              <div className="text-center py-8">No clients found.</div>
+              <div className="text-center py-8">Nenhum cliente encontrado.</div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredClients.map(client => (
@@ -727,7 +727,7 @@ const Clients = () => {
             <DialogHeader className="px-6 pt-6 pb-2 sticky top-0 bg-background z-20 border-b">
               <DialogTitle className="text-xl font-semibold">Add New Client</DialogTitle>
               <DialogDescription>
-                Create a new client by filling out the details below. Required fields are marked with an asterisk (*).
+                Crie um novo cliente preenchendo os detalhes abaixo. Campos obrigatórios estão marcados com um asterisco (*).
               </DialogDescription>
             </DialogHeader>
             
@@ -737,38 +737,38 @@ const Clients = () => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Building2 className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-medium">Client Information</h3>
+                    <h3 className="text-lg font-medium">Informações do Cliente</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 gap-2">
-                    <Label htmlFor="contact_name" className="after:content-['*'] after:ml-0.5 after:text-red-500">Contact Name</Label>
+                    <Label htmlFor="contact_name" className="after:content-['*'] after:ml-0.5 after:text-red-500">Nome do Contato</Label>
                     <Input
                       id="contact_name"
                       value={newClient.contact_name}
                       onChange={(e) => setNewClient({ ...newClient, contact_name: e.target.value })}
-                      placeholder="Full Name"
+                      placeholder="Nome Completo"
                       className="focus-visible:ring-primary"
                     />
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="company_name">Company</Label>
+                      <Label htmlFor="company_name">Empresa</Label>
                       <Input
                         id="company_name"
                         value={newClient.company_name || ''}
                         onChange={(e) => setNewClient({ ...newClient, company_name: e.target.value })}
-                        placeholder="Company Name"
+                        placeholder="Nome da Empresa"
                         className="focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="business_type">Business Type</Label>
+                      <Label htmlFor="business_type">Tipo de Negócio</Label>
                       <Input
                         id="business_type"
                         value={newClient.business_type || ''}
                         onChange={(e) => setNewClient({ ...newClient, business_type: e.target.value })}
-                        placeholder="e.g. Restaurant, Retail"
+                        placeholder="ex: Restaurante, Varejo"
                         className="focus-visible:ring-primary"
                       />
                     </div>
@@ -779,40 +779,40 @@ const Clients = () => {
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 mb-4">
                     <Phone className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-medium">Contact Information</h3>
+                    <h3 className="text-lg font-medium">Informações de Contato</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone" className="after:content-['*'] after:ml-0.5 after:text-red-500">Phone</Label>
+                      <Label htmlFor="phone" className="after:content-['*'] after:ml-0.5 after:text-red-500">Telefone</Label>
                       <Input
                         id="phone"
                         value={newClient.phone}
                         onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                        placeholder="Phone Number"
+                        placeholder="Número de Telefone"
                         className="focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">E-mail</Label>
                       <Input
                         id="email"
                         type="email"
                         value={newClient.email || ''}
                         onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                        placeholder="Email Address"
+                        placeholder="Endereço de E-mail"
                         className="focus-visible:ring-primary"
                       />
                     </div>
                   </div>
                   
                   <div className="mt-4 space-y-2">
-                    <Label htmlFor="website">Website</Label>
+                    <Label htmlFor="website">Site</Label>
                     <Input
                       id="website"
                       value={newClient.website || ''}
                       onChange={(e) => setNewClient({ ...newClient, website: e.target.value })}
-                      placeholder="https://example.com"
+                      placeholder="https://exemplo.com"
                       className="focus-visible:ring-primary"
                     />
                   </div>
@@ -822,27 +822,27 @@ const Clients = () => {
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 mb-4">
                     <MapPin className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-medium">Location</h3>
+                    <h3 className="text-lg font-medium">Localização</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="region_city">City</Label>
+                      <Label htmlFor="region_city">Cidade</Label>
                       <Input
                         id="region_city"
                         value={newClient.region_city || ''}
                         onChange={(e) => setNewClient({ ...newClient, region_city: e.target.value })}
-                        placeholder="City"
+                        placeholder="Cidade"
                         className="focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="region_state">State</Label>
+                      <Label htmlFor="region_state">Estado</Label>
                       <Input
                         id="region_state"
                         value={newClient.region_state || ''}
                         onChange={(e) => setNewClient({ ...newClient, region_state: e.target.value })}
-                        placeholder="State"
+                        placeholder="Estado"
                         className="focus-visible:ring-primary"
                       />
                     </div>
@@ -850,22 +850,22 @@ const Clients = () => {
                   
                   <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="full_address">Address</Label>
+                      <Label htmlFor="full_address">Endereço</Label>
                       <Input
                         id="full_address"
                         value={newClient.full_address || ''}
                         onChange={(e) => setNewClient({ ...newClient, full_address: e.target.value })}
-                        placeholder="Street Address"
+                        placeholder="Endereço Completo"
                         className="focus-visible:ring-primary"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="zip_code">Zip Code</Label>
+                      <Label htmlFor="zip_code">CEP</Label>
                       <Input
                         id="zip_code"
                         value={newClient.zip_code || ''}
                         onChange={(e) => setNewClient({ ...newClient, zip_code: e.target.value })}
-                        placeholder="Zip Code"
+                        placeholder="CEP"
                         className="focus-visible:ring-primary"
                       />
                     </div>
@@ -876,17 +876,17 @@ const Clients = () => {
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 mb-4">
                     <CreditCard className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-medium">Billing Information</h3>
+                    <h3 className="text-lg font-medium">Informações de Cobrança</h3>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="plan_name">Plan</Label>
+                      <Label htmlFor="plan_name">Plano</Label>
                       <Input
                         id="plan_name"
                         value={newClient.plan_name || ''}
                         onChange={(e) => setNewClient({ ...newClient, plan_name: e.target.value })}
-                        placeholder="Service Plan"
+                        placeholder="Plano de Serviço"
                         className="focus-visible:ring-primary"
                       />
                     </div>
@@ -898,18 +898,18 @@ const Clients = () => {
                         value={newClient.status || 'active'}
                         onChange={(e) => setNewClient({ ...newClient, status: e.target.value as 'active' | 'inactive' | 'delinquent' })}
                       >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="delinquent">Delinquent</option>
+                        <option value="active">Ativo</option>
+                        <option value="inactive">Inativo</option>
+                        <option value="delinquent">Inadimplente</option>
                       </select>
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <div className="space-y-2">
-                      <Label htmlFor="monthly_fee">Monthly Fee ($)</Label>
+                      <Label htmlFor="monthly_fee">Mensalidade (R$)</Label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">R$</span>
                         <Input
                           id="monthly_fee"
                           type="number"
@@ -921,14 +921,14 @@ const Clients = () => {
                             monthly_fee: e.target.value ? parseFloat(e.target.value) : null 
                           })}
                           className="pl-7 focus-visible:ring-primary"
-                          placeholder="Optional"
+                          placeholder="Opcional"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="ad_budget">Ad Budget ($)</Label>
+                      <Label htmlFor="ad_budget">Orçamento de Anúncios (R$)</Label>
                       <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">R$</span>
                         <Input
                           id="ad_budget"
                           type="number"
@@ -940,7 +940,7 @@ const Clients = () => {
                             ad_budget: e.target.value ? parseFloat(e.target.value) : null
                           })}
                           className="pl-7 focus-visible:ring-primary"
-                          placeholder="Optional"
+                          placeholder="Opcional"
                         />
                       </div>
                     </div>
@@ -951,16 +951,16 @@ const Clients = () => {
                 <div className="pt-2 border-t">
                   <div className="flex items-center gap-2 mb-4">
                     <FileText className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-medium">Additional Information</h3>
+                    <h3 className="text-lg font-medium">Informações Adicionais</h3>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Notes</Label>
+                    <Label htmlFor="notes">Observações</Label>
                     <Textarea
                       id="notes"
                       value={newClient.notes || ''}
                       onChange={(e) => setNewClient({ ...newClient, notes: e.target.value })}
-                      placeholder="Client notes or additional information"
+                      placeholder="Observações do cliente ou informações adicionais"
                       rows={4}
                       className="resize-none focus-visible:ring-primary"
                     />
@@ -972,7 +972,7 @@ const Clients = () => {
             <DialogFooter className="px-6 py-4 border-t">
               <div className="flex gap-2 w-full justify-end">
                 <Button variant="outline" onClick={() => setAddClientDialogOpen(false)}>
-                  Cancel
+                  Cancelar
                 </Button>
                 <Button 
                   type="submit" 
@@ -981,9 +981,9 @@ const Clients = () => {
                   className="bg-primary hover:bg-primary/90"
                 >
                   {createClientMutation.isPending ? (
-                    <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></span>Saving...</>
+                    <><span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent"></span>Salvando...</>
                   ) : (
-                    <>Save Client</>
+                    <>Salvar Cliente</>
                   )}
                 </Button>
               </div>

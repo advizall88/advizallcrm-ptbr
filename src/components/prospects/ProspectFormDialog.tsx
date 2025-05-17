@@ -20,11 +20,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const formSchema = z.object({
-  contact_name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  contact_name: z.string().min(2, { message: "O nome deve ter pelo menos 2 caracteres" }),
   company_name: z.string().nullable().optional(),
-  phone: z.string().min(5, { message: "Phone number is required" }),
-  email: z.string().email({ message: "Invalid email address" }).optional().nullable(),
-  lead_source: z.string().default("Other"),
+  phone: z.string().min(5, { message: "O telefone é obrigatório" }),
+  email: z.string().email({ message: "E-mail inválido" }).optional().nullable(),
+  lead_source: z.string().default("Outro"),
   business_type: z.string().optional(),
   region_city: z.string().optional().nullable(),
   region_state: z.string().optional().nullable(),
@@ -122,8 +122,8 @@ const ProspectFormDialog = ({
           score: 3,
           first_contact_at: new Date(),
           timezone: "America/Los_Angeles",
-          lead_source: "Other",
-          business_type: "Other",
+          lead_source: "Outro",
+          business_type: "Outro",
         },
   });
 
@@ -150,8 +150,8 @@ const ProspectFormDialog = ({
           score: 3,
           first_contact_at: new Date(),
           timezone: "America/Los_Angeles",
-          lead_source: "Other",
-          business_type: "Other",
+          lead_source: "Outro",
+          business_type: "Outro",
         });
         setIsAdvancedOpen(false);
       }
@@ -187,8 +187,8 @@ const ProspectFormDialog = ({
         company_name: values.company_name || null,
         phone: values.phone,
         email: values.email || null,
-        lead_source: values.lead_source || "Other",
-        business_type: values.business_type || "Other",
+        lead_source: values.lead_source || "Outro",
+        business_type: values.business_type || "Outro",
         region_city: values.region_city || null,
         region_state: values.region_state || null,
         timezone: values.timezone || "America/Los_Angeles",
@@ -203,7 +203,7 @@ const ProspectFormDialog = ({
       
       // Increase timeout to 20 seconds
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Request is taking too long. Saving data locally...")), 20000);
+        setTimeout(() => reject(new Error("A solicitação está demorando muito. Salvando os dados localmente...")), 20000);
       });
       
       try {
@@ -215,7 +215,7 @@ const ProspectFormDialog = ({
           // First try to retry
           setSubmitStatus("retrying");
           setRetryCount(prev => prev + 1);
-          setError(`Submit attempt ${retryCount + 1}/${MAX_RETRIES + 1} failed. Retrying...`);
+          setError(`Tentativa ${retryCount + 1}/${MAX_RETRIES + 1} falhou. Tentando novamente...`);
           
           // Wait 2 seconds before retrying
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -236,16 +236,16 @@ const ProspectFormDialog = ({
         const savedLocally = saveFormDataLocally(formattedData);
         
         if (savedLocally) {
-          setError("We couldn't save your data online, but we've saved it locally. The system will try to sync when you return to the application.");
+          setError("Não foi possível salvar seus dados online, mas salvamos localmente. O sistema tentará sincronizar quando você retornar ao aplicativo.");
           // Keep the dialog open so the user can see the message
           // But enable the Cancel button so they can dismiss it if they want
         } else {
-          throw new Error("Failed to save data locally. Please try again or copy your data elsewhere.");
+          throw new Error("Falha ao salvar os dados localmente. Por favor, tente novamente ou copie seus dados para outro lugar.");
         }
       }
     } catch (error) {
       console.error("Error submitting prospect form:", error);
-      setError(error instanceof Error ? error.message : "Failed to submit form. Please try again.");
+      setError(error instanceof Error ? error.message : "Falha ao enviar o formulário. Por favor, tente novamente.");
     } finally {
       setIsSubmitting(false);
       if (submitStatus !== "saving-locally") {
@@ -264,10 +264,10 @@ const ProspectFormDialog = ({
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>
-            {mode === "create" ? "Add New Prospect" : "Edit Prospect"}
+            {mode === "create" ? "Adicionar Novo Prospecto" : "Editar Prospecto"}
           </DialogTitle>
           <DialogDescription>
-            Fill in the prospect information below
+            Preencha as informações do prospecto abaixo
           </DialogDescription>
         </DialogHeader>
         
@@ -287,9 +287,9 @@ const ProspectFormDialog = ({
                   name="contact_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Name *</FormLabel>
+                      <FormLabel>Nome do Contato *</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Doe" {...field} />
+                        <Input placeholder="João da Silva" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -301,9 +301,9 @@ const ProspectFormDialog = ({
                   name="company_name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company Name</FormLabel>
+                      <FormLabel>Nome da Empresa</FormLabel>
                       <FormControl>
-                        <Input placeholder="ABC Corporation" {...field} value={field.value || ""} />
+                        <Input placeholder="Empresa Exemplo" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -315,9 +315,9 @@ const ProspectFormDialog = ({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>E-mail</FormLabel>
                       <FormControl>
-                        <Input placeholder="email@example.com" {...field} />
+                        <Input placeholder="email@exemplo.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -329,9 +329,9 @@ const ProspectFormDialog = ({
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone *</FormLabel>
+                      <FormLabel>Telefone *</FormLabel>
                       <FormControl>
-                        <Input placeholder="(555) 123-4567" {...field} />
+                        <Input placeholder="(11) 91234-5678" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -343,20 +343,20 @@ const ProspectFormDialog = ({
                   name="lead_source"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lead Source</FormLabel>
+                      <FormLabel>Origem do Lead</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a source" />
+                            <SelectValue placeholder="Selecione uma origem" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="Ads">Ads</SelectItem>
-                          <SelectItem value="Cold-call">Cold-call</SelectItem>
-                          <SelectItem value="Referral">Referral</SelectItem>
-                          <SelectItem value="Website">Website</SelectItem>
-                          <SelectItem value="Social Media">Social Media</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="Ads">Anúncios</SelectItem>
+                          <SelectItem value="Cold-call">Ligação Fria</SelectItem>
+                          <SelectItem value="Referral">Indicação</SelectItem>
+                          <SelectItem value="Website">Site</SelectItem>
+                          <SelectItem value="Social Media">Mídia Social</SelectItem>
+                          <SelectItem value="Other">Outro</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -369,22 +369,22 @@ const ProspectFormDialog = ({
                   name="business_type"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Business Type</FormLabel>
+                      <FormLabel>Tipo de Negócio</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a type" />
+                            <SelectValue placeholder="Selecione um tipo" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="E-commerce">E-commerce</SelectItem>
                           <SelectItem value="SaaS">SaaS</SelectItem>
-                          <SelectItem value="Healthcare">Healthcare</SelectItem>
-                          <SelectItem value="Education">Education</SelectItem>
-                          <SelectItem value="Real Estate">Real Estate</SelectItem>
-                          <SelectItem value="Finance">Finance</SelectItem>
-                          <SelectItem value="Retail">Retail</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          <SelectItem value="Healthcare">Saúde</SelectItem>
+                          <SelectItem value="Education">Educação</SelectItem>
+                          <SelectItem value="Real Estate">Imobiliário</SelectItem>
+                          <SelectItem value="Finance">Finanças</SelectItem>
+                          <SelectItem value="Retail">Varejo</SelectItem>
+                          <SelectItem value="Other">Outro</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -397,9 +397,9 @@ const ProspectFormDialog = ({
                   name="region_city"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>City</FormLabel>
+                      <FormLabel>Cidade</FormLabel>
                       <FormControl>
-                        <Input placeholder="New York" {...field} />
+                        <Input placeholder="São Paulo" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -411,11 +411,11 @@ const ProspectFormDialog = ({
                   name="region_state"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>State</FormLabel>
+                      <FormLabel>Estado</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ""}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a state" />
+                            <SelectValue placeholder="Selecione um estado" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -446,7 +446,7 @@ const ProspectFormDialog = ({
                 onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
                 className="p-0 h-auto font-normal text-primary dark:text-primary-foreground"
               >
-                {isAdvancedOpen ? "Hide Advanced Options" : "Show Advanced Options"}
+                {isAdvancedOpen ? "Ocultar Opções Avançadas" : "Mostrar Opções Avançadas"}
               </Button>
               
               {isAdvancedOpen && (
@@ -456,19 +456,19 @@ const ProspectFormDialog = ({
                     name="score"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Score (1-5)</FormLabel>
+                        <FormLabel>Pontuação (1-5)</FormLabel>
                         <Select onValueChange={(val) => field.onChange(parseInt(val))} value={field.value?.toString() || "3"}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Rate priority" />
+                              <SelectValue placeholder="Avalie a prioridade" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="1">1 - Low</SelectItem>
+                            <SelectItem value="1">1 - Baixa</SelectItem>
                             <SelectItem value="2">2</SelectItem>
-                            <SelectItem value="3">3 - Medium</SelectItem>
+                            <SelectItem value="3">3 - Média</SelectItem>
                             <SelectItem value="4">4</SelectItem>
-                            <SelectItem value="5">5 - High</SelectItem>
+                            <SelectItem value="5">5 - Alta</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -485,14 +485,14 @@ const ProspectFormDialog = ({
                         <Select onValueChange={field.onChange} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
+                              <SelectValue placeholder="Selecione o status" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="new">New</SelectItem>
-                            <SelectItem value="interested">Interested</SelectItem>
-                            <SelectItem value="negotiation">Negotiation</SelectItem>
-                            <SelectItem value="lost">Lost</SelectItem>
+                            <SelectItem value="new">Novo</SelectItem>
+                            <SelectItem value="interested">Interessado</SelectItem>
+                            <SelectItem value="negotiation">Negociação</SelectItem>
+                            <SelectItem value="lost">Perdido</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
@@ -505,7 +505,7 @@ const ProspectFormDialog = ({
                     name="first_contact_at"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>First Contact Date</FormLabel>
+                        <FormLabel>Data do Primeiro Contato</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -519,7 +519,7 @@ const ProspectFormDialog = ({
                                 {field.value ? (
                                   format(field.value, "PPP")
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>Escolha uma data</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -544,7 +544,7 @@ const ProspectFormDialog = ({
                     name="next_follow_up_at"
                     render={({ field }) => (
                       <FormItem className="flex flex-col">
-                        <FormLabel>Next Follow-up</FormLabel>
+                        <FormLabel>Próximo Follow-up</FormLabel>
                         <Popover>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -558,7 +558,7 @@ const ProspectFormDialog = ({
                                 {field.value ? (
                                   format(field.value, "PPP")
                                 ) : (
-                                  <span>Pick a date</span>
+                                  <span>Escolha uma data</span>
                                 )}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
@@ -583,10 +583,10 @@ const ProspectFormDialog = ({
                     name="call_summary"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Call Summary</FormLabel>
+                        <FormLabel>Resumo da Ligação</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Summary of initial call..."
+                            placeholder="Resumo da ligação inicial..."
                             className="min-h-[80px]"
                             {...field}
                             value={field.value || ""}
@@ -602,10 +602,10 @@ const ProspectFormDialog = ({
                     name="notes"
                     render={({ field }) => (
                       <FormItem className="col-span-2">
-                        <FormLabel>Notes</FormLabel>
+                        <FormLabel>Notas</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Additional notes..."
+                            placeholder="Notas adicionais..."
                             className="min-h-[80px]"
                             {...field}
                             value={field.value || ""}
@@ -628,7 +628,7 @@ const ProspectFormDialog = ({
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting && submitStatus !== "saving-locally"}
           >
-            {submitStatus === "saving-locally" ? "Close" : "Cancel"}
+            {submitStatus === "saving-locally" ? "Fechar" : "Cancelar"}
           </Button>
           <Button 
             onClick={form.handleSubmit(handleSubmit)}
@@ -640,13 +640,13 @@ const ProspectFormDialog = ({
             )}
             {isSubmitting
               ? submitStatus === "retrying" 
-                ? `Retry ${retryCount}/${MAX_RETRIES}`
+                ? `Tentar novamente ${retryCount}/${MAX_RETRIES}`
                 : submitStatus === "saving-locally"
-                ? "Saved Locally"
-                : "Saving..."
+                ? "Salvo Localmente"
+                : "Salvando..."
               : mode === "create"
-              ? "Create Prospect"
-              : "Update Prospect"}
+              ? "Criar Prospecto"
+              : "Atualizar Prospecto"}
           </Button>
         </DialogFooter>
       </DialogContent>

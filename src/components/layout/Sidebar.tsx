@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
-  { name: "Dashboard", href: "/", icon: "📊" },
-  { name: "Prospects", href: "/prospects", icon: "🔍" },
-  { name: "Clients", href: "/clients", icon: "👥" },
-  { name: "Meetings", href: "/meetings", icon: "📅" },
-  { name: "Settings", href: "/settings", icon: "⚙️" },
+  { name: "Painel", href: "/", icon: "📊" },
+  { name: "Prospectos", href: "/prospects", icon: "🔍" },
+  { name: "Clientes", href: "/clients", icon: "👥" },
+  { name: "Reuniões", href: "/meetings", icon: "📅" },
+  { name: "Configurações", href: "/settings", icon: "⚙️" },
 ];
 
 const Sidebar = () => {
@@ -44,7 +44,7 @@ const Sidebar = () => {
           <div className="flex items-center">
             <img src="/images/logo.png" alt="Advizall" className="h-6 mr-2" />
             <div>
-              <p className="text-xs font-medium text-muted-foreground">Powered by</p>
+              <p className="text-xs font-medium text-muted-foreground">Desenvolvido por</p>
               <p className="text-sm font-medium text-foreground">Advizall</p>
             </div>
           </div>

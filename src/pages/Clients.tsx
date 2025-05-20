@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { format } from "date-fns";
 import AppLayout from "@/components/layout/AppLayout";
-import { Button } from "@/components/ui/button";
-import { 
+import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search, Plus, Calendar, CreditCard, MapPin, Phone, Mail, Building2, Star, FileText } from "lucide-react";
-import { Client, Project, Payment, Credential } from "@/lib/supabase";
 import { useToast } from "@/components/ui/use-toast";
-import ClientDetailsDialog from "@/components/clients/ClientDetailsDialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import type { Client, Project, Payment, Credential } from "@/lib/supabase";
 import { clientService, ClientFormData, ProjectFormData, PaymentFormData, CredentialFormData } from "@/services/clientService";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Plus, Calendar, CreditCard, MapPin, Phone, Mail, Building2, Star, FileText } from "lucide-react";
+import ClientDetailsDialog from "@/components/clients/ClientDetailsDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
-import { format } from 'date-fns';
 import { 
   Dialog, 
   DialogContent, 
@@ -31,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { v4 as uuidv4 } from 'uuid';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ClientCard = ({ 
   client, 
@@ -803,9 +805,18 @@ const Clients = () => {
                       <Label htmlFor="phone" className="after:content-['*'] after:ml-0.5 after:text-red-500">Telefone</Label>
                       <Input
                         id="phone"
-                        value={newClient.phone}
-                        onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                        placeholder="Número de Telefone"
+                        value={(function formatPhone(value) {
+                          const numbers = (value || '').replace(/\D/g, '').slice(0, 11);
+                          if (numbers.length <= 2) return numbers;
+                          if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+                          return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+                        })(newClient.phone)}
+                        onChange={e => {
+                          const onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 11);
+                          setNewClient({ ...newClient, phone: onlyNumbers });
+                        }}
+                        maxLength={16}
+                        placeholder="(11) 91234-5678"
                         className="focus-visible:ring-primary"
                       />
                     </div>
@@ -854,13 +865,43 @@ const Clients = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="region_state">Estado</Label>
-                      <Input
-                        id="region_state"
-                        value={newClient.region_state || ''}
-                        onChange={(e) => setNewClient({ ...newClient, region_state: e.target.value })}
-                        placeholder="Estado"
-                        className="focus-visible:ring-primary"
-                      />
+                      <Select 
+                        value={newClient.region_state || ''} 
+                        onValueChange={(value) => setNewClient({ ...newClient, region_state: value })}
+                      >
+                        <SelectTrigger id="region_state" className="focus-visible:ring-primary">
+                          <SelectValue placeholder="Selecione um estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="AC">Acre</SelectItem>
+                          <SelectItem value="AL">Alagoas</SelectItem>
+                          <SelectItem value="AP">Amapá</SelectItem>
+                          <SelectItem value="AM">Amazonas</SelectItem>
+                          <SelectItem value="BA">Bahia</SelectItem>
+                          <SelectItem value="CE">Ceará</SelectItem>
+                          <SelectItem value="DF">Distrito Federal</SelectItem>
+                          <SelectItem value="ES">Espírito Santo</SelectItem>
+                          <SelectItem value="GO">Goiás</SelectItem>
+                          <SelectItem value="MA">Maranhão</SelectItem>
+                          <SelectItem value="MT">Mato Grosso</SelectItem>
+                          <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                          <SelectItem value="MG">Minas Gerais</SelectItem>
+                          <SelectItem value="PA">Pará</SelectItem>
+                          <SelectItem value="PB">Paraíba</SelectItem>
+                          <SelectItem value="PR">Paraná</SelectItem>
+                          <SelectItem value="PE">Pernambuco</SelectItem>
+                          <SelectItem value="PI">Piauí</SelectItem>
+                          <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                          <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                          <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                          <SelectItem value="RO">Rondônia</SelectItem>
+                          <SelectItem value="RR">Roraima</SelectItem>
+                          <SelectItem value="SC">Santa Catarina</SelectItem>
+                          <SelectItem value="SP">São Paulo</SelectItem>
+                          <SelectItem value="SE">Sergipe</SelectItem>
+                          <SelectItem value="TO">Tocantins</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   

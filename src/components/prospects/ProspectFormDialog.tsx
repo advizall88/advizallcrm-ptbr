@@ -110,6 +110,9 @@ const ProspectFormDialog = ({
     defaultValues: initialData
       ? {
           ...initialData,
+          status: (['new', 'interested', 'negotiation', 'lost'].includes(initialData.status)
+            ? initialData.status
+            : 'new') as 'new' | 'interested' | 'negotiation' | 'lost',
           first_contact_at: initialData.first_contact_at
             ? new Date(initialData.first_contact_at)
             : new Date(),
@@ -134,6 +137,9 @@ const ProspectFormDialog = ({
         // Reset form with initialData for edit mode
         form.reset({
           ...initialData,
+          status: (['new', 'interested', 'negotiation', 'lost'].includes(initialData.status)
+            ? initialData.status
+            : 'new') as 'new' | 'interested' | 'negotiation' | 'lost',
           first_contact_at: initialData.first_contact_at
             ? new Date(initialData.first_contact_at)
             : new Date(),
@@ -146,12 +152,12 @@ const ProspectFormDialog = ({
       } else {
         // Reset form with defaults for create mode
         form.reset({
-          status: "new",
+          status: 'new',
           score: 3,
           first_contact_at: new Date(),
-          timezone: "America/Los_Angeles",
-          lead_source: "Outro",
-          business_type: "Outro",
+          timezone: 'America/Los_Angeles',
+          lead_source: 'Outro',
+          business_type: 'Outro',
         });
         setIsAdvancedOpen(false);
       }
@@ -327,15 +333,34 @@ const ProspectFormDialog = ({
                 <FormField
                   control={form.control}
                   name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Telefone *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="(11) 91234-5678" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    // Função para formatar o telefone
+                    const formatPhone = (value: string) => {
+                      const numbers = value.replace(/\D/g, '').slice(0, 11);
+                      if (numbers.length <= 2) return `${numbers}`;
+                      if (numbers.length <= 7)
+                        return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+                      return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+                    };
+                    return (
+                      <FormItem>
+                        <FormLabel>Telefone *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="(11) 91234-5678"
+                            value={formatPhone(field.value || "")}
+                            onChange={e => {
+                              // Aceita apenas números, limita a 11 dígitos
+                              const onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 11);
+                              field.onChange(onlyNumbers);
+                            }}
+                            maxLength={16} // (99) 99999-9999
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
                 
                 <FormField
@@ -419,19 +444,33 @@ const ProspectFormDialog = ({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="AL">Alabama</SelectItem>
-                          <SelectItem value="AK">Alaska</SelectItem>
-                          <SelectItem value="AZ">Arizona</SelectItem>
-                          <SelectItem value="CA">California</SelectItem>
-                          <SelectItem value="CO">Colorado</SelectItem>
-                          <SelectItem value="CT">Connecticut</SelectItem>
-                          <SelectItem value="FL">Florida</SelectItem>
-                          <SelectItem value="GA">Georgia</SelectItem>
-                          <SelectItem value="IL">Illinois</SelectItem>
-                          <SelectItem value="NY">New York</SelectItem>
-                          <SelectItem value="TX">Texas</SelectItem>
-                          <SelectItem value="WA">Washington</SelectItem>
-                          {/* Add other states as needed */}
+                          <SelectItem value="AC">Acre</SelectItem>
+                          <SelectItem value="AL">Alagoas</SelectItem>
+                          <SelectItem value="AP">Amapá</SelectItem>
+                          <SelectItem value="AM">Amazonas</SelectItem>
+                          <SelectItem value="BA">Bahia</SelectItem>
+                          <SelectItem value="CE">Ceará</SelectItem>
+                          <SelectItem value="DF">Distrito Federal</SelectItem>
+                          <SelectItem value="ES">Espírito Santo</SelectItem>
+                          <SelectItem value="GO">Goiás</SelectItem>
+                          <SelectItem value="MA">Maranhão</SelectItem>
+                          <SelectItem value="MT">Mato Grosso</SelectItem>
+                          <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                          <SelectItem value="MG">Minas Gerais</SelectItem>
+                          <SelectItem value="PA">Pará</SelectItem>
+                          <SelectItem value="PB">Paraíba</SelectItem>
+                          <SelectItem value="PR">Paraná</SelectItem>
+                          <SelectItem value="PE">Pernambuco</SelectItem>
+                          <SelectItem value="PI">Piauí</SelectItem>
+                          <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                          <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                          <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                          <SelectItem value="RO">Rondônia</SelectItem>
+                          <SelectItem value="RR">Roraima</SelectItem>
+                          <SelectItem value="SC">Santa Catarina</SelectItem>
+                          <SelectItem value="SP">São Paulo</SelectItem>
+                          <SelectItem value="SE">Sergipe</SelectItem>
+                          <SelectItem value="TO">Tocantins</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />

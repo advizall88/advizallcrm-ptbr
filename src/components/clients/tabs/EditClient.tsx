@@ -1,8 +1,10 @@
 import React from 'react';
+import { Client } from '@/lib/supabase';
+import { ClientFormData } from '@/services/clientService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
   Card,
   CardContent,
@@ -16,10 +18,9 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from '@/components/ui/select';
-import { ClientFormData } from '@/services/clientService';
-import { Save, X } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 
 interface EditClientProps {
   client: ClientFormData | null;
@@ -82,9 +83,18 @@ const EditClient: React.FC<EditClientProps> = ({
               <Label htmlFor="phone">Telefone</Label>
               <Input
                 id="phone"
-                value={client.phone || ''}
-                onChange={(e) => onChange('phone', e.target.value)}
-                placeholder="Número de telefone"
+                value={(function formatPhone(value) {
+                  const numbers = (value || '').replace(/\D/g, '').slice(0, 11);
+                  if (numbers.length <= 2) return numbers;
+                  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+                  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+                })(client.phone)}
+                onChange={e => {
+                  const onlyNumbers = e.target.value.replace(/\D/g, '').slice(0, 11);
+                  onChange('phone', onlyNumbers);
+                }}
+                maxLength={16}
+                placeholder="(11) 91234-5678"
               />
             </div>
             
@@ -127,12 +137,43 @@ const EditClient: React.FC<EditClientProps> = ({
 
             <div className="space-y-2">
               <Label htmlFor="region_state">Estado</Label>
-              <Input
-                id="region_state"
-                value={client.region_state || ''}
-                onChange={(e) => onChange('region_state', e.target.value)}
-                placeholder="Estado"
-              />
+              <Select 
+                value={client.region_state || ''} 
+                onValueChange={(value) => onChange('region_state', value)}
+              >
+                <SelectTrigger id="region_state">
+                  <SelectValue placeholder="Selecione um estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="AC">Acre</SelectItem>
+                  <SelectItem value="AL">Alagoas</SelectItem>
+                  <SelectItem value="AP">Amapá</SelectItem>
+                  <SelectItem value="AM">Amazonas</SelectItem>
+                  <SelectItem value="BA">Bahia</SelectItem>
+                  <SelectItem value="CE">Ceará</SelectItem>
+                  <SelectItem value="DF">Distrito Federal</SelectItem>
+                  <SelectItem value="ES">Espírito Santo</SelectItem>
+                  <SelectItem value="GO">Goiás</SelectItem>
+                  <SelectItem value="MA">Maranhão</SelectItem>
+                  <SelectItem value="MT">Mato Grosso</SelectItem>
+                  <SelectItem value="MS">Mato Grosso do Sul</SelectItem>
+                  <SelectItem value="MG">Minas Gerais</SelectItem>
+                  <SelectItem value="PA">Pará</SelectItem>
+                  <SelectItem value="PB">Paraíba</SelectItem>
+                  <SelectItem value="PR">Paraná</SelectItem>
+                  <SelectItem value="PE">Pernambuco</SelectItem>
+                  <SelectItem value="PI">Piauí</SelectItem>
+                  <SelectItem value="RJ">Rio de Janeiro</SelectItem>
+                  <SelectItem value="RN">Rio Grande do Norte</SelectItem>
+                  <SelectItem value="RS">Rio Grande do Sul</SelectItem>
+                  <SelectItem value="RO">Rondônia</SelectItem>
+                  <SelectItem value="RR">Roraima</SelectItem>
+                  <SelectItem value="SC">Santa Catarina</SelectItem>
+                  <SelectItem value="SP">São Paulo</SelectItem>
+                  <SelectItem value="SE">Sergipe</SelectItem>
+                  <SelectItem value="TO">Tocantins</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           

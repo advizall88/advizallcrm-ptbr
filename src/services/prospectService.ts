@@ -63,6 +63,7 @@ export type ProspectFormData = {
   call_summary?: string | null;
   notes?: string | null;
   next_follow_up_at?: string | null;
+  order_index?: number | null;
 };
 
 export const prospectService = {
@@ -215,22 +216,51 @@ export const prospectService = {
   },
 
   async updateProspect(id: string, updates: Partial<ProspectFormData>): Promise<Prospect> {
-    const { data, error } = await supabase
-      .from('prospects')
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) {
+    try {
+      // Passo 1: Atualizar o registro sem tentar buscar o resultado
+      const { error: updateError } = await supabase
+        .from('prospects')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      
+      if (updateError) {
+        console.error(`Error updating prospect ${id}:`, updateError);
+        throw updateError;
+      }
+      
+      // Passo 2: Buscar o registro atualizado separadamente
+      const { data, error: fetchError } = await supabase
+        .from('prospects')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+      
+      // Se conseguirmos buscar o registro atualizado, ótimo
+      if (data) {
+        return data as Prospect;
+      }
+      
+      // Se não conseguirmos buscar, mas a atualização foi bem-sucedida,
+      // retorne um objeto com os campos que sabemos que foram atualizados
+      if (fetchError) {
+        console.warn(`Updated prospect ${id} but could not fetch it:`, fetchError);
+        return {
+          id,
+          ...updates,
+          updated_at: new Date().toISOString()
+        } as Prospect;
+      }
+      
+      // Se não encontramos o registro após atualização
+      console.error(`Prospect with id ${id} not found after update`);
+      throw new Error(`Prospect with id ${id} not found or could not be updated`);
+    } catch (error) {
       console.error(`Error updating prospect ${id}:`, error);
       throw error;
     }
-    
-    return data as Prospect;
   },
 
   async updateProspectStatus(id: string, status: Prospect['status']): Promise<Prospect> {
@@ -251,8 +281,24 @@ export const prospectService = {
     destinationIndex: number,
     prospectId: string
   ): Promise<void> {
-    // Simplesmente atualiza o status do prospect arrastado
-    await this.updateProspectStatus(prospectId, destinationStatus);
+    try {
+      // Atualiza apenas o status do prospecto, sem outros campos
+      const { error } = await supabase
+        .from('prospects')
+        .update({
+          status: destinationStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', prospectId);
+      
+      if (error) {
+        console.error(`Error updating prospect status ${prospectId}:`, error);
+        throw error;
+      }
+    } catch (error) {
+      console.error(`Error reordering prospect ${prospectId}:`, error);
+      throw error;
+    }
   },
 
   async deleteProspect(id: string): Promise<void> {

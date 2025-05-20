@@ -128,10 +128,10 @@ export const calMeetingService = {
             status: meeting.status,
             attendee_name: meeting.attendee_name,
             attendee_email: meeting.attendee_email,
-            meeting_url: meeting.meeting_url,
+            meeting_link: meeting.meeting_link,
             trigger_event: meeting.trigger_event,
-            note: meeting.note,
-            phone: meeting.phone,
+            additional_notes: meeting.additional_notes,
+            phone_number: meeting.phone_number,
             reschedule_reason: meeting.reschedule_reason,
             cancellation_reason: meeting.cancellation_reason
           })
@@ -172,14 +172,22 @@ export const calMeetingService = {
         status: meeting.status,
         attendee_name: meeting.attendee_name || null,
         attendee_email: meeting.attendee_email || null,
-        meeting_url: meeting.meeting_url || null,
+        meeting_link: meeting.meeting_link || null,
         trigger_event: meeting.trigger_event,
-        note: meeting.note || null,
-        phone: meeting.phone || null,
+        additional_notes: meeting.additional_notes || null,
+        phone_number: meeting.phone_number || null,
         reschedule_reason: meeting.reschedule_reason || null,
         cancellation_reason: meeting.cancellation_reason || null,
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        attendees: null,
+        organizer: null,
+        calendar_event_id: null,
+        location: null,
+        event_type: null,
+        cal_user_id: null,
+        processed: false,
+        raw_payload: null
       };
     }
   }

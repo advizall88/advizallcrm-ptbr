@@ -12,60 +12,84 @@ export interface Database {
       cal_meetings: {
         Row: {
           id: string
-          ical_uid: string
+          ical_uid: string | null
           title: string
           description: string | null
           start_time: string
           end_time: string
+          attendees: Json | null
+          organizer: Json | null
+          calendar_event_id: string | null
+          location: string | null
           status: string
-          attendee_name: string | null
-          attendee_email: string | null
-          meeting_url: string | null
-          trigger_event: string
-          note: string | null
-          phone: string | null
-          reschedule_reason: string | null
-          cancellation_reason: string | null
+          event_type: Json | null
+          cal_user_id: string | null
           created_at: string
           updated_at: string
+          processed: boolean | null
+          raw_payload: Json | null
+          trigger_event: string
+          additional_notes: string | null
+          attendee_name: string | null
+          attendee_email: string | null
+          phone_number: string | null
+          meeting_link: string | null
+          reschedule_reason: string | null
+          cancellation_reason: string | null
         }
         Insert: {
           id?: string
-          ical_uid: string
+          ical_uid?: string | null
           title: string
           description?: string | null
           start_time: string
           end_time: string
+          attendees?: Json | null
+          organizer?: Json | null
+          calendar_event_id?: string | null
+          location?: string | null
           status: string
-          attendee_name?: string | null
-          attendee_email?: string | null
-          meeting_url?: string | null
-          trigger_event: string
-          note?: string | null
-          phone?: string | null
-          reschedule_reason?: string | null
-          cancellation_reason?: string | null
+          event_type?: Json | null
+          cal_user_id?: string | null
           created_at?: string
           updated_at?: string
+          processed?: boolean | null
+          raw_payload?: Json | null
+          trigger_event: string
+          additional_notes?: string | null
+          attendee_name?: string | null
+          attendee_email?: string | null
+          phone_number?: string | null
+          meeting_link?: string | null
+          reschedule_reason?: string | null
+          cancellation_reason?: string | null
         }
         Update: {
           id?: string
-          ical_uid?: string
+          ical_uid?: string | null
           title?: string
           description?: string | null
           start_time?: string
           end_time?: string
+          attendees?: Json | null
+          organizer?: Json | null
+          calendar_event_id?: string | null
+          location?: string | null
           status?: string
-          attendee_name?: string | null
-          attendee_email?: string | null
-          meeting_url?: string | null
-          trigger_event?: string
-          note?: string | null
-          phone?: string | null
-          reschedule_reason?: string | null
-          cancellation_reason?: string | null
+          event_type?: Json | null
+          cal_user_id?: string | null
           created_at?: string
           updated_at?: string
+          processed?: boolean | null
+          raw_payload?: Json | null
+          trigger_event?: string
+          additional_notes?: string | null
+          attendee_name?: string | null
+          attendee_email?: string | null
+          phone_number?: string | null
+          meeting_link?: string | null
+          reschedule_reason?: string | null
+          cancellation_reason?: string | null
         }
         Relationships: []
       }
@@ -83,7 +107,7 @@ export interface Database {
           region_state: string
           timezone: string
           score: number
-          status: 'new' | 'interested' | 'negotiation' | 'lost'
+          status: 'active' | string
           first_contact_at: string
           call_summary?: string
           notes?: string
@@ -110,7 +134,7 @@ export interface Database {
           region_state: string
           timezone: string
           score?: number
-          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          status?: 'active' | string
           first_contact_at?: string
           call_summary?: string
           notes?: string
@@ -137,7 +161,7 @@ export interface Database {
           region_state?: string
           timezone?: string
           score?: number
-          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          status?: 'active' | string
           first_contact_at?: string
           call_summary?: string
           notes?: string
@@ -165,33 +189,33 @@ export interface Database {
         Row: {
           id: string
           client_id: string
-          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other' | string
           login: string
           password: string
           notes?: string
-          visible_to: 'moderator' | 'admin'
+          visible_to: 'moderator' | 'admin' | string
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           client_id: string
-          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          system: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other' | string
           login: string
           password: string
           notes?: string
-          visible_to?: 'moderator' | 'admin'
+          visible_to?: 'moderator' | 'admin' | string
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           client_id?: string
-          system?: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other'
+          system?: 'hosting' | 'domain' | 'facebook' | 'instagram' | 'other' | string
           login?: string
           password?: string
           notes?: string
-          visible_to?: 'moderator' | 'admin'
+          visible_to?: 'moderator' | 'admin' | string
           created_at?: string
           updated_at?: string
         }
@@ -326,8 +350,9 @@ export interface Database {
         Row: {
           id: string
           client_id: string
-          service: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
-          status: 'todo' | 'doing' | 'done'
+          name: string
+          service: 'website' | 'organic' | 'paid_ads' | 'branding' | 'ops' | string
+          status: 'todo' | 'doing' | 'done' | string
           description?: string
           deadline?: string
           created_at: string
@@ -336,8 +361,9 @@ export interface Database {
         Insert: {
           id?: string
           client_id: string
-          service: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
-          status?: 'todo' | 'doing' | 'done'
+          name: string
+          service: 'website' | 'organic' | 'paid_ads' | 'branding' | 'ops' | string
+          status?: 'todo' | 'doing' | 'done' | string
           description?: string
           deadline?: string
           created_at?: string
@@ -346,8 +372,9 @@ export interface Database {
         Update: {
           id?: string
           client_id?: string
-          service?: 'website' | 'paid_ads' | 'organic' | 'branding' | 'ops'
-          status?: 'todo' | 'doing' | 'done'
+          name?: string
+          service?: 'website' | 'organic' | 'paid_ads' | 'branding' | 'ops' | string
+          status?: 'todo' | 'doing' | 'done' | string
           description?: string
           deadline?: string
           created_at?: string
@@ -377,7 +404,7 @@ export interface Database {
           region_state: string
           timezone: string
           score: number
-          status: 'new' | 'interested' | 'negotiation' | 'lost'
+          status: 'new' | 'interested' | 'negotiation' | 'lost' | string
           first_contact_at: string
           call_summary?: string
           notes?: string
@@ -398,7 +425,7 @@ export interface Database {
           region_state: string
           timezone: string
           score?: number
-          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          status?: 'new' | 'interested' | 'negotiation' | 'lost' | string
           first_contact_at?: string
           call_summary?: string
           notes?: string
@@ -419,7 +446,7 @@ export interface Database {
           region_state?: string
           timezone?: string
           score?: number
-          status?: 'new' | 'interested' | 'negotiation' | 'lost'
+          status?: 'new' | 'interested' | 'negotiation' | 'lost' | string
           first_contact_at?: string
           call_summary?: string
           notes?: string
@@ -442,7 +469,7 @@ export interface Database {
           id: string
           project_id: string
           title: string
-          status: 'todo' | 'doing' | 'done'
+          status: 'todo' | 'doing' | 'done' | string
           due_at?: string
           assignee_id?: string
           created_at: string
@@ -452,7 +479,7 @@ export interface Database {
           id?: string
           project_id: string
           title: string
-          status?: 'todo' | 'doing' | 'done'
+          status?: 'todo' | 'doing' | 'done' | string
           due_at?: string
           assignee_id?: string
           created_at?: string
@@ -462,7 +489,7 @@ export interface Database {
           id?: string
           project_id?: string
           title?: string
-          status?: 'todo' | 'doing' | 'done'
+          status?: 'todo' | 'doing' | 'done' | string
           due_at?: string
           assignee_id?: string
           created_at?: string

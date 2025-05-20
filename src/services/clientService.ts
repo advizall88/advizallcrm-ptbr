@@ -391,9 +391,9 @@ export const clientService = {
   async createProject(data: ProjectFormData): Promise<Project> {
     try {
       const now = new Date().toISOString();
-      
       const projectData = {
         id: uuidv4(),
+        name: data.name,
         client_id: data.client_id,
         service: data.service,
         status: data.status,
@@ -402,13 +402,11 @@ export const clientService = {
         created_at: now,
         updated_at: now
       };
-      
       const { data: newProject, error } = await supabase
         .from('projects')
         .insert(projectData)
         .select()
         .single();
-      
       if (error) throw error;
       return newProject as Project;
     } catch (error) {

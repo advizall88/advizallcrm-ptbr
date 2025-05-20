@@ -158,8 +158,8 @@ const Clients = () => {
       } else {
         // Client not found - show a toast and redirect to clients page
         toast({
-          title: "Cliente Não Encontrado",
-          description: `Nenhum cliente encontrado com o ID: ${clientIdFromUrl}`,
+          title: "Cliente Transferido",
+          description: `O cliente foi transferido de Prospectados para cá, ID: ${clientIdFromUrl}`,
           variant: "destructive"
         });
         navigate('/clients');
